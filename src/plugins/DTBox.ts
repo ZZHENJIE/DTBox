@@ -29,8 +29,8 @@ export const provider_props_ref = computed<ConfigProviderProps>(() => ({
 const discrete_api = createDiscreteApi(['loadingBar', 'message', 'modal', 'notification'], {
     configProviderProps: provider_props_ref
 });
-export const useConfig = () => config_ref;
 
+export const useConfig = () => config_ref;
 export const useDiscreteApi = () => discrete_api;
 
 export default {

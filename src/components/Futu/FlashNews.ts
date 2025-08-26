@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted, onUnmounted, ref, type VNode } from "vue";
 import FutuApi from "../../api/Futu";
-import { NAlert, NCard, NFlex } from "naive-ui";
+import { NAlert, NCard, NFlex, NTime } from "naive-ui";
 import Tool from "../../utils/Tool";
 import { useConfig } from "../../plugins/DTBox";
 
@@ -38,7 +38,10 @@ export default () => {
 
                     result.push(h(NCard, {
                         title: item.title,
-                        action: () => Tool.Format_Time(item.time, 'hh:MM:ss')
+                        action: () => h(NTime, {
+                            time: item.time * 1000,
+                            format: 'HH:mm:ss'
+                        })
                     }, () => alert()))
                 }
 

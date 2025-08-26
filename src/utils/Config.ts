@@ -2,7 +2,9 @@ import type { AppConfig } from "./Config.d";
 
 export const DEFAULT: AppConfig = {
     is_dark_theme: true,
-    keywords: [],
+    keywords: [
+        '收购'
+    ],
     language: 'en-US',
     finviz: {
         token: '1e3ab083-4d40-48cd-9218-ea042376b56e',

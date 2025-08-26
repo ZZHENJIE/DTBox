@@ -1,8 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import FutuApi from "../../api/Futu";
 import { defineComponent, h, ref, type VNode } from "vue";
-import { NCard, NEllipsis, NFlex, NHighlight, NScrollbar, NSpin } from "naive-ui";
-import Tool from "../../utils/Tool";
+import { NCard, NEllipsis, NFlex, NHighlight, NScrollbar, NSpin, NTime } from "naive-ui";
 import { useConfig } from "../../plugins/DTBox";
 
 export default (symbol: string, patterns: string[] = []) => {
@@ -21,9 +20,11 @@ export default (symbol: string, patterns: string[] = []) => {
                         text: item.title,
                         patterns: patterns
                     }));
-
                     items.push(h(NCard, {
-                        action: () => `${item.source} ${Tool.Format_Time(item.time, 'yyyy-mm-dd hh:MM:ss')}`
+                        action: () => [h(NTime, {
+                            time: item.time * 1000,
+                            format: 'yyyy-MM-dd hh:mm:ss'
+                        }), `-${item.source}`]
                     }, () => ellipsis));
                 }
             })

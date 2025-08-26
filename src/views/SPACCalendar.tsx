@@ -1,7 +1,6 @@
-import { defineComponent, h, onUnmounted, ref } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { SpacResearchItem } from '../api/Type';
-import { useDiscreteApi } from '../plugins/DTBox';
 import SpacResearchApi from '../api/SpacResearch';
 import { NDataTable, type DataTableColumns } from 'naive-ui';
 import MEllipsis from '../components/MEllipsis';
@@ -10,13 +9,12 @@ export default defineComponent(() => {
 
     const { t } = useI18n();
     const calendar_data = ref<SpacResearchItem[]>();
+    const loading = ref(true);
 
-    useDiscreteApi().loadingBar.start();
     SpacResearchApi.Calendar().then((data) => {
         calendar_data.value = data;
-        useDiscreteApi().loadingBar.finish();
+        loading.value = false;
     })
-    onUnmounted(() => useDiscreteApi().loadingBar.finish());
 
     const filter_options = [
         {
@@ -60,6 +58,7 @@ export default defineComponent(() => {
 
     return () => h(NDataTable, {
         columns: columns,
-        data: calendar_data.value
+        data: calendar_data.value,
+        loading: loading.value
     });
 });

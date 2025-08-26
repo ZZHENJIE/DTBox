@@ -1,8 +1,7 @@
 import { defineComponent, h, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useDiscreteApi } from '../plugins/DTBox';
 import WallstreetcnApi from '../api/Wallstreetcn';
-import { NDataTable, NDatePicker, NFloatButton, NIcon, NPopover, type DataTableColumns } from 'naive-ui';
+import { NDataTable, NDatePicker, NFloatButton, NIcon, NPopover, NTime, type DataTableColumns } from 'naive-ui';
 import MEllipsis from '../components/MEllipsis';
 import Tool from '../utils/Tool';
 import { CalendarSharp } from '@vicons/ionicons5';
@@ -26,18 +25,16 @@ export default defineComponent(() => {
     const { t } = useI18n();
     const calendar_data = ref();
     const date = ref(get_defult_date());
+    const loading = ref(true);
 
     const calendar_update = (timestamp: number) => {
-        useDiscreteApi().loadingBar.start();
         WallstreetcnApi.Calendar(timestamp, timestamp + 86399).then((json) => {
             calendar_data.value = json.data.items;
-            useDiscreteApi().loadingBar.finish();
+            loading.value = false;
         })
     };
 
     calendar_update(date.value / 1000);
-    onUnmounted(() => useDiscreteApi().loadingBar.finish());
-
 
     const columns: DataTableColumns<any> = [
         {
@@ -46,11 +43,12 @@ export default defineComponent(() => {
             width: 100,
             render: (row) => row.public_date % 86400 == 14520 ?
                 MEllipsis(t('Undetermined')) :
-                MEllipsis(Tool.Format_Time(row.public_date, 'hh:MM:ss'))
+                h(NTime, { time: row.public_date * 1000, format: 'HH:mm:ss' })
         },
         {
             title: () => MEllipsis(t('Country')),
             key: 'country_id',
+            width: 110,
             render: (row) => MEllipsis(row.country_id),
             defaultFilterOptionValues: ['US'],
             filterOptions: [
@@ -93,7 +91,8 @@ export default defineComponent(() => {
 
     const data_table = () => h(NDataTable, {
         data: calendar_data.value,
-        columns: columns
+        columns: columns,
+        loading: loading.value
     });
 
     const date_picker = () => h(NPopover, {

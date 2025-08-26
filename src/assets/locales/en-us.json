@@ -45,5 +45,6 @@
     "Amendment_Vote": "Amendment Vote",
     "Approval_Vote": "Approval Vote",
     "IPO_Date": "IPO Date",
-    "Liquidation_Deadline": "Liquidation Deadline"
+    "Liquidation_Deadline": "Liquidation Deadline",
+    "Show_Time_Window": "Show Time Window"
 }

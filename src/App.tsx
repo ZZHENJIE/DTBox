@@ -5,6 +5,7 @@ import { RouterView, useRoute, useRouter } from "vue-router";
 import Router from "./plugins/Router";
 import { useI18n } from "vue-i18n";
 import { Init, provider_props_ref, useConfig, useDiscreteApi } from "./plugins/DTBox";
+import TimeWindowButton from "./components/TimeWindowButton";
 
 export default defineComponent(() => {
     const route = useRoute();
@@ -79,7 +80,7 @@ export default defineComponent(() => {
                 },
             }, () => h(NFlex, {
                 justify: 'center'
-            }, () => [home_button(), back_button(), settings_button(), menu()]))
+            }, () => [home_button(), back_button(), settings_button(), , h(TimeWindowButton), menu()]))
         }
     }
 
@@ -107,15 +108,19 @@ export default defineComponent(() => {
 
     onMounted(() => {
         useI18n().locale.value = useConfig().value.language;
-        const init_message = useDiscreteApi().message.loading(`${t('Initializing')}...`, {
-            duration: 0
-        });
-        Init()
-            .then(() => init_message.destroy())
-            .catch((error) => {
-                init_message.destroy();
-                useDiscreteApi().message.error(`Init: ${error}`);
-            });
+        setTimeout(() => {
+            if (!route?.meta.standalone) {
+                const init_message = useDiscreteApi().message.loading(`${t('Initializing')}...`, {
+                    duration: 0
+                });
+                Init()
+                    .then(() => init_message.destroy())
+                    .catch((error) => {
+                        init_message.destroy();
+                        useDiscreteApi().message.error(`Init: ${error}`);
+                    });
+            }
+        }, 500);
     })
 
     return render;

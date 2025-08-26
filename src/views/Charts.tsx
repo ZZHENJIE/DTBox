@@ -1,17 +1,14 @@
 import { AreaSeries, CandlestickSeries, ColorType, createChart, type ChartOptions, type DeepPartial } from 'lightweight-charts';
-import { defineComponent, h, onMounted } from 'vue';
+import { defineComponent, h, onMounted, ref } from 'vue';
 
 export default defineComponent(() => {
-    const render = () => h('div', null, [
-        h('div', { id: 'container' })
-    ]);
+
+    const container = ref<HTMLElement | null>(null);
 
     onMounted(() => {
-        const container = document.getElementById('container');
-
-        if (container) {
+        if (container.value) {
             const chartOptions: DeepPartial<ChartOptions> = { layout: { textColor: 'white', background: { type: ColorType.Solid, color: 'black' } } };
-            const chart = createChart(container, chartOptions);
+            const chart = createChart(container.value, chartOptions);
             const areaSeries = chart.addSeries(AreaSeries, {
                 lineColor: '#2962FF', topColor: '#2962FF',
                 bottomColor: 'rgba(41, 98, 255, 0.28)',
@@ -50,6 +47,14 @@ export default defineComponent(() => {
         }
     })
 
+    const render = () => h('div', [
+        h('div', {
+            style: {
+                height: '400px'
+            },
+            ref: container
+        }),
+    ]);
 
     return render;
 });

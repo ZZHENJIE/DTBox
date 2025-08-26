@@ -1,6 +1,4 @@
-
-import { defineComponent, h, onUnmounted, ref } from 'vue';
-import { useDiscreteApi } from '../plugins/DTBox';
+import { defineComponent, h, ref } from 'vue';
 import IposcoopApi from '../api/Iposcoop';
 import type { IPOItem } from '../api/Type';
 import { NDataTable, type DataTableColumns } from 'naive-ui';
@@ -10,13 +8,12 @@ import MEllipsis from '../components/MEllipsis';
 export default defineComponent(() => {
     const { t } = useI18n();
     const calendar_data = ref<IPOItem[]>();
+    const loading = ref(true);
 
-    useDiscreteApi().loadingBar.start();
     IposcoopApi.Calendar().then((data) => {
         calendar_data.value = data;
-        useDiscreteApi().loadingBar.finish();
+        loading.value = false;
     })
-    onUnmounted(() => useDiscreteApi().loadingBar.finish())
 
     const columns: DataTableColumns<IPOItem> = [
         {
@@ -62,6 +59,7 @@ export default defineComponent(() => {
 
     return () => h(NDataTable, {
         columns: columns,
-        data: calendar_data.value
+        data: calendar_data.value,
+        loading: loading.value
     });
 });
