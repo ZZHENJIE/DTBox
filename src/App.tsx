@@ -66,6 +66,7 @@ export default defineComponent(() => {
 
             const menu = () => h(NMenu, {
                 options: menu_options,
+                style: { width: '190px' },
                 value: route.name as string,
                 onUpdateValue: (value) => router.push({ name: value })
             })

@@ -46,5 +46,7 @@
     "Approval_Vote": "Approval Vote",
     "IPO_Date": "IPO Date",
     "Liquidation_Deadline": "Liquidation Deadline",
-    "Show_Time_Window": "Show Time Window"
+    "Show_Time_Window": "Show Time Window",
+    "Length": "Length",
+    "Max": "Max"
 }

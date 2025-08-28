@@ -1,5 +1,6 @@
 import { AreaSeries, CandlestickSeries, ColorType, createChart, type ChartOptions, type DeepPartial } from 'lightweight-charts';
-import { defineComponent, h, onMounted, ref } from 'vue';
+import { NGrid, NGridItem } from 'naive-ui';
+import { defineComponent, h, onMounted, ref, type VNode } from 'vue';
 
 export default defineComponent(() => {
 
@@ -7,7 +8,7 @@ export default defineComponent(() => {
 
     onMounted(() => {
         if (container.value) {
-            const chartOptions: DeepPartial<ChartOptions> = { layout: { textColor: 'white', background: { type: ColorType.Solid, color: 'black' } } };
+            const chartOptions: DeepPartial<ChartOptions> = { layout: { textColor: 'white', background: { type: ColorType.Solid, color: 'black' } }, autoSize: true };
             const chart = createChart(container.value, chartOptions);
             const areaSeries = chart.addSeries(AreaSeries, {
                 lineColor: '#2962FF', topColor: '#2962FF',
@@ -47,13 +48,29 @@ export default defineComponent(() => {
         }
     })
 
-    const render = () => h('div', [
-        h('div', {
+    const test = (number: number) => {
+        const result: VNode[] = [];
+        for (let i = 0; i < number; i++) {
+            result.push(h('div', null, i))
+        }
+        return result;
+    }
+
+    const render = () => h(NGrid, {
+        itemResponsive: true,
+        cols: 6
+    }, () => [
+        h(NGridItem, {
+            span: 1
+        }, () => test(100)),
+        h(NGridItem, {
+            span: 5
+        }, () => h('div', {
             style: {
                 height: '400px'
             },
             ref: container
-        }),
+        }, test(5)))
     ]);
 
     return render;

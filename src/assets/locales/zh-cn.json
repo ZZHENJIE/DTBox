@@ -46,5 +46,7 @@
     "Approval_Vote": "合并批准投票",
     "IPO_Date": "上市日",
     "Liquidation_Deadline": "清算截止日",
-    "Show_Time_Window": "显示时间窗口"
+    "Show_Time_Window": "显示时间窗口",
+    "Length": "长度",
+    "Max": "最大"
 }

@@ -12,16 +12,16 @@ const Finviz: RouteRecordRaw[] = [
         },
         component: () => import('../views/FinvizScreener.tsx')
     },
-    {
-        path: '/finviz_analysis',
-        name: 'FinvizAnalysis',
-        meta: {
-            title: () => useI18n().t('Analysis'),
-            menu_enable: true,
-            standalone: false
-        },
-        component: () => import('../views/FinvizAnalysis.tsx')
-    }
+    // {
+    //     path: '/finviz_analysis',
+    //     name: 'FinvizAnalysis',
+    //     meta: {
+    //         title: () => useI18n().t('Analysis'),
+    //         menu_enable: true,
+    //         standalone: false
+    //     },
+    //     component: () => import('../views/FinvizAnalysis.tsx')
+    // }
 ];
 
 const Calendar: RouteRecordRaw[] = [
@@ -45,16 +45,6 @@ const Calendar: RouteRecordRaw[] = [
         },
         component: () => import('../views/SPACCalendar.tsx')
     },
-    {
-        path: '/ipo_calendar',
-        name: 'IPOCalendar',
-        meta: {
-            title: () => useI18n().t('IPO'),
-            menu_enable: true,
-            standalone: false
-        },
-        component: () => import('../views/IPOCalendar.tsx')
-    },
 ];
 
 const Viewer: RouteRecordRaw[] = [
@@ -67,16 +57,6 @@ const Viewer: RouteRecordRaw[] = [
             standalone: false
         },
         component: () => import('../views/Home.tsx')
-    },
-    {
-        path: '/cboe_book_viewer',
-        name: 'CboeBookViewer',
-        meta: {
-            title: () => useI18n().t('Cboe_Book_Viewer'),
-            menu_enable: true,
-            standalone: false
-        },
-        component: () => import('../views/CboeBookViewer.tsx')
     },
     {
         path: '/charts',

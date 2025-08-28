@@ -1,0 +1,23 @@
+.breathing-element {
+    animation: breathing 2s infinite ease-in-out;
+}
+
+@keyframes breathing {
+    0% {
+        transform: scale(0.9);
+        opacity: 1;
+        color: steelblue;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1.4;
+        color: cadetblue;
+    }
+
+    100% {
+        transform: scale(0.9);
+        opacity: 1;
+        color: slateblue;
+    }
+}

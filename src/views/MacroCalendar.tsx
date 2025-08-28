@@ -1,23 +1,14 @@
-import { defineComponent, h, onUnmounted, ref } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WallstreetcnApi from '../api/Wallstreetcn';
 import { NDataTable, NDatePicker, NFloatButton, NIcon, NPopover, NTime, type DataTableColumns } from 'naive-ui';
 import MEllipsis from '../components/MEllipsis';
-import Tool from '../utils/Tool';
 import { CalendarSharp } from '@vicons/ionicons5';
 
 function get_defult_date() {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     return now.getTime();
-}
-
-function importance_icon(importance: number) {
-    let icon = '';
-    for (let index = 0; index < importance; index++) {
-        icon += '★';
-    }
-    return icon;
 }
 
 export default defineComponent(() => {
@@ -70,7 +61,7 @@ export default defineComponent(() => {
             title: () => MEllipsis(t('Importance')),
             key: 'importance',
             width: 100,
-            render: (row) => MEllipsis(importance_icon(row.importance))
+            render: (row) => MEllipsis('★'.repeat(row.importance))
         },
         {
             title: () => MEllipsis(t('Actual')),
