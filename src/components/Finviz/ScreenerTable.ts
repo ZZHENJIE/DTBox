@@ -5,10 +5,12 @@ import { useI18n } from "vue-i18n";
 import FinvizApi, { type ThumbnailType } from "../../api/Finviz";
 import MImage from "../MImage";
 import MEllipsis from "../MEllipsis";
+import { useConfig } from "../../plugins/DTBox";
 
 export default (array: FinvizScreenerItem[], thumbnail_type: ThumbnailType = 'd') => {
 
     const { t } = useI18n();
+    const theme = useConfig().value.is_dark_theme ? 'd' : 'l';
 
     const renderChange = (value: number) => {
         const color = value > 0 ? '#90EE90' : '#DB7093';
@@ -35,7 +37,7 @@ export default (array: FinvizScreenerItem[], thumbnail_type: ThumbnailType = 'd'
                     width: thumbnail_dimensions.width,
                     height: thumbnail_dimensions.height,
                     previewDisabled: true,
-                    src: FinvizApi.Thumbnail_Image_Url(row.Symbol, thumbnail_type)
+                    src: FinvizApi.Thumbnail_Image_Url(row.Symbol, theme, thumbnail_type)
                 })),
             })
         },

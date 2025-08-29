@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n';
 export default defineComponent(() => {
     const { t } = useI18n();
     const timestamp = ref(0);
-    const timeout_id = ref(0);
+    const timer = ref(0);
     const macro_calendar_data = ref();
     const warn_list = ref<any[]>([]);
 
@@ -17,26 +17,27 @@ export default defineComponent(() => {
         .then(json => {
             macro_calendar_data.value = json.data.items; Tool.Akamai_Timestamp().then(object => {
                 timestamp.value = Number(object);
-                auto_update_timestamp();
+                start_update_timestamp();
             })
         });
-    const auto_update_timestamp = () => {
-        timestamp.value++;
-        timeout_id.value = setTimeout(() => {
-            auto_update_timestamp();
-        }, 1000);
-
-        warn_list.value = [];
-        if ((timestamp.value + 28800) % 86400 === 0) {
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+    const start_update_timestamp = () => {
+        if (timer.value) {
+            clearInterval(timer.value);
         }
-        for (const item of macro_calendar_data.value) {
-            if (item.country_id === 'US' && item.public_date < (timestamp.value + 300) && timestamp.value < item.public_date) {
-                warn_list.value.push(item);
+        timer.value = setInterval(() => {
+            timestamp.value++;
+            warn_list.value = [];
+            if ((timestamp.value + 28800) % 86400 === 0) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             }
-        }
+            for (const item of macro_calendar_data.value) {
+                if (item.country_id === 'US' && item.public_date < (timestamp.value + 300) && timestamp.value < item.public_date) {
+                    warn_list.value.push(item);
+                }
+            }
+        }, 1000);
     }
 
     const warn_info = () => {
@@ -46,7 +47,7 @@ export default defineComponent(() => {
         }
     }
 
-    onUnmounted(() => clearTimeout(timeout_id.value));
+    onUnmounted(() => clearInterval(timer.value));
     const render = () => h('div', {
         style: {
             'text-align': 'center'

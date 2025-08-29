@@ -6,23 +6,25 @@ export default (style?: unknown) => {
     return defineComponent(() => {
 
         const timestamp = ref(0);
-        const timeout_id = ref(0);
+        const timer = ref(0);
 
         Tool.Akamai_Timestamp().then(object => {
-            timestamp.value = Number(object) * 1000;
-            auto_update_timestamp();
+            timestamp.value = Number(object);
+            start_update_timestamp();
         });
-        const auto_update_timestamp = () => {
-            timestamp.value += 1000;
-            timeout_id.value = setTimeout(() => {
-                auto_update_timestamp();
+        const start_update_timestamp = () => {
+            if (timer.value) {
+                clearInterval(timer.value);
+            }
+            timer.value = setInterval(() => {
+                timestamp.value++;
             }, 1000);
         }
 
-        onUnmounted(() => clearTimeout(timeout_id.value));
+        onUnmounted(() => clearInterval(timer.value));
 
         return () => h(NTime, {
-            time: timestamp.value,
+            time: timestamp.value * 1000,
             format: 'HH:mm:ss',
             style: style
         })

@@ -11,7 +11,6 @@
     "Finviz": "Finviz",
     "Calendar": "日历",
     "Confirm": "确认",
-    "Parameter_Form": "参数表单",
     "Please_Select": "请选择",
     "Table": "表格",
     "Charts": "图表",
@@ -48,5 +47,15 @@
     "Liquidation_Deadline": "清算截止日",
     "Show_Time_Window": "显示时间窗口",
     "Length": "长度",
-    "Max": "最大"
+    "Max": "最大",
+    "Parameter": "参数",
+    "Form": "表单",
+    "Auto": "自动",
+    "Refresh": "刷新",
+    "Thumbnail": "缩略",
+    "Type": "类型",
+    "Second": "秒",
+    "Minute": "分钟",
+    "Hour": "小时",
+    "Day": "天"
 }

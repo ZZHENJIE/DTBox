@@ -11,7 +11,8 @@
     "Finviz": "Finviz",
     "Calendar": "Calendar",
     "Confirm": "Confirm",
-    "Parameter_Form": "Parameter Form",
+    "Parameter": "Parameter",
+    "Form": "Form",
     "Please_Select": "Please Select",
     "Table": "Table",
     "Charts": "Charts",
@@ -48,5 +49,13 @@
     "Liquidation_Deadline": "Liquidation Deadline",
     "Show_Time_Window": "Show Time Window",
     "Length": "Length",
-    "Max": "Max"
+    "Max": "Max",
+    "Auto": "Auto",
+    "Refresh": "Refresh",
+    "Thumbnail": "Thumbnail",
+    "Type": "Type",
+    "Second": "Second",
+    "Minute": "Minute",
+    "Hour": "Hour",
+    "Day": "Day"
 }

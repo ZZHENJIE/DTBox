@@ -62,8 +62,8 @@ const ThumbnailDimensions: Record<ThumbnailType, ThumbnailDimensions> = {
     [FinvizThumbnails.I5]: { width: 376, height: 180 },
 };
 
-function Thumbnail_Image_Url(symbol: string, type: ThumbnailType = FinvizThumbnails.D) {
-    return `https://charts-node.finviz.com/chart.ashx?&t=${symbol}&tf=${type}&ct=candle_stick`;
+function Thumbnail_Image_Url(symbol: string, theme: 'd' | 'l' = 'd', type: ThumbnailType = FinvizThumbnails.D) {
+    return `https://charts-node.finviz.com/chart.ashx?&t=${symbol}&tf=${type}&ct=candle_stick&tm=${theme}`;
 }
 
 function Get_Thumbnail_Image_Dimensions(type: ThumbnailType) {

@@ -11,6 +11,7 @@ import MImage from "../MImage";
 export default (array: FinvizScreenerItem[], thumbnail_type: ThumbnailType = 'd') => {
     const page = ref(1);
     const page_size = ref(12);
+    const theme = useConfig().value.is_dark_theme ? 'd' : 'l';
 
     const current_page_data = () => {
         const start = (page.value - 1) * page_size.value;
@@ -43,7 +44,7 @@ export default (array: FinvizScreenerItem[], thumbnail_type: ThumbnailType = 'd'
                 }, h(MImage({
                     width: image_dimensions.width,
                     height: image_dimensions.height,
-                    src: FinvizApi.Thumbnail_Image_Url(item.Symbol, thumbnail_type),
+                    src: FinvizApi.Thumbnail_Image_Url(item.Symbol, theme, thumbnail_type),
                 }))),
                 footer: () => h(NButton, {
                     onClick: () => {
