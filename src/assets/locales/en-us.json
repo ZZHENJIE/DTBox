@@ -57,5 +57,11 @@
     "Second": "Second",
     "Minute": "Minute",
     "Hour": "Hour",
-    "Day": "Day"
+    "Day": "Day",
+    "Save": "Save",
+    "Reset": "Reset",
+    "Edit": "Edit",
+    "Label": "Label",
+    "Value": "Value",
+    "Success": "Success"
 }

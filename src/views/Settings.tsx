@@ -7,20 +7,29 @@ import FinvizPane from '../components/Settings/FinvizPane';
 import TimeWindowPane from '../components/Settings/TimeWindowPane';
 import { RefreshCircleSharp, SaveSharp } from '@vicons/ionicons5';
 import Config from '../utils/Config';
-import { useConfig } from '../plugins/DTBox';
+import { useConfig, useDiscreteApi } from '../plugins/DTBox';
+import { useI18n } from 'vue-i18n';
 
 export default defineComponent(() => {
+
+    const { t } = useI18n();
 
     const save_button = () => h(NFloatButton, {
         bottom: '50px',
         right: '50px',
-        onClick: () => Config.Save(useConfig().value)
+        onClick: () => {
+            Config.Save(useConfig().value);
+            useDiscreteApi().message.success(t('Save'));
+        }
     }, () => h(NIcon, null, () => h(SaveSharp)));
 
     const reset_button = () => h(NFloatButton, {
         bottom: '50px',
         right: '100px',
-        onClick: () => Config.Save(Config.DEFAULT)
+        onClick: () => {
+            Config.Save(Config.DEFAULT);
+            useDiscreteApi().message.success(t('Reset'));
+        }
     }, () => h(NIcon, null, () => h(RefreshCircleSharp)));
 
     const tabs = () => h(NTabs, {

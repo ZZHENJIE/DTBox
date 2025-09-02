@@ -57,5 +57,11 @@
     "Second": "秒",
     "Minute": "分钟",
     "Hour": "小时",
-    "Day": "天"
+    "Day": "天",
+    "Save": "保存",
+    "Reset": "重置",
+    "Edit": "编辑",
+    "Label": "标签",
+    "Value": "值",
+    "Success": "成功"
 }
