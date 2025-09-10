@@ -23,7 +23,7 @@ export default defineComponent(() => {
         placement: 'bottom-start'
     }, {
         trigger: () => h(NButton, {
-            onClick: () => show_time_window()
+            onClick: () => show_time_window(),
         }, () => h(Time())),
         default: () => t('Show_Time_Window')
     })

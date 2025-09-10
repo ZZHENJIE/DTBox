@@ -10,18 +10,18 @@ const Finviz: RouteRecordRaw[] = [
             menu_enable: true,
             standalone: false
         },
-        component: () => import('../views/FinvizScreener.tsx')
+        component: () => import('../views/FinvizScreener.ts')
     },
-    // {
-    //     path: '/finviz_analysis',
-    //     name: 'FinvizAnalysis',
-    //     meta: {
-    //         title: () => useI18n().t('Analysis'),
-    //         menu_enable: true,
-    //         standalone: false
-    //     },
-    //     component: () => import('../views/FinvizAnalysis.tsx')
-    // }
+    {
+        path: '/finviz_analysis',
+        name: 'FinvizAnalysis',
+        meta: {
+            title: () => useI18n().t('Analysis'),
+            menu_enable: true,
+            standalone: false
+        },
+        component: () => import('../views/FinvizAnalysis.ts')
+    }
 ];
 
 const Calendar: RouteRecordRaw[] = [
@@ -33,7 +33,7 @@ const Calendar: RouteRecordRaw[] = [
             menu_enable: true,
             standalone: false
         },
-        component: () => import('../views/MacroCalendar.tsx')
+        component: () => import('../views/MacroCalendar.ts')
     },
     {
         path: '/spac_calendar',
@@ -43,7 +43,17 @@ const Calendar: RouteRecordRaw[] = [
             menu_enable: true,
             standalone: false
         },
-        component: () => import('../views/SPACCalendar.tsx')
+        component: () => import('../views/SPACCalendar.ts')
+    },
+    {
+        path: '/ipo_calendar',
+        name: 'IPOCalendar',
+        meta: {
+            title: () => useI18n().t('IPO'),
+            menu_enable: true,
+            standalone: false
+        },
+        component: () => import('../views/IPOCalendar.ts')
     },
 ];
 
@@ -56,7 +66,7 @@ const Viewer: RouteRecordRaw[] = [
             menu_enable: false,
             standalone: false
         },
-        component: () => import('../views/Home.tsx')
+        component: () => import('../views/Home.ts')
     },
     {
         path: '/charts',
@@ -66,7 +76,7 @@ const Viewer: RouteRecordRaw[] = [
             menu_enable: true,
             standalone: false
         },
-        component: () => import('../views/Charts.tsx')
+        component: () => import('../views/Charts.ts')
     },
     {
         path: '/settings',
@@ -76,7 +86,7 @@ const Viewer: RouteRecordRaw[] = [
             menu_enable: false,
             standalone: false
         },
-        component: () => import('../views/Settings.tsx')
+        component: () => import('../views/Settings.ts')
     },
     {
         path: '/time',
@@ -86,7 +96,7 @@ const Viewer: RouteRecordRaw[] = [
             menu_enable: false,
             standalone: true
         },
-        component: () => import('../views/TimeWindow.tsx')
+        component: () => import('../views/TimeWindow.ts')
     },
 ];
 

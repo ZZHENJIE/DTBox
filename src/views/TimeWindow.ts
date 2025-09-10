@@ -11,15 +11,20 @@ export default defineComponent(() => {
     const macro_calendar_data = ref();
     const warn_list = ref<any[]>([]);
 
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    WallstreetcnApi.Calendar(date.getTime() / 1000, date.getTime() / 1000 + 86399)
-        .then(json => {
-            macro_calendar_data.value = json.data.items; Tool.Akamai_Timestamp().then(object => {
-                timestamp.value = Number(object);
-                start_update_timestamp();
-            })
-        });
+    const update_calendar_data = () => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        return WallstreetcnApi.Calendar(date.getTime() / 1000, date.getTime() / 1000 + 86399);
+    }
+
+    update_calendar_data().then(json => {
+        macro_calendar_data.value = json.data.items;
+        Tool.Akamai_Timestamp().then(object => {
+            timestamp.value = Number(object);
+            start_update_timestamp();
+        })
+    })
+
     const start_update_timestamp = () => {
         if (timer.value) {
             clearInterval(timer.value);
@@ -28,9 +33,7 @@ export default defineComponent(() => {
             timestamp.value++;
             warn_list.value = [];
             if ((timestamp.value + 28800) % 86400 === 0) {
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                setTimeout(() => update_calendar_data().then(json => macro_calendar_data.value = json.data.items), 1000);
             }
             for (const item of macro_calendar_data.value) {
                 if (item.country_id === 'US' && item.public_date < (timestamp.value + 300) && timestamp.value < item.public_date) {
