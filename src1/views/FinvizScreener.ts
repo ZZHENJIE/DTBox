@@ -8,14 +8,7 @@ import type { FinvizScreenerItem } from '../api/Type';
 import ScreenerTable from '../components/Finviz/ScreenerTable';
 import ScreenerCharts from '../components/Finviz/ScreenerCharts';
 import { useConfig, useDiscreteApi } from '../plugins/DTBox';
-
-interface ScreenerParameter {
-    parameter: string,
-    auto_refresh: number,
-    thumbnail_type: string
-}
-
-const parameter_list = useConfig().value.finviz.screener_parameter_list;
+import Config from '../utils/Config';
 
 const filter_screener = (array: FinvizScreenerItem[]) => {
     const ignoreList = useConfig().value.finviz.ignore;
@@ -25,6 +18,7 @@ const filter_screener = (array: FinvizScreenerItem[]) => {
 export default defineComponent(() => {
 
     const { t } = useI18n();
+    const parameter_list = useConfig().value.finviz.screener_parameter_list;
     const auto_refresh_list = [
         {
             label: '10' + t('Second'),
@@ -53,33 +47,30 @@ export default defineComponent(() => {
             { label: '3' + t('Minute'), value: FinvizApi.FinvizThumbnails.I3 },
             { label: '5' + t('Minute'), value: FinvizApi.FinvizThumbnails.I5 },
         ];
+
     const is_runing = ref(false);
     const loadingBar = useDiscreteApi().loadingBar;
-    const screener_parameter = ref<ScreenerParameter>({
-        parameter: parameter_list[0].value,
-        auto_refresh: auto_refresh_list[0].value,
-        thumbnail_type: thumbnail_type_list[0].value
-    });
     const screener_data = ref<FinvizScreenerItem[]>([]);
     const refresh_time_id = ref<number>();
+    const parameter = ref(useConfig().value.finviz.screener_parameter);
 
-    const parameter_form = (parameter: ScreenerParameter) => {
-        return new Promise<ScreenerParameter>((resolve, _) => {
+    const parameter_form = () => {
+        return new Promise<boolean>((resolve, _) => {
             const parameter_select = () => [t('Screener') + t('Parameter'), h(NSelect, {
                 options: parameter_list as SelectMixedOption[],
-                value: parameter.parameter,
-                onUpdateValue: (value) => parameter.parameter = value,
+                value: parameter.value.parameter,
+                onUpdateValue: (value) => parameter.value.parameter = value,
             })];
 
             const auto_refresh_select = () => [t('Auto') + t('Refresh'), h(NSelect, {
                 options: auto_refresh_list as SelectMixedOption[],
-                value: parameter.auto_refresh,
-                onUpdateValue: (value) => parameter.auto_refresh = value,
+                value: parameter.value.auto_refresh,
+                onUpdateValue: (value) => parameter.value.auto_refresh = value,
             })];
             const thumbnail_type_select = () => [t('Thumbnail') + t('Type'), h(NSelect, {
                 options: thumbnail_type_list,
-                value: parameter.thumbnail_type,
-                onUpdateValue: (value) => parameter.thumbnail_type = value
+                value: parameter.value.thumbnail_type,
+                onUpdateValue: (value) => parameter.value.thumbnail_type = value
             })];
 
             const content = () => h(NFlex, {
@@ -97,7 +88,8 @@ export default defineComponent(() => {
                 content,
                 positiveText: t('Confirm'),
                 onPositiveClick: () => {
-                    resolve(parameter);
+                    Config.Save(useConfig().value)
+                    resolve(true);
                 }
             })
         })
@@ -108,20 +100,21 @@ export default defineComponent(() => {
             is_runing.value = false;
             clearTimeout(refresh_time_id.value);
         } else {
-            parameter_form(screener_parameter.value).then((data) => {
-                screener_parameter.value = data;
-                is_runing.value = true;
-                screener_data_update();
+            parameter_form().then((value) => {
+                if (value) {
+                    is_runing.value = true;
+                    screener_data_update();
+                }
             })
         }
     }
 
     const screener_data_update = () => {
         loadingBar.start();
-        FinvizApi.Export_Screener(screener_parameter.value.parameter, useConfig().value.finviz.token).then((data) => {
+        FinvizApi.Export_Screener(parameter.value.parameter, useConfig().value.finviz.token).then((data) => {
             screener_data.value = filter_screener(data);
             useDiscreteApi().loadingBar.finish();
-            refresh_time_id.value = setTimeout(() => screener_data_update(), screener_parameter.value.auto_refresh);
+            refresh_time_id.value = setTimeout(() => screener_data_update(), parameter.value.auto_refresh);
         }).catch(() => loadingBar.error())
     };
 
@@ -142,12 +135,12 @@ export default defineComponent(() => {
     const screener_table = () => h(NTabPane, {
         name: 'table',
         tab: t('Table')
-    }, () => ScreenerTable(screener_data.value, screener_parameter.value?.thumbnail_type as ThumbnailType));
+    }, () => ScreenerTable(screener_data.value, parameter.value.thumbnail_type as ThumbnailType));
 
     const screener_charts = () => h(NTabPane, {
         name: 'charts',
         tab: t('Charts')
-    }, () => ScreenerCharts(screener_data.value, screener_parameter.value?.thumbnail_type as ThumbnailType));
+    }, () => ScreenerCharts(screener_data.value, parameter.value.thumbnail_type as ThumbnailType));
 
     const back_top_button = () => h(NBackTop, {
         bottom: '50px',

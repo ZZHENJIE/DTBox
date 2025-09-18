@@ -27,6 +27,11 @@ export const DEFAULT: AppConfig = {
                 value: '&f=sh_curvol_o200,sh_price_1to20,ta_change_-3to3&ft=4&o=-volume'
             }
         ],
+        screener_parameter: {
+            parameter: '&f=sh_price_0.7to20,sh_curvol_o200&o=-volume',
+            auto_refresh: 10 * 1000,
+            thumbnail_type: 'd'
+        },
     },
     kimi: {
         is_show_button: false,

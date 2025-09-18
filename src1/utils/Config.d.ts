@@ -12,6 +12,11 @@ export interface AppConfig {
     finviz: {
         token: string,
         ignore: string[],
+        screener_parameter: {
+            parameter: string,
+            auto_refresh: number,
+            thumbnail_type: string
+        },
         screener_parameter_list: FinvizScreenerParameterItem[],
     },
     kimi: {

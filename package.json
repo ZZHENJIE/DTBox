@@ -12,6 +12,9 @@
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-http": "~2",
+    "@tauri-apps/plugin-opener": "~2",
+    "@tauri-apps/plugin-os": "~2",
+    "@tauri-apps/plugin-store": "~2",
     "@tauri-apps/plugin-window-state": "~2",
     "@types/crypto-js": "^4.2.2",
     "@vicons/ionicons5": "^0.13.0",

@@ -4,12 +4,26 @@
   "description": "Capability for the main window",
   "windows": [
     "main",
-    "time"
+    "time",
+    "chart-*"
   ],
   "permissions": [
     "core:default",
     "http:default",
+    "os:default",
     "core:webview:allow-create-webview-window",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "/path/to/file"
+        }
+      ]
+    },
     {
       "identifier": "http:default",
       "allow": [

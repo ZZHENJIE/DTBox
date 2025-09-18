@@ -28,6 +28,7 @@ export default defineComponent(() => {
         right: '100px',
         onClick: () => {
             Config.Save(Config.DEFAULT);
+            useConfig().value = Config.DEFAULT;
             useDiscreteApi().message.success(t('Reset'));
         }
     }, () => h(NIcon, null, () => h(RefreshCircleSharp)));

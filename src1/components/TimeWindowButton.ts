@@ -14,7 +14,10 @@ export default defineComponent(() => {
             url: "/time",
             width: 400,
             height: 150,
-            alwaysOnTop: true
+            alwaysOnTop: true,
+            decorations: false,
+            transparent: true,
+            titleBarStyle: "overlay"
         });
     }
 
