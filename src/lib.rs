@@ -1,8 +1,14 @@
-slint::include_modules!();
+pub mod app;
+pub mod components {
+    pub mod windowtitlebar;
+}
+pub mod windows {
+    pub mod mainwindow;
+}
 
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    if let Ok(window) = MainWindow::new() {
-        window.run()?
-    }
-    Ok(())
+#[derive(Debug, Clone)]
+pub enum Message {
+    NewWindow(iced::window::Id),
+    CloseWindow(iced::window::Id),
+    MainWindow(crate::windows::mainwindow::Message),
 }
