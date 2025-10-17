@@ -7,4 +7,6 @@ edition = "2024"
 name = "dt_box"
 
 [dependencies]
-iced = "0.13.1"
+iced = { version = "0.13.1",features = ["tokio"] }
+iced_aw = "0.12.2"
+reqwest = "0.12.24"
