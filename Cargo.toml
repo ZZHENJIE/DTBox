@@ -1,12 +1,7 @@
-[package]
-name = "DTBox"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "3"
 
-[lib]
-name = "dt_box"
-
-[dependencies]
-iced = { version = "0.13.1",features = ["tokio"] }
-iced_aw = "0.12.2"
-reqwest = "0.12.24"
+members = [
+    "dtbox_core",
+    "dtbox_ui",
+]
