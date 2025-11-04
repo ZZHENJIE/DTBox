@@ -2,6 +2,6 @@
 resolver = "3"
 
 members = [
-    "dtbox_core",
-    "dtbox_ui",
+    "core",
+    "ui",
 ]
