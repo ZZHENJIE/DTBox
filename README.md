@@ -36,3 +36,5 @@ timeline
   1.0.0 Release
     : 第一个正式版发布
 ```
+
+API 数据特别感谢 Finviz提供 文档`https://finviz.com/api_explanation.ashx`

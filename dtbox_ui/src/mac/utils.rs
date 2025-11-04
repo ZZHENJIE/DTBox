@@ -1,6 +1,6 @@
 use gpui::{
-    App, AppContext, Bounds, ParentElement, Point, Render, SharedString, Size, Styled,
-    WindowControlArea, WindowOptions, div, px,
+    div, px, App, AppContext, Bounds, ParentElement, Point, Render, SharedString, Size, Styled,
+    WindowControlArea, WindowOptions,
 };
 
 pub struct AboutWindow;

@@ -1,4 +1,4 @@
-use log::error;
+use crate::RequestResult;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ pub struct MarketQuoteItem {
 pub async fn market_quote(
     client: &reqwest::Client,
     market: Market,
-) -> Result<MarketQuote, reqwest::Error> {
+) -> Result<RequestResult<MarketQuote>, reqwest::Error> {
     let url = format!(
         "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
         market.to_string()
@@ -57,42 +57,42 @@ pub async fn market_quote(
         let fields: Vec<&str> = line.split(',').collect();
         let item = MarketQuoteItem {
             symbal: fields[0].to_string(),
-            volume: fields[1].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse volume: {}", err);
-                0
-            }),
-            ask_size: fields[2].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse ask_size: {}", err);
-                0
-            }),
-            ask_price: fields[3].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse ask_price: {}", err);
-                0.0
-            }),
-            bid_size: fields[4].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse bid_size: {}", err);
-                0
-            }),
-            bid_price: fields[5].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse bid_price: {}", err);
-                0.0
-            }),
-            last_price: fields[6].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse last_price: {}", err);
-                0.0
-            }),
-            shares_matched: fields[7].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse shares_matched: {}", err);
-                0
-            }),
-            shares_routed: fields[8].parse().unwrap_or_else(|err| {
-                error!("Cboe Market Quote Failed to parse shares_routed: {}", err);
-                0
-            }),
+            volume: match fields[1].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            ask_size: match fields[2].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            ask_price: match fields[3].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            bid_size: match fields[4].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            bid_price: match fields[5].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            last_price: match fields[6].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            shares_matched: match fields[7].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
+            shares_routed: match fields[8].parse() {
+                Ok(volume) => volume,
+                Err(err) => return Ok(RequestResult::ParseError(err.to_string())),
+            },
         };
         quote.items.push(item);
     }
-    Ok(quote)
+    Ok(RequestResult::Success(quote))
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -128,7 +128,7 @@ pub async fn symbal_market_quote(
     client: &reqwest::Client,
     market: Market,
     symbal: &str,
-) -> Result<SymbalMarketQuote, reqwest::Error> {
+) -> Result<RequestResult<SymbalMarketQuote>, reqwest::Error> {
     let url = format!(
         "https://www.cboe.com/json/{}/book/{}",
         market.to_string(),
@@ -143,5 +143,32 @@ pub async fn symbal_market_quote(
         .send()
         .await?;
     let quote = response.json::<SymbalMarketQuote>().await?;
-    Ok(quote)
+    Ok(RequestResult::Success(quote))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_symbal_market_quote() {
+        let client = reqwest::Client::new();
+        let market = Market::EDGA;
+        let symbal = "AAPL";
+        let quote = symbal_market_quote(&client, market, symbal).await.unwrap();
+        println!("{:#?}", quote);
+    }
+
+    #[tokio::test]
+    async fn test_market_quote() {
+        let client = reqwest::Client::new();
+        let market = Market::EDGA;
+        let quote = market_quote(&client, market).await.unwrap();
+        match quote {
+            RequestResult::Success(quote) => {
+                println!("{:#?}", quote.items[0]);
+            }
+            _ => {}
+        }
+    }
 }

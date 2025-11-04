@@ -1,4 +1,4 @@
-use gpui::{App, KeyBinding, Menu, MenuItem, Render, actions, div};
+use gpui::{actions, div, App, KeyBinding, Menu, MenuItem, Render};
 
 pub struct AppState {}
 

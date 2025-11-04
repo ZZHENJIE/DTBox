@@ -1,5 +1,5 @@
+use crate::RequestResult;
 use serde::{Deserialize, Serialize};
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
     pub data: Data,
@@ -63,12 +63,27 @@ pub struct Status {
     pub developer_message: Option<serde_json::Value>,
 }
 
-pub async fn quote(client: &reqwest::Client, symbol: &str) -> Result<Quote, reqwest::Error> {
+pub async fn quote(
+    client: &reqwest::Client,
+    symbol: &str,
+) -> Result<RequestResult<Quote>, reqwest::Error> {
     let url = format!(
         "https://api.nasdaq.com/api/quote/{}/info?assetclass=stocks",
         symbol
     );
     let response = client.get(&url).send().await?;
     let quote = response.json::<Quote>().await?;
-    Ok(quote)
+    Ok(RequestResult::Success(quote))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_quote() {
+        let client = reqwest::Client::new();
+        let quote = quote(&client, "AAPL").await;
+        println!("{:#?}", quote);
+    }
 }

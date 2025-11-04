@@ -10,6 +10,7 @@ dependencies = [
  "env_logger",
  "gpui",
  "gpui-component",
+ "log",
  "reqwest",
  "tokio",
 ]
@@ -1397,7 +1398,6 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 name = "dtbox_core"
 version = "0.1.0"
 dependencies = [
- "log",
  "reqwest",
  "serde",
  "serde_json",
@@ -2268,7 +2268,7 @@ dependencies = [
 [[package]]
 name = "gpui-component"
 version = "0.4.0-preview0"
-source = "git+https://github.com/longbridge/gpui-component.git#f6bbef0082d2fe561f9ca13b2efa0bb906202961"
+source = "git+https://github.com/longbridge/gpui-component.git#522f3ced439d5d107ca4b791472c6a151e660d61"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -2306,7 +2306,7 @@ dependencies = [
 [[package]]
 name = "gpui-component-macros"
 version = "0.4.0-preview0"
-source = "git+https://github.com/longbridge/gpui-component.git#f6bbef0082d2fe561f9ca13b2efa0bb906202961"
+source = "git+https://github.com/longbridge/gpui-component.git#522f3ced439d5d107ca4b791472c6a151e660d61"
 dependencies = [
  "proc-macro2",
  "quote",
