@@ -1,6 +1,6 @@
 pub mod cboe {
     pub mod market;
-    pub mod symbal;
+    pub mod symbol;
 }
 pub mod finviz {
     pub mod candlestick;

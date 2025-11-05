@@ -1,15 +1,8 @@
 use crate::{Market, RequestResult};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Quote {
-    pub success: bool,
-    pub reload: String,
-    pub data: Data,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Data {
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct QuoteData {
     pub symbol: String,
     pub auction: bool,
     pub company: String,
@@ -33,12 +26,12 @@ pub struct Data {
 pub async fn quote(
     client: &reqwest::Client,
     market: Market,
-    symbal: &str,
-) -> Result<RequestResult<Quote>, reqwest::Error> {
+    symbol: &str,
+) -> Result<RequestResult<QuoteData>, reqwest::Error> {
     let url = format!(
         "https://www.cboe.com/json/{}/book/{}",
         market.to_string(),
-        symbal
+        symbol
     );
     let response = client
         .get(&url)
@@ -48,8 +41,15 @@ pub async fn quote(
         )
         .send()
         .await?;
-    let quote = response.json::<Quote>().await?;
-    Ok(RequestResult::Success(quote))
+    let object: serde_json::Value = response.json().await?;
+    let mut result = QuoteData::default();
+    if let Some(data_value) = object.get("data") {
+        result = match serde_json::from_value::<QuoteData>(data_value.clone()) {
+            Ok(data) => data,
+            Err(err) => return Ok(RequestResult::Error(err.to_string())),
+        };
+    }
+    Ok(RequestResult::Success(result))
 }
 
 #[cfg(test)]
@@ -57,11 +57,11 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_symbal_quote() {
+    async fn test_symbol_quote() {
         let client = reqwest::Client::new();
         let market = Market::EDGX;
-        let symbal = "AAPL";
-        let quote = quote(&client, market, symbal).await.unwrap();
+        let symbol = "AAPL";
+        let quote = quote(&client, market, symbol).await.unwrap();
         match quote {
             RequestResult::Success(quote) => {
                 println!("{:#?}", quote);

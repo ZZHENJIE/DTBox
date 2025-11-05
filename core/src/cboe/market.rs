@@ -10,7 +10,7 @@ pub struct Quote {
 #[derive(Debug, Deserialize)]
 pub struct QuoteItem {
     #[serde(rename = "Name")]
-    pub symbal: String,
+    pub symbol: String,
     #[serde(rename = "Volume")]
     pub volume: u64,
     #[serde(rename = "Ask Size")]
