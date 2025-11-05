@@ -83,7 +83,14 @@ mod tests {
     #[tokio::test]
     async fn test_quote() {
         let client = reqwest::Client::new();
-        let quote = quote(&client, "AAPL").await;
-        println!("{:#?}", quote);
+        let quote = quote(&client, "AAPL").await.unwrap();
+        match quote {
+            RequestResult::Success(quote) => {
+                println!("{:#?}", quote);
+            }
+            RequestResult::Error(err) => {
+                println!("{:#?}", err);
+            }
+        }
     }
 }

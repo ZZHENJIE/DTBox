@@ -49,7 +49,7 @@ impl Translate {
         let response_json = response.json::<serde_json::Value>().await?;
         let result = match response_json[0][0][0].as_str() {
             Some(result) => result,
-            None => return Ok(RequestResult::JsonError("No result found".to_string())),
+            None => return Ok(RequestResult::Error("No result found".to_string())),
         };
         Ok(RequestResult::Success(result.to_string()))
     }
@@ -64,7 +64,15 @@ mod tests {
         let translate = Translate::new(language::Language::EN, language::Language::ZHCN);
         let result = translate
             .google(&reqwest::Client::new(), "GPUI is a hybrid immediate and retained mode, GPU accelerated, UI framework for Rust, designed to support a wide variety of applications.".to_string())
-            .await;
-        println!("{:#?}", result);
+            .await
+            .unwrap();
+        match result {
+            RequestResult::Success(result) => {
+                println!("{:#?}", result);
+            }
+            RequestResult::Error(err) => {
+                println!("{:#?}", err);
+            }
+        }
     }
 }

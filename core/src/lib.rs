@@ -1,4 +1,7 @@
-pub mod cboe;
+pub mod cboe {
+    pub mod market;
+    pub mod symbal;
+}
 pub mod finviz {
     pub mod candlestick;
     pub mod news;
@@ -14,6 +17,24 @@ pub mod utils {
 #[derive(Debug)]
 pub enum RequestResult<T> {
     Success(T),
-    JsonError(String),
-    ParseError(String),
+    Error(String),
+}
+
+#[derive(Debug)]
+pub enum Market {
+    BYX,
+    BZX,
+    EDGA,
+    EDGX,
+}
+
+impl Market {
+    fn to_string(&self) -> &'static str {
+        match self {
+            Market::BYX => "byx",
+            Market::BZX => "bzx",
+            Market::EDGA => "edga",
+            Market::EDGX => "edgx",
+        }
+    }
 }
