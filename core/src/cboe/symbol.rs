@@ -1,4 +1,4 @@
-use crate::{Market, RequestResult};
+use crate::{market::Cboe, RequestResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -25,7 +25,7 @@ pub struct QuoteData {
 
 pub async fn quote(
     client: &reqwest::Client,
-    market: Market,
+    market: Cboe,
     symbol: &str,
 ) -> Result<RequestResult<QuoteData>, reqwest::Error> {
     let url = format!(
@@ -59,7 +59,7 @@ mod tests {
     #[tokio::test]
     async fn test_symbol_quote() {
         let client = reqwest::Client::new();
-        let market = Market::EDGX;
+        let market = Cboe::EDGX;
         let symbol = "AAPL";
         let quote = quote(&client, market, symbol).await.unwrap();
         match quote {
