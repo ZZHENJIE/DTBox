@@ -3,9 +3,9 @@ pub mod cboe {
     pub mod symbol;
 }
 pub mod finviz {
-    pub mod candlestick;
-    pub mod news;
-    pub mod screener;
+    // pub mod candlestick;
+    // pub mod news;
+    // pub mod screener;
 }
 pub mod market;
 pub mod nasdaq;

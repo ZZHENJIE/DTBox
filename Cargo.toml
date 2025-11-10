@@ -1,7 +1,8 @@
-[workspace]
-resolver = "3"
+[package]
+name = "DTBox"
+version = "0.1.0"
+edition = "2021"
 
-members = [
-    "core",
-    # "ui",
-]
+[dependencies]
+ui = { path = "./crates/ui" }
+tokio = { version = "1.48.0", features = ["full"] }

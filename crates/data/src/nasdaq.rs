@@ -63,13 +63,29 @@ pub struct Status {
     pub developer_message: Option<serde_json::Value>,
 }
 
+pub enum Asset {
+    STOCK,
+    ETF,
+}
+
+impl Asset {
+    fn to_string(&self) -> &'static str {
+        match self {
+            Asset::ETF => "etf",
+            Asset::STOCK => "stocks",
+        }
+    }
+}
+
 pub async fn quote(
     client: &reqwest::Client,
     symbol: &str,
+    asset: Asset,
 ) -> Result<RequestResult<Quote>, reqwest::Error> {
     let url = format!(
-        "https://api.nasdaq.com/api/quote/{}/info?assetclass=stocks",
-        symbol
+        "https://api.nasdaq.com/api/quote/{}/info?assetclass={}",
+        symbol,
+        asset.to_string()
     );
     let response = client.get(&url).send().await?;
     let quote = response.json::<Quote>().await?;
@@ -83,7 +99,7 @@ mod tests {
     #[tokio::test]
     async fn test_quote() {
         let client = reqwest::Client::new();
-        let quote = quote(&client, "AAPL").await.unwrap();
+        let quote = quote(&client, "AAPL", Asset::STOCK).await.unwrap();
         match quote {
             RequestResult::Success(quote) => {
                 println!("{:#?}", quote);

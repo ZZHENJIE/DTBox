@@ -1,4 +1,4 @@
-use gpui::{IntoElement, RenderOnce, div};
+use gpui::{div, IntoElement, RenderOnce};
 
 #[derive(IntoElement, Clone, Copy)]
 pub struct WindowTitleBar;
