@@ -1,5 +1,10 @@
-use futures::future::BoxFuture;
+use anyhow::anyhow;
+use futures::{
+    future::{self, BoxFuture},
+    FutureExt,
+};
 use gpui_http_client::HttpClient as GPUIHttpClient;
+use reqwest::Proxy;
 
 pub struct HttpClient {
     client: reqwest::Client,
@@ -8,7 +13,14 @@ pub struct HttpClient {
 }
 
 impl HttpClient {
-    pub fn new() -> Self {
+    pub fn new(proxy: Option<Proxy>, user_agent: Option<&str>) -> Self {
+        let client = {
+            let mut builder = reqwest::ClientBuilder::new();
+            if let Some(proxy) = proxy {
+                builder = builder.proxy(reqwest::Proxy::all(proxy).unwrap());
+            }
+            builder.build().unwrap()
+        };
         Self {
             client: reqwest::Client::new(),
             proxy: None,
@@ -27,7 +39,7 @@ impl GPUIHttpClient for HttpClient {
         follow_redirects: bool,
     ) -> BoxFuture<'static, anyhow::Result<gpui_http_client::Response<gpui_http_client::AsyncBody>>>
     {
-        self.send(self.client.get(uri).body(body).build().unwrap())
+        self.send(gpui_http_client::Request::get(uri).body(body).unwrap())
     }
     fn post_json(
         &self,
@@ -35,24 +47,23 @@ impl GPUIHttpClient for HttpClient {
         body: gpui_http_client::AsyncBody,
     ) -> BoxFuture<'static, anyhow::Result<gpui_http_client::Response<gpui_http_client::AsyncBody>>>
     {
-        self.send()
+        self.send(gpui_http_client::Request::post(uri).body(body).unwrap())
     }
     fn proxy(&self) -> Option<&reqwest::Url> {
         self.proxy.as_ref()
-    }
-    fn send_multipart_form<'a>(
-        &'a self,
-        _url: &str,
-        _request: reqwest::multipart::Form,
-    ) -> BoxFuture<'a, anyhow::Result<gpui_http_client::Response<gpui_http_client::AsyncBody>>>
-    {
-        self.send()
     }
     fn send(
         &self,
         req: gpui_http_client::http::Request<gpui_http_client::AsyncBody>,
     ) -> BoxFuture<'static, anyhow::Result<gpui_http_client::Response<gpui_http_client::AsyncBody>>>
     {
+        Box::pin(async {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "BlockedHttpClient disallowed request",
+            )
+            .into())
+        })
     }
     fn type_name(&self) -> &'static str {
         std::any::type_name::<Self>()
