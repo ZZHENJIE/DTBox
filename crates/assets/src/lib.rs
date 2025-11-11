@@ -4,7 +4,7 @@ use rust_embed::RustEmbed;
 use std::borrow::Cow;
 
 #[derive(RustEmbed)]
-#[folder = "./assets"]
+#[folder = "../assets"]
 pub struct Assets;
 
 impl AssetSource for Assets {

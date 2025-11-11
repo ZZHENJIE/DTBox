@@ -6,6 +6,9 @@ version = 4
 name = "DTBox"
 version = "0.1.0"
 dependencies = [
+ "assets",
+ "gpui",
+ "gpui-component",
  "tokio",
  "ui",
 ]
@@ -237,6 +240,15 @@ dependencies = [
  "serde_repr",
  "url",
  "zbus",
+]
+
+[[package]]
+name = "assets"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gpui",
+ "rust-embed",
 ]
 
 [[package]]
@@ -1337,17 +1349,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2931af7e13dc045d8e9d26afccc6fa115d64e115c9c84b1166288b46f6782c2"
 
 [[package]]
-name = "data"
-version = "0.1.0"
-dependencies = [
- "csv",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "data-url"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2372,8 +2373,9 @@ dependencies = [
 
 [[package]]
 name = "gpui-component"
-version = "0.4.0-preview1"
-source = "git+https://github.com/longbridge/gpui-component.git#b899100d09afa2d3a072b8c7b7364e5e7620f4b5"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f3232f733e6b2b6ad47d008e41ce9f766218dfd7164ff760de8dfe6303dc8eb"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -2410,8 +2412,9 @@ dependencies = [
 
 [[package]]
 name = "gpui-component-macros"
-version = "0.4.0-preview1"
-source = "git+https://github.com/longbridge/gpui-component.git#b899100d09afa2d3a072b8c7b7364e5e7620f4b5"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0908e53be8b27e7c185bd2c8996459055a98cbbf3f266382d028eb28270835a2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2764,6 +2767,17 @@ dependencies = [
  "http",
  "http-body",
  "pin-project-lite",
+]
+
+[[package]]
+name = "http_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "futures",
+ "gpui_http_client",
+ "reqwest",
+ "tokio",
 ]
 
 [[package]]
@@ -4923,6 +4937,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 
 [[package]]
+name = "request"
+version = "0.1.0"
+dependencies = [
+ "csv",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "reqwest"
 version = "0.12.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6778,11 +6803,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "data",
  "env_logger",
  "gpui",
  "gpui-component",
+ "http_client",
  "log",
+ "request",
  "reqwest",
  "rust-embed",
  "sqlx",

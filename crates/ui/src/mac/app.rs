@@ -1,23 +1,49 @@
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::time::Duration;
 
-use chrono::{FixedOffset, TimeZone, Utc};
 use gpui::{actions, div, App, KeyBinding, Menu, MenuItem, ParentElement, Render};
-use gpui_component::{button::Button, Icon, Root, TitleBar, WindowExt};
-use tokio::time;
+use gpui_component::{button::Button, Icon, TitleBar};
+
+use crate::components;
 
 pub struct AppState {
-    time_stamper: Arc<Mutex<u64>>,
+    time: i64,
 }
 
 actions!(app, [Quit, About]);
 impl AppState {
-    pub fn new(_: &mut gpui::Context<Self>) -> Self {
-        AppState {
-            time_stamper: Arc::new(Mutex::new(0)),
-        }
+    pub fn new(cx: &mut gpui::Context<Self>) -> Self {
+        let task = cx
+            .spawn(async move |this, async_app| {
+                let client = reqwest::Client::new();
+                let time = request::utils::time::akamai_stamper(&client).await.unwrap();
+                match time {
+                    request::RequestResult::Success(data) => {
+                        let time: i64 = data.parse().unwrap();
+                        let mut count = 0;
+                        let _ = this.update(async_app, |this, cx| {
+                            this.time = time;
+                        });
+                        loop {
+                            async_app
+                                .background_executor()
+                                .timer(Duration::from_secs_f32(0.1))
+                                .await;
+                            let _ = this.update(async_app, |this, cx| {
+                                this.time += 1;
+                                count += 1;
+                                println!("update count :{}", count);
+                                cx.notify();
+                            });
+                        }
+                    }
+                    request::RequestResult::Error(err) => {
+                        println!("err:{}", err);
+                    }
+                }
+            })
+            .detach();
+
+        Self { time: 0 }
     }
     pub fn init(cx: &mut App) {
         cx.set_menus(vec![Menu {
@@ -55,59 +81,15 @@ impl Render for AppState {
             app.quit();
             true
         });
-        let dialog_layer = Root::render_dialog_layer(window, cx);
-        let time_stamper = self.time_stamper.lock().unwrap();
-        let shared_time_stamper = Arc::clone(&self.time_stamper);
-        div().children(dialog_layer).child(
+
+        div().child(
             TitleBar::new()
                 .child(
                     Button::new("like-btn")
-                        .icon(Icon::new(Icon::empty()).path("icons/Fixed.svg"))
-                        .on_click(|event, window, app| {
-                            window.open_dialog(app, |dialog, window, app| {
-                                dialog.title("Welcome").child("This is a dialog dialog.")
-                            });
-                        }),
+                        .icon(Icon::new(Icon::empty()).path("icons/Reduce.svg"))
+                        .on_click(|event, window, app| {}),
                 )
-                .child(Button::new("start").on_click(move |event, window, app| {
-                    let shared_time_stamper = Arc::clone(&shared_time_stamper);
-                    let task = app
-                        .spawn(async move |async_app| {
-                            let mut interval = time::interval(Duration::from_secs(1));
-                            let mut count = 0;
-                            let client = reqwest::Client::new();
-                            let time_stamper =
-                                data::utils::time::akamai_stamper(&client).await.unwrap();
-                            match time_stamper {
-                                data::RequestResult::Success(stamper) => {
-                                    *shared_time_stamper.lock().unwrap() = stamper.parse().unwrap();
-                                    loop {
-                                        interval.tick().await;
-                                        *shared_time_stamper.lock().unwrap() += 1;
-                                        count += 1;
-                                        if let Err(e) = async_app.refresh() {
-                                            eprintln!("refresh failed: {:?}  (count={})", e, count);
-                                            break; // 退出循环，避免无限 panic
-                                        }
-                                        println!("update {}", count);
-                                    }
-                                }
-                                _ => {}
-                            }
-                        })
-                        .detach();
-                }))
-                .child(ts_to_utc8_str(*time_stamper)),
+                .child(components::time::Time::ts_to_utc8_str(self.time)),
         )
     }
-}
-
-pub fn ts_to_utc8_str(ts: u64) -> String {
-    let utc_time = Utc
-        .timestamp_opt(ts as i64, 0)
-        .single()
-        .expect("invalid timestamp");
-    let utc8 = FixedOffset::east_opt(8 * 3600).unwrap();
-    let local = utc_time.with_timezone(&utc8);
-    local.format("%Y-%m-%d %H:%M:%S").to_string()
 }
