@@ -1,6 +1,6 @@
 use gpui::{px, App, AppContext, Bounds, Size};
 use gpui_component::Root;
-use ui::app::AppState;
+use ui::dtbox::DTBox;
 
 #[tokio::main]
 async fn main() {
@@ -19,8 +19,9 @@ async fn main() {
         );
 
         cx.spawn(async move |async_app| {
-            let _ = async_app.open_window(AppState::window_option(bounds), |window, cx| {
-                let view = cx.new(|cx| AppState::new(cx));
+            let app_state = ui::app_state::AppState::new(async_app);
+            let _ = async_app.open_window(DTBox::window_option(bounds), |window, cx| {
+                let view = cx.new(|cx| DTBox::new(cx));
                 cx.new(|cx| Root::new(view.into(), window, cx))
             });
         })

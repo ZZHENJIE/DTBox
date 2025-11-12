@@ -2770,17 +2770,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "http_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "futures",
- "gpui_http_client",
- "reqwest",
- "tokio",
-]
-
-[[package]]
 name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4957,7 +4946,6 @@ dependencies = [
  "bytes",
  "encoding_rs",
  "futures-core",
- "futures-util",
  "h2",
  "http",
  "http-body",
@@ -4969,7 +4957,6 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
- "mime_guess",
  "native-tls",
  "percent-encoding",
  "pin-project-lite",
@@ -6808,7 +6795,6 @@ dependencies = [
  "env_logger",
  "gpui",
  "gpui-component",
- "http_client",
  "log",
  "request",
  "reqwest",
