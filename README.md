@@ -1,7 +1,15 @@
+
 # DTBox
+
+![](./web/public/debox.svg)
 
 ## 简介
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
+
+## 安装步骤
+1. 安装PostgradSQL
+2. 下载DTBox文件
+3. 配置DTBox
 
 ## 路线图
 ```mermaid
@@ -33,4 +41,3 @@ timeline
 ```
 
 API 数据特别感谢 Finviz提供 文档`https://finviz.com/api_explanation.ashx`
-

@@ -1,0 +1,22 @@
+[server]
+port = 56789
+auto_refresh = 10 # seconds
+static_dir = "./static"
+
+[postgres]
+host = "localhost"
+port = 5432
+username = "postgres"
+password = "postgres"
+
+[finviz]
+auto_token = ""
+
+[source]
+host = "http://47.115.95.50"
+
+[proxy]
+# username = ""
+# password = ""
+# http = ""
+# https = ""
