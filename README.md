@@ -1,15 +1,21 @@
 
 # DTBox
 
-![](./web/public/debox.svg)
+![](./web/public/dtbox.svg)
 
 ## 简介
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
 
 ## 安装步骤
 1. 安装PostgradSQL
-2. 下载DTBox文件
-3. 配置DTBox
+2. 创建DTBox数据库
+  - 按需修改init.sql文件内容
+  - 在shell环境下执行 init.sql
+  ```shell
+  psql -U postgres -d postgres -f init.sql
+  ```
+3. 下载DTBox文件
+4. 配置DTBox
 
 ## 路线图
 ```mermaid

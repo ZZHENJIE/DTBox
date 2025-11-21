@@ -12,19 +12,27 @@ pub mod fetch {
     // pub mod nasdaq;
     pub mod utils {
         pub mod language;
-        // pub mod time;
+        pub mod time;
         pub mod translate;
     }
 }
 
 pub mod app {
+    pub mod error;
+    pub mod router;
     pub mod settings;
     pub mod state;
 }
 
+pub type ResponseResult<T> = Result<T, app::error::Error>;
+
+pub use app::error::Error;
+pub use app::router::Router;
 pub use app::settings::Settings;
 pub use app::state::AppState;
 
-// pub mod database {
-//     pub mod user;
-// }
+pub mod database {
+    // pub mod user;
+    pub mod book_view;
+    pub mod stocks;
+}

@@ -14,7 +14,7 @@ impl AppState {
             .port(settings.postgres.port)
             .username(&settings.postgres.username)
             .password(&settings.postgres.password)
-            .database("postgres");
+            .database("dtbox");
         // create reqwest client
         let client_builder = {
             let username = settings.proxy.username.as_deref().unwrap_or("");
@@ -52,5 +52,14 @@ impl AppState {
     }
     pub fn database_pool(&self) -> &sqlx::Pool<sqlx::Postgres> {
         &self.database
+    }
+    pub fn init_background_task(state: Arc<AppState>) -> Vec<tokio::task::JoinHandle<()>> {
+        let stocks_state = Arc::clone(&state);
+        let stocks_task =
+            tokio::spawn(async move { crate::database::stocks::task(stocks_state).await });
+        let book_view_state = Arc::clone(&state);
+        let book_view_task =
+            tokio::spawn(async move { crate::database::book_view::task(book_view_state).await });
+        vec![stocks_task, book_view_task]
     }
 }

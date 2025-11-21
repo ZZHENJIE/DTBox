@@ -63,13 +63,5 @@ mod tests {
             .await
             .unwrap();
         println!("{:#?}", result);
-        // match result {
-        //     RequestResult::Success(result) => {
-        //         println!("{:#?}", result);
-        //     }
-        //     RequestResult::Error(err) => {
-        //         println!("{:#?}", err);
-        //     }
-        // }
     }
 }

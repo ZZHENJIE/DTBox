@@ -1,6 +1,6 @@
 [server]
 port = 56789
-auto_refresh = 10 # seconds
+background_tasks_refresh = 10 # seconds
 static_dir = "./static"
 
 [postgres]

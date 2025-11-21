@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Server {
     pub port: u16,
-    pub auto_refresh: u16,
+    pub background_tasks_refresh: u64,
     pub static_dir: String,
 }
 

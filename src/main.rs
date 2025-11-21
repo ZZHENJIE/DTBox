@@ -1,31 +1,27 @@
 use std::sync::Arc;
 
-use axum::{
-    Router,
-    routing::{get, get_service},
-};
-
-use tower_http::services::{ServeDir, ServeFile};
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // init settings and server config
     let settings = dtbox_lib::Settings::new("./settings.toml")?;
-    let static_dir = settings.server.static_dir.clone();
     let server_host_port = format!("0.0.0.0:{}", settings.server.port);
-    let state = dtbox_lib::AppState::new(settings).await?;
-    let app = Router::new()
-        .nest_service(
-            "/static",
-            get_service(
-                ServeDir::new(&static_dir)
-                    .not_found_service(ServeFile::new(format!("{}/index.html", static_dir)))
-                    .fallback(ServeFile::new(format!("{}/index.html", static_dir))),
-            ),
-        )
-        .route("/api/test1", get(async || "Hello Test1"))
-        .with_state(Arc::new(state));
+    // create state and router
+    let app = dtbox_lib::Router::new(&settings);
+    let state = Arc::new(dtbox_lib::AppState::new(settings).await?);
+    let mut background_tasks = dtbox_lib::AppState::init_background_task(Arc::clone(&state));
+    let app = app.with_state(Arc::clone(&state));
+    // verify listener and start server
     let listener = tokio::net::TcpListener::bind(&server_host_port).await?;
-    println!("Server started {}", server_host_port);
-    axum::serve(listener, app).await?;
+    println!(
+        "Server created successfully.\nListener http://{}/static 🎉",
+        server_host_port
+    );
+    background_tasks.push(tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap_or_else(|err| {
+            eprintln!("Axum server error: {}", err);
+        });
+    }));
+
+    futures::future::join_all(background_tasks).await;
     Ok(())
 }
