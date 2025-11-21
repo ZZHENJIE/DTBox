@@ -1,7 +1,9 @@
 
 # DTBox
 
-![](./web/public/dtbox.svg)
+<div>
+    <img src="./web/public/dtbox.svg" alt="Logo" style="text-align: center; width: 200px" />
+</div>
 
 ## 简介
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。

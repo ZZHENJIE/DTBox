@@ -2,6 +2,7 @@
     <div style="text-align: center">
         <button @click="test_fetch">Test</button>
     </div>
+    <img src="/dtbox.svg" alt="Logo" style="text-align: center; width: 200px" />
 </template>
 
 <script lang="js">
