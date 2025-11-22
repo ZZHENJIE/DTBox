@@ -1,6 +1,6 @@
 # DTBox
 
-<img src="./web/public/dtbox.png" alt="Logo" style="text-align: center; width: 200px" />
+<img src="./web/public/image/dtbox.png" alt="Logo" style="text-align: center; width: 200px" />
 
 ## 简介
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
