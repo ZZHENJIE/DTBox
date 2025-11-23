@@ -1,9 +1,13 @@
 # DTBox
 
-<img src="./web/public/image/dtbox.png" alt="Logo" style="text-align: center; width: 200px" />
+<div align="center">
+  <img src="./web/public/image/dtbox.png" alt="Logo" width="200" />
+</div>
 
 ## 简介
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
+## 软件仅限个人投资研究/交流学习，请于下载后的 24 小时内卸载！
+## 如果本项目存在侵犯您的合法权益的情况，请及时与开发者联系，开发者将会及时删除有关内容。
 
 ## 安装步骤
 1. 安装PostgradSQL
