@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::database;
 use axum::routing::{get_service, post};
 use std::sync::Arc;
 use tower_http::services::{ServeDir, ServeFile};
@@ -22,7 +23,8 @@ impl Router {
                         ))),
                 ),
             )
-            .route("/api/user", post(async || "Hello Test1"));
+            .route("/api/user", post(async || "Hello Test1"))
+            .route("/api/user/create", post(database::user::create));
 
         app
     }

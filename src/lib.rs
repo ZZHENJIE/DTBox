@@ -18,21 +18,26 @@ pub mod fetch {
 }
 
 pub mod app {
-    pub mod error;
     pub mod router;
-    pub mod settings;
     pub mod state;
 }
 
-pub type ResponseResult<T> = Result<T, app::error::Error>;
-
-pub use app::error::Error;
-pub use app::router::Router;
-pub use app::settings::Settings;
-pub use app::state::AppState;
-
 pub mod database {
-    // pub mod user;
     pub mod book_view;
     pub mod stocks;
+    pub mod user;
 }
+
+pub mod utils {
+    pub mod error;
+    pub mod settings;
+    pub mod token;
+}
+
+pub use app::router::Router;
+pub use app::state::AppState;
+pub use utils::error::Error;
+pub use utils::settings::Settings;
+pub use utils::token::Token;
+
+pub type ResponseResult<T> = Result<T, utils::error::Error>;

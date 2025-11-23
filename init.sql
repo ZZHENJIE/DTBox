@@ -30,7 +30,7 @@ create table if not exists screeners (
 	create_user_id		int				not null,
 	private				boolean			not null default false,
 	script				text			not null,
-	last_update_time	timestamp		not null default now(),
+	update_time			timestamp		not null default now(),
 	update_state		boolean			not null default false,
 	constraint fk_screeners_create_user_id
 		foreign key (create_user_id) references users(id)
@@ -47,7 +47,8 @@ create table if not exists stocks (
 	market_cap	varchar(50)	not null default 'Unknown',
 	price		float		not null default 0.0,
 	change		float		not null default 0.0,
-	volume		int			not null default 0
+	volume		int			not null default 0,
+	update_time	timestamp		not null default now()
 );
 
 create table if not exists book_view (
