@@ -19,7 +19,7 @@ create table if not exists users (
 	id			serial 			primary key,
 	name		varchar(100)	not null unique,
 	pass_hash   varchar(100)	not null,
-    token       varchar(100)	unique,
+    token       varchar(100)	not null unique,
     config      json			not null,
     create_time timestamp	 	not null default now()
 );

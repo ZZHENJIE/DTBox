@@ -1,26 +1,32 @@
 <template>
-    <div style="text-align: center">
-        <button @click="test_fetch">Test</button>
-    </div>
-    <img
-        src="/image/dtbox.png"
-        alt="Logo"
-        style="text-align: center; width: 200px"
-    />
+    <button @click="resetConfig">Reset Config</button>
 </template>
 
 <script lang="js">
 import { defineComponent } from "vue";
+import { getConfig, resetConfig } from "./utils/config";
 
 export default defineComponent({
     data() {
-        return {};
+        return {
+            config: {},
+            resetConfig,
+        };
     },
-    methods: {
-        async test_fetch() {
-            const user = await fetch("/api/test1");
-            alert(await user.text());
-        },
+    methods: {},
+    async mounted() {
+        this.config = getConfig();
+        const response = await fetch("/api/user/get", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(this.config.user),
+        });
+        if (response.status != 200) {
+            const data = await response.json();
+            alert(JSON.stringify(data));
+        }
     },
 });
 </script>

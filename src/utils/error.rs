@@ -3,6 +3,7 @@ use reqwest::StatusCode;
 
 pub enum Error {
     NotFound,
+    AuthError(String),
     BadRequest(String),
     Internal,
     DataBase(sqlx::Error),
@@ -13,6 +14,7 @@ impl IntoResponse for Error {
         let (code, message) = match self {
             Error::NotFound => (StatusCode::NOT_FOUND, "Not Found".to_string()),
             Error::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            Error::AuthError(err) => (StatusCode::UNAUTHORIZED, err),
             Error::Internal => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Internal Server Error".to_string(),
