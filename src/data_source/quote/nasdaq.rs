@@ -1,5 +1,6 @@
-use crate::RequestResult;
 use serde::{Deserialize, Serialize};
+use std::fmt;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
     pub data: Data,
@@ -63,50 +64,61 @@ pub struct Status {
     pub developer_message: Option<serde_json::Value>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Asset {
     STOCK,
     ETF,
 }
 
-impl Asset {
-    fn to_string(&self) -> &'static str {
-        match self {
-            Asset::ETF => "etf",
-            Asset::STOCK => "stocks",
-        }
+impl Default for Asset {
+    fn default() -> Self {
+        Asset::STOCK
     }
 }
 
-pub async fn quote(
-    client: &reqwest::Client,
-    symbol: &str,
-    asset: Asset,
-) -> Result<RequestResult<Quote>, reqwest::Error> {
-    let url = format!(
-        "https://api.nasdaq.com/api/quote/{}/info?assetclass={}",
-        symbol,
-        asset.to_string()
-    );
-    let response = client.get(&url).send().await?;
-    let quote = response.json::<Quote>().await?;
-    Ok(RequestResult::Success(quote))
+impl fmt::Display for Asset {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Asset::ETF => "etf",
+            Asset::STOCK => "stocks",
+        })
+    }
+}
+
+#[derive(Default, Serialize, Deserialize)]
+pub struct QuoteNasdaq {
+    pub symbol: String,
+    pub asset: Asset,
+}
+
+impl crate::data_source::Source for QuoteNasdaq {
+    type Output = Quote;
+
+    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+        let url = format!(
+            "https://api.nasdaq.com/api/quote/{}/info?assetclass={}",
+            self.symbol,
+            self.asset.to_string()
+        );
+        let response = client.get(&url).send().await?;
+        let quote = response.json::<Quote>().await?;
+        Ok(quote)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::data_source::Source;
 
     #[tokio::test]
     async fn test_quote() {
         let client = reqwest::Client::new();
-        let quote = quote(&client, "AAPL", Asset::STOCK).await.unwrap();
-        match quote {
-            RequestResult::Success(quote) => {
-                println!("{:#?}", quote);
-            }
-            RequestResult::Error(err) => {
-                println!("{:#?}", err);
-            }
-        }
+        let quote_nasdaq = QuoteNasdaq {
+            symbol: "AAPL".to_string(),
+            asset: Asset::STOCK,
+        };
+        let result = quote_nasdaq.fetch(&client).await;
+        println!("{:#?}", result);
     }
 }

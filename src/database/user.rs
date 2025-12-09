@@ -6,32 +6,51 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Deserialize, Serialize)]
-pub struct Authenticate {
-    pub id: i32,
-    pub token: String,
+pub enum StatusCode {
+    TOKENINVALID,
+    USERNOTFOUND,
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct Login {
-    pub name: String,
-    pub pass_hash: String,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct CreateUserPayload {
+pub struct CreatePayload {
     pub name: String,
     pub pass_hash: String,
     pub config: serde_json::Value,
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct UpdateUserPayload {
-    pub id: i32,
+pub struct LoginPayload {
     pub name: String,
     pub pass_hash: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct UpdatePayload {
+    pub id: i32,
+    pub name: String,
     pub token: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct ChangePasswordPayload {
+    pub id: i32,
+    pub old_pass_token: String,
+    pub token: String,
+    pub new_pass_token: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct AuthenticatePayload {
+    pub id: i32,
+    pub token: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct InfoResult {
+    pub id: i32,
+    pub name: String,
     pub config: serde_json::Value,
+    pub create_time: chrono::NaiveDateTime,
 }
 
 #[derive(Deserialize, Serialize, sqlx::FromRow)]
@@ -60,8 +79,8 @@ pub async fn name_is_exist(
 
 pub async fn create(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<CreateUserPayload>,
-) -> ResponseResult<Json<Authenticate>> {
+    Json(payload): Json<CreatePayload>,
+) -> ResponseResult<Json<AuthenticatePayload>> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -78,32 +97,34 @@ pub async fn create(
     .await
     .map_err(Error::DataBase)?;
 
-    Ok(Json(Authenticate {
+    Ok(Json(AuthenticatePayload {
         token: user.token,
         id: user.id,
     }))
 }
 
-pub async fn get(
+pub async fn info(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<Authenticate>,
-) -> ResponseResult<Json<User>> {
-    let user = sqlx::query_as!(User, r#"SELECT * FROM users WHERE id = $1"#, payload.id)
-        .fetch_one(state.database_pool())
-        .await
-        .map_err(Error::DataBase)?;
+    Json(payload): Json<AuthenticatePayload>,
+) -> ResponseResult<Json<InfoResult>> {
+    let user = get_item(payload.id, state.database_pool()).await?;
 
     if user.token != payload.token {
         return Err(Error::AuthError("Expired login.".to_string()));
     }
 
-    Ok(Json(user))
+    Ok(Json(InfoResult {
+        id: user.id,
+        name: user.name,
+        config: user.config,
+        create_time: user.create_time,
+    }))
 }
 
 pub async fn login(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<Login>,
-) -> ResponseResult<Json<Authenticate>> {
+    Json(payload): Json<LoginPayload>,
+) -> ResponseResult<Json<AuthenticatePayload>> {
     let user = sqlx::query_as!(
         User,
         r#"SELECT * FROM users WHERE name = $1 AND pass_hash = $2"#,
@@ -129,20 +150,28 @@ pub async fn login(
     .await
     .map_err(Error::DataBase)?;
 
-    Ok(Json(Authenticate {
+    Ok(Json(AuthenticatePayload {
         token: new_token_user.token,
         id: new_token_user.id,
     }))
 }
 
+pub async fn change_password(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<ChangePasswordPayload>,
+) {
+    let user = get_item(payload.id, state.database_pool()).await?;
+
+    if(user.pass_hash != )
+
+
+}
+
 pub async fn update(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<UpdateUserPayload>,
-) -> ResponseResult<Json<Authenticate>> {
-    let user = sqlx::query_as!(User, r#"SELECT * FROM users WHERE id = $1"#, payload.id)
-        .fetch_one(state.database_pool())
-        .await
-        .map_err(Error::DataBase)?;
+    Json(payload): Json<UpdatePayload>,
+) -> ResponseResult<Json<bool>> {
+    let user = get_item(payload.id, state.database_pool()).await?;
 
     if user.token != payload.token {
         return Err(Error::AuthError("Expired login.".to_string()));
@@ -152,7 +181,7 @@ pub async fn update(
         User,
         r#"
             UPDATE users
-            SET name = $1, pass_hash = $2, token = $3, config = $4
+            SET name = $1, config = $4
             WHERE id = $5
             RETURNING *
             "#,
@@ -166,8 +195,13 @@ pub async fn update(
     .await
     .map_err(Error::DataBase)?;
 
-    Ok(Json(Authenticate {
-        token: updated_user.token,
-        id: updated_user.id,
-    }))
+    Ok(Json(true))
+}
+
+async fn get_item(id: i32, pool: &sqlx::Pool<sqlx::Postgres>) -> Result<User, crate::Error> {
+    let user = sqlx::query_as!(User, r#"SELECT * FROM users WHERE id = $1"#, id)
+        .fetch_one(pool)
+        .await
+        .map_err(Error::DataBase)?;
+    Ok(user)
 }

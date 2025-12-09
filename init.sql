@@ -15,6 +15,11 @@ create type market_quote as (
 	last_update_time	TIMESTAMPTZ
 );
 
+create type screener_result_item as (
+    symbol  varchar(20),
+    weight  int not null default 0
+);
+
 create table if not exists users (
 	id			serial 			primary key,
 	name		varchar(100)	not null unique,
@@ -25,13 +30,14 @@ create table if not exists users (
 );
 
 create table if not exists screeners (
-	id					serial			primary key,
-	name				varchar(100)	not null default 'Unknown',
-	create_user_id		int				not null,
-	private				boolean			not null default false,
-	script				text			not null,
-	update_time			timestamp		not null default now(),
-	update_state		boolean			not null default false,
+	id					serial			        primary key,
+	name				varchar(100)	        not null default 'Unknown',
+	create_user_id		int				        not null,
+	private				boolean			        not null default false,
+	script				text			        not null,
+	update_time			timestamp		        not null default now(),
+	update_state		boolean			        not null default false,
+	result              screener_result_item[]  not null default '{}',
 	constraint fk_screeners_create_user_id
 		foreign key (create_user_id) references users(id)
 		on update cascade
@@ -61,13 +67,4 @@ create table if not exists book_view (
 	bzx		market_quote,
 	byx		market_quote,
 	nasdaq	market_quote
-);
-
-create table if not exists screened_template (
-    symbol	varchar(20)	primary key
-		references stocks(symbol)
-		on update cascade
-		on delete cascade,
-    weight	int	not null default 0
-    	check (weight between 0 and 100)
 );

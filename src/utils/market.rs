@@ -1,4 +1,7 @@
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+use std::fmt;
+
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Cboe {
     BYX,
     BZX,
@@ -6,14 +9,20 @@ pub enum Cboe {
     EDGX,
 }
 
-impl Cboe {
-    pub fn to_string(&self) -> &'static str {
-        match self {
+impl Default for Cboe {
+    fn default() -> Self {
+        Cboe::EDGA
+    }
+}
+
+impl fmt::Display for Cboe {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
             Cboe::BYX => "byx",
             Cboe::BZX => "bzx",
             Cboe::EDGA => "edga",
             Cboe::EDGX => "edgx",
-        }
+        })
     }
 }
 

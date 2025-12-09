@@ -4,7 +4,7 @@
   <img src="./web/public/image/dtbox.png" alt="Logo" width="200" />
 </div>
 
-## 简介
+## 简介(新手项目)
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
 ## 软件仅限个人交流学习/投资研究，请于下载后的 24 小时内卸载！
 ## 如果本项目存在侵犯您的合法权益的情况，请及时与开发者联系，开发者将会及时删除有关内容。
@@ -47,3 +47,6 @@ timeline
 ```
 
 API 数据特别感谢 Finviz提供 文档`https://finviz.com/api_explanation.ashx`
+
+
+- [ ] Cboe市场Book深度
