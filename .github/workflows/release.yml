@@ -3,12 +3,12 @@ name: Multi-platform Release
 on:
   push:
     tags:
-      - "v*" # 推送 v1.0.0 这类 tag 时触发
-  workflow_dispatch: # 手动触发按钮
+      - "v*"
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
-  SQLX_OFFLINE: true # 离线编译，无需 PG
+  SQLX_OFFLINE: true
 
 jobs:
   build:
@@ -18,15 +18,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Linux
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact: linux-x64
+          # Windows
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: windows-x64
+          # Intel Mac
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact: macos-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: macos-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}.* # tar.gz 或 zip
+          path: ${{ matrix.artifact }}.*
 
   release:
     needs: build

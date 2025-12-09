@@ -1,7 +1,7 @@
 # DTBox
 
 <div align="center">
-  <img src="./web/public/image/dtbox.png" alt="Logo" width="200" />
+  <img src="./web/src/assets/image/dtbox.svg" alt="Logo" width="200" />
 </div>
 
 ## 简介(新手项目)
