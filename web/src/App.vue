@@ -1,98 +1,95 @@
 <template>
-    <NConfigProvider :theme="theme" inlineThemeDisabled>
-        <NLayout position="absolute" hasSider>
-            <NLayoutHeader
-                bordered
-                style="
-                    height: 64px;
-                    padding: 0 12px;
-                    display: flex;
-                    align-items: center;
-                "
-            >
-                <div style="display: flex; align-items: center; gap: 12px">
-                    <img src="./assets/image/dtbox.svg" style="width: 50px" />
-                    <NText style="font-size: 36px; padding-right: 60px"
-                        >DTBox</NText
-                    >
-
-                    <NDropdown
-                        trigger="hover"
-                        :options="options"
-                        @select="dropdown_handle_select"
-                    >
-                        <NButton>找个地方休息</NButton>
-                    </NDropdown>
-                    <NDropdown trigger="hover" :options="options">
-                        <NButton>找个地方休息</NButton>
-                    </NDropdown>
-                </div>
-
-                <div
+    <NConfigProvider :theme="get_theme()" inlineThemeDisabled>
+        <NNotificationProvider>
+            <NLayout position="absolute" hasSider>
+                <NLayoutHeader
+                    bordered
                     style="
-                        margin-left: auto;
+                        height: 64px;
+                        padding: 0 12px;
                         display: flex;
                         align-items: center;
-                        gap: 12px;
                     "
                 >
-                    <NButton
-                        quaternary
-                        circle
-                        style="background-color: aquamarine"
+                    <div style="display: flex; align-items: center; gap: 12px">
+                        <img
+                            @click="$router.push('/')"
+                            src="./assets/image/dtbox.svg"
+                            style="width: 50px; cursor: pointer"
+                        />
+                        <NText style="font-size: 36px; padding-right: 60px"
+                            >DTBox</NText
+                        >
+
+                        <NDropdown
+                            v-for="option in options"
+                            trigger="hover"
+                            :options="option.value"
+                            @select="dropdown_handle_select"
+                        >
+                            <NButton>{{ option.table }}</NButton>
+                        </NDropdown>
+                    </div>
+
+                    <div
+                        style="
+                            margin-left: auto;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        "
                     >
-                        <NIcon><moon /></NIcon>
-                    </NButton>
-                    <NButton
-                        quaternary
-                        circle
-                        tag="a"
-                        href="https://github.com/ZZHENJIE/DTBox"
-                        style="background-color: antiquewhite"
-                        target="_blank"
-                    >
-                        <NIcon><github /></NIcon>
-                    </NButton>
-                </div>
-            </NLayoutHeader>
-            <RouterView style="top: 64px"></RouterView>
-        </NLayout>
+                        <NButton quaternary circle @click="change_theme">
+                            <NIcon size="40">
+                                <ContrastSharp />
+                            </NIcon>
+                        </NButton>
+                        <NButton
+                            quaternary
+                            circle
+                            @click="
+                                openUrl('https://github.com/ZZHENJIE/DTBox')
+                            "
+                        >
+                            <NIcon size="40">
+                                <LogoGithub />
+                            </NIcon>
+                        </NButton>
+                        <NTooltip trigger="hover">
+                            <template #trigger>
+                                <NButton>Version</NButton>
+                            </template>
+                            Beta 0.0.1
+                        </NTooltip>
+                    </div>
+                </NLayoutHeader>
+                <RouterView style="top: 64px"></RouterView>
+            </NLayout>
+        </NNotificationProvider>
     </NConfigProvider>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { darkTheme } from "naive-ui";
+<script setup lang="ts">
+import { ref } from "vue";
+import { darkTheme, lightTheme, NText, NTooltip } from "naive-ui";
+import { LogoGithub, ContrastSharp } from "@vicons/ionicons5";
+import Menu from "./utils/menu";
+import { openUrl } from "./utils/tool";
+import { useRouter } from "vue-router";
 
-export default defineComponent({
-    data() {
-        return {
-            theme: darkTheme,
-            options: [
-                {
-                    label: "!!!About",
-                    key: "/ipo",
-                    disabled: true,
-                },
-                {
-                    label: "Home",
-                    key: "/",
-                },
-                {
-                    label: "About",
-                    key: "/about",
-                },
-                {
-                    label: "比佛利山庄酒店，洛杉矶",
-                    key: "the beverly hills hotel, los angeles",
-                },
-            ],
-        };
-    },
-    methods: {
-        dropdown_handle_select(key: string) {
-            this.$router.push(key);
-        },
-    },
-});
+const is_dark = ref(true);
+const options = ref(Menu);
+const $router = useRouter();
+
+const dropdown_handle_select = (key: string) => {
+    $router.push(key);
+};
+
+const change_theme = () => {
+    is_dark.value = !is_dark.value;
+};
+
+const get_theme = () => {
+    return is_dark.value ? darkTheme : lightTheme;
+};
 </script>

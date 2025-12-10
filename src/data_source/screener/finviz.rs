@@ -1,4 +1,6 @@
+use crate::AppState;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScreenerItem {
@@ -29,18 +31,18 @@ pub struct ScreenerItem {
 #[derive(Default, Serialize, Deserialize)]
 pub struct ScreenerFinviz {
     pub query: String,
-    pub auth: String,
 }
 
 impl crate::data_source::Source for ScreenerFinviz {
     type Output = Vec<ScreenerItem>;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
         let url = format!(
             "https://elite.finviz.com/export.ashx?v=111&f={}&auth={}",
-            self.query, self.auth
+            self.query,
+            state.settings().finviz.auto_token
         );
-        let response = client.get(&url).send().await?;
+        let response = state.http_client().get(&url).send().await?;
         let csv = response.text().await?;
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());
         let mut items: Vec<ScreenerItem> = Vec::new();
@@ -49,22 +51,5 @@ impl crate::data_source::Source for ScreenerFinviz {
             items.push(record);
         }
         Ok(items)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::data_source::Source;
-
-    #[tokio::test]
-    async fn test_screener() {
-        let client = reqwest::Client::new();
-        let screener_finviz = ScreenerFinviz {
-            query: "&o=-volume".to_string(),
-            auth: "6d4a3d20-4cff-4466-81fb-49740b20ec1c".to_string(),
-        };
-        let result = screener_finviz.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

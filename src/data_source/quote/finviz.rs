@@ -1,5 +1,9 @@
+use crate::AppState;
 use serde::{Deserialize, Serialize};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +42,7 @@ pub struct QuoteFinviz {
 impl crate::data_source::Source for QuoteFinviz {
     type Output = Quote;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
         let date_from = self.date_from.unwrap_or_else(|| {
             let now = SystemTime::now();
             let duration = now
@@ -50,26 +54,8 @@ impl crate::data_source::Source for QuoteFinviz {
             "https://api.finviz.com/api/quote.ashx?dateFrom={}&instrument=stock&ticker={}&timeframe=d",
             date_from, self.symbol
         );
-        let response = client.get(url).send().await?;
+        let response = state.http_client().get(url).send().await?;
         let quote: Quote = response.json().await?;
         Ok(quote)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::data_source::Source;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn test_result() {
-        let client = reqwest::Client::new();
-        let quote_finviz = QuoteFinviz {
-            symbol: "AAPL".to_string(),
-            date_from: None,
-        };
-        let result = quote_finviz.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

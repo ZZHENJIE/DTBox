@@ -1,7 +1,8 @@
 import { createApp } from "vue";
 import "./assets/style.css";
 import App from "./App.vue";
-import router from "./router";
+import router from "./utils/router";
+import "vfonts/OpenSans.css";
 
 const app = createApp(App);
 app.use(router);

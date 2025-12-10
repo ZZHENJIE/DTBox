@@ -4,7 +4,7 @@ use std::sync::Arc;
 async fn main() -> anyhow::Result<()> {
     // init settings and server config
     let settings = dtbox_lib::Settings::new("./settings.toml")?;
-    let server_host_port = format!("0.0.0.0:{}", settings.server.port);
+    let server_host_port = format!("127.0.0.1:{}", settings.server.port);
     // create state and router
     let state = Arc::new(dtbox_lib::AppState::new(settings).await?);
     let app = dtbox_lib::Router::new(state.settings()).with_state(Arc::clone(&state));

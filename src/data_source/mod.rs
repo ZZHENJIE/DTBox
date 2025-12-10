@@ -10,7 +10,7 @@ where
     type Output: Serialize;
     fn fetch(
         &self,
-        client: &reqwest::Client,
+        state: Arc<AppState>,
     ) -> impl std::future::Future<Output = Result<Self::Output, anyhow::Error>> + Send;
 
     fn post(
@@ -21,7 +21,7 @@ where
         Self: Sized,
     {
         async move {
-            match payload.fetch(state.http_client()).await {
+            match payload.fetch(state).await {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Error::BadRequest(err)),
             }

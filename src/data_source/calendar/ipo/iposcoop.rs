@@ -1,6 +1,7 @@
-use crate::utils::tool;
+use crate::{AppState, utils::tool};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -19,8 +20,9 @@ pub struct IposcoopCalendar {}
 impl crate::data_source::Source for IposcoopCalendar {
     type Output = Vec<Item>;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
-        let response = client
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+        let response = state
+            .http_client()
             .get("https://www.iposcoop.com/ipo-calendar/")
             .send()
             .await?;
@@ -51,19 +53,5 @@ impl crate::data_source::Source for IposcoopCalendar {
         }
 
         Ok(items)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::data_source::Source;
-
-    #[tokio::test]
-    async fn test_result() {
-        let client = reqwest::Client::new();
-        let iposcoop_calendar = IposcoopCalendar::default();
-        let result = iposcoop_calendar.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

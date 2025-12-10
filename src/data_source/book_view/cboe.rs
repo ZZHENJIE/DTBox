@@ -1,5 +1,6 @@
-use crate::utils::market::Cboe;
+use crate::{AppState, utils::market::Cboe};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Item {
@@ -31,12 +32,12 @@ pub struct BookViewCboe {
 impl crate::data_source::Source for BookViewCboe {
     type Output = Vec<Item>;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
         let url = format!(
             "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
             self.market.to_string()
         );
-        let response = client.get(&url).send().await?;
+        let response = state.http_client().get(&url).send().await?;
         let csv = response.text().await?;
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());
         let mut items: Vec<Item> = Vec::new();
@@ -45,21 +46,5 @@ impl crate::data_source::Source for BookViewCboe {
             items.push(record);
         }
         Ok(items)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::data_source::Source;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn test_market_quote() {
-        let client = reqwest::Client::new();
-        let market = Cboe::EDGX;
-        let book_view_cboe = BookViewCboe { market };
-        let result = book_view_cboe.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

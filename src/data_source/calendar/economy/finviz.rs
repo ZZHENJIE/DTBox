@@ -1,4 +1,6 @@
+use crate::AppState;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,29 +33,13 @@ pub struct EconomyFinvizCalendar {
 impl crate::data_source::Source for EconomyFinvizCalendar {
     type Output = Vec<Item>;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
         let url = format!(
             "https://finviz.com/api/calendar/economic?dateFrom={}&dateTo={}",
             self.begin, self.end
         );
-        let response = client.get(url).send().await?;
+        let response = state.http_client().get(url).send().await?;
         let items: Vec<Item> = response.json().await?;
         Ok(items)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::data_source::{Source, calendar::economy::finviz::EconomyFinvizCalendar};
-
-    #[tokio::test]
-    async fn test_result() {
-        let client = reqwest::Client::new();
-        let economy_finviz_calendar = EconomyFinvizCalendar {
-            begin: "2025-12-08".to_string(),
-            end: "2025-12-12".to_string(),
-        };
-        let result = economy_finviz_calendar.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

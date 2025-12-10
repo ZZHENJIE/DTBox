@@ -235,6 +235,11 @@
   dependencies:
     undici-types "~7.16.0"
 
+"@vicons/ionicons5@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.npmmirror.com/@vicons/ionicons5/-/ionicons5-0.13.0.tgz#86856b21807f9e2340c31e7b596f7f42567a88b1"
+  integrity sha512-zvZKBPjEXKN7AXNo2Na2uy+nvuv6SP4KAMQxpKL2vfHMj0fSvuw7JZcOPCjQC3e7ayssKnaoFVAhbYcW6v41qQ==
+
 "@vitejs/plugin-vue@^6.0.1":
   version "6.0.2"
   resolved "https://registry.npmmirror.com/@vitejs/plugin-vue/-/plugin-vue-6.0.2.tgz#318d1828fe73e4a0b73f473040dcb3ad52db38ec"

@@ -1,5 +1,6 @@
+use crate::AppState;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
@@ -94,31 +95,14 @@ pub struct QuoteNasdaq {
 impl crate::data_source::Source for QuoteNasdaq {
     type Output = Quote;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
         let url = format!(
             "https://api.nasdaq.com/api/quote/{}/info?assetclass={}",
             self.symbol,
             self.asset.to_string()
         );
-        let response = client.get(&url).send().await?;
+        let response = state.http_client().get(&url).send().await?;
         let quote = response.json::<Quote>().await?;
         Ok(quote)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::data_source::Source;
-
-    #[tokio::test]
-    async fn test_quote() {
-        let client = reqwest::Client::new();
-        let quote_nasdaq = QuoteNasdaq {
-            symbol: "AAPL".to_string(),
-            asset: Asset::STOCK,
-        };
-        let result = quote_nasdaq.fetch(&client).await;
-        println!("{:#?}", result);
     }
 }

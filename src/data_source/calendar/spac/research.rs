@@ -1,7 +1,8 @@
-use crate::utils::tool;
+use crate::{AppState, utils::tool};
 use chrono::{Datelike, Local};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Event {
@@ -37,8 +38,9 @@ pub struct SpacResearchCalendar {}
 impl crate::data_source::Source for SpacResearchCalendar {
     type Output = Vec<Item>;
 
-    async fn fetch(&self, client: &reqwest::Client) -> Result<Self::Output, anyhow::Error> {
-        let response = client
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+        let response = state
+            .http_client()
             .get("https://www.spacresearch.com/calendar")
             .send()
             .await?;
@@ -84,19 +86,5 @@ impl crate::data_source::Source for SpacResearchCalendar {
             }
         }
         Ok(items)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::data_source::Source;
-
-    #[tokio::test]
-    async fn test_result() {
-        let client = reqwest::Client::new();
-        let spac_research_calendar = SpacResearchCalendar::default();
-        let items = spac_research_calendar.fetch(&client).await;
-        println!("{:#?}", items);
     }
 }
