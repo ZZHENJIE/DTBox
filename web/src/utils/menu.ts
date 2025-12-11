@@ -1,6 +1,31 @@
 export default [
   {
+    table: "Screener",
+    type: "warning",
+    value: [
+      {
+        label: "Finviz",
+        children: [
+          {
+            label: "Query",
+            key: "/screener/finviz/query",
+          },
+          {
+            label: "Result",
+            key: "/screener/finviz/result",
+          },
+          {
+            label: "Script",
+            key: "/screener/finviz/script",
+          },
+        ],
+        key: "screener_finviz",
+      },
+    ],
+  },
+  {
     table: "Calendar",
+    type: "info",
     value: [
       {
         label: "Economy",
@@ -35,11 +60,12 @@ export default [
     ],
   },
   {
-    table: "Help",
+    table: "Experimental",
+    type: "warning",
     value: [
       {
-        label: "About",
-        key: "/about",
+        label: "Chart",
+        key: "/experimental/chart",
       },
     ],
   },

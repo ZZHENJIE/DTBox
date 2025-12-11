@@ -72,7 +72,7 @@
                         <template #icon>
                             <NIcon>
                                 <img
-                                    style="width: 20px"
+                                    style="width: 18px"
                                     src="../assets/image/bilibili.svg"
                                 />
                             </NIcon>

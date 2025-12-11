@@ -21,19 +21,19 @@
                 </NList>
             </NSpin>
         </NLayout>
-        <NLayout-sider
+        <NLayoutSider
             content-style="padding: 24px;"
             :native-scrollbar="false"
             bordered
         >
-        </NLayout-sider>
+        </NLayoutSider>
     </NLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useNotification } from "naive-ui";
-import api_fetch from "../utils/api_fetch";
+import { Event } from "../utils/api";
 import { openUrl } from "../utils/tool";
 
 export interface News_Item {
@@ -45,20 +45,14 @@ export interface News_Item {
 }
 
 const notification = useNotification();
+const event = new Event(notification);
 const news_result = ref<News_Item[]>([]);
 const news_is_loading = ref(true);
 const news_refresh = async () => {
     news_is_loading.value = true;
-    const json = await api_fetch(
-        "/api/event/finviz",
-        {
-            News: null,
-        },
-        notification,
-        (_) => {
-            news_is_loading.value = false;
-        },
-    );
+    const json = await event.Finviz("News", (_) => {
+        news_is_loading.value = false;
+    });
     news_result.value = json.Common;
 };
 

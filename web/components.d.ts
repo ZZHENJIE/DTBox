@@ -11,6 +11,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    About_dropdown: typeof import('./src/components/about_dropdown.vue')['default']
+    Help_dropdown: typeof import('./src/components/help_dropdown.vue')['default']
+    NAutoComplete: typeof import('naive-ui')['NAutoComplete']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
@@ -32,5 +35,6 @@ declare module 'vue' {
     NThing: typeof import('naive-ui')['NThing']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Symbol_serach: typeof import('./src/components/symbol_serach.vue')['default']
   }
 }

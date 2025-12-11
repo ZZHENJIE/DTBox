@@ -21,13 +21,17 @@
                             >DTBox</NText
                         >
 
+                        <SymbolSerach />
+
                         <NDropdown
                             v-for="option in options"
                             trigger="hover"
                             :options="option.value"
                             @select="dropdown_handle_select"
                         >
-                            <NButton>{{ option.table }}</NButton>
+                            <NButton secondary :type="option.type">{{
+                                option.table
+                            }}</NButton>
                         </NDropdown>
                     </div>
 
@@ -55,12 +59,8 @@
                                 <LogoGithub />
                             </NIcon>
                         </NButton>
-                        <NTooltip trigger="hover">
-                            <template #trigger>
-                                <NButton>Version</NButton>
-                            </template>
-                            Beta 0.0.1
-                        </NTooltip>
+
+                        <AboutDropdown />
                     </div>
                 </NLayoutHeader>
                 <RouterView style="top: 64px"></RouterView>
@@ -71,11 +71,13 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { darkTheme, lightTheme, NText, NTooltip } from "naive-ui";
+import { darkTheme, lightTheme, NText } from "naive-ui";
 import { LogoGithub, ContrastSharp } from "@vicons/ionicons5";
 import Menu from "./utils/menu";
 import { openUrl } from "./utils/tool";
 import { useRouter } from "vue-router";
+import SymbolSerach from "./components/symbol_serach.vue";
+import AboutDropdown from "./components/about_dropdown.vue";
 
 const is_dark = ref(true);
 const options = ref(Menu);

@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import api_fetch from "../../../utils/api_fetch";
+import { Calendar } from "../../../utils/api";
 import { useNotification } from "naive-ui";
 
 interface Item {
@@ -37,18 +37,14 @@ interface Item {
 }
 
 const notification = useNotification();
+const calendar = new Calendar(notification);
 const result = ref<Item[]>([]);
 const is_loading = ref(true);
 const refresh = async () => {
     is_loading.value = true;
-    const json = await api_fetch(
-        "/api/calendar/spac/research",
-        {},
-        notification,
-        (_) => {
-            is_loading.value = false;
-        },
-    );
+    const json = await calendar.SPAC_Research((_) => {
+        is_loading.value = false;
+    });
     result.value = json;
 };
 
