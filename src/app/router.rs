@@ -1,9 +1,6 @@
-use crate::{
-    AppState,
-    data_source::{self, Source},
-};
+use crate::{AppState, app::api, data_source};
 // use crate::database;
-use axum::routing::{get_service, post};
+use axum::routing::{self, get_service};
 use std::sync::Arc;
 use tower_http::services::{ServeDir, ServeFile};
 
@@ -28,47 +25,51 @@ impl Router {
             )
             .route(
                 "/api/book_view/cboe",
-                post(data_source::book_view::cboe::BookViewCboe::post),
+                routing::post(api::post::<data_source::book_view::cboe::BookViewCboe>),
             )
             .route(
                 "/api/calendar/economy/finviz",
-                post(data_source::calendar::economy::finviz::EconomyFinvizCalendar::post),
+                routing::post(
+                    api::post::<data_source::calendar::economy::finviz::EconomyFinvizCalendar>,
+                ),
             )
             .route(
                 "/api/calendar/ipo/iposcoop",
-                post(data_source::calendar::ipo::iposcoop::IposcoopCalendar::post),
+                routing::get(api::get::<data_source::calendar::ipo::iposcoop::IposcoopCalendar>),
             )
             .route(
                 "/api/calendar/spac/research",
-                post(data_source::calendar::spac::research::SpacResearchCalendar::post),
+                routing::get(
+                    api::get::<data_source::calendar::spac::research::SpacResearchCalendar>,
+                ),
             )
             .route(
                 "/api/candlestick/finviz",
-                post(data_source::candlestick::finviz::CandlestickFinviz::post),
+                routing::post(api::post::<data_source::candlestick::finviz::CandlestickFinviz>),
             )
             .route(
                 "/api/event/finviz",
-                post(data_source::event::finviz::EventFinviz::post),
+                routing::post(api::post::<data_source::event::finviz::EventFinviz>),
             )
             .route(
                 "/api/quote/finviz",
-                post(data_source::quote::finviz::QuoteFinviz::post),
+                routing::post(api::post::<data_source::quote::finviz::QuoteFinviz>),
             )
             .route(
                 "/api/quote/nasdaq",
-                post(data_source::quote::nasdaq::QuoteNasdaq::post),
+                routing::post(api::post::<data_source::quote::nasdaq::QuoteNasdaq>),
             )
             .route(
                 "/api/screener/finviz",
-                post(data_source::screener::finviz::ScreenerFinviz::post),
+                routing::post(api::post::<data_source::screener::finviz::ScreenerFinviz>),
             )
             .route(
                 "/api/time_stamp/akamai",
-                post(data_source::time_stamp::akamai::AkamaiTimeStamp::post),
+                routing::get(api::get::<data_source::time_stamp::akamai::AkamaiTimeStamp>),
             )
             .route(
                 "/api/translate/google",
-                post(data_source::translate::google::GoogleTranslate::post),
+                routing::post(api::post::<data_source::translate::google::GoogleTranslate>),
             )
         // .route(
         //     "/api/user/name_exists/{name}",

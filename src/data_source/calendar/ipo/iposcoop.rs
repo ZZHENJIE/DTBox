@@ -1,4 +1,4 @@
-use crate::{AppState, utils::tool};
+use crate::{Api, AppState, Error, utils::tool};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -14,13 +14,14 @@ pub struct Item {
     pub expected_date: String,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct IposcoopCalendar {}
 
-impl crate::data_source::Source for IposcoopCalendar {
+impl Api for IposcoopCalendar {
     type Output = Vec<Item>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let response = state
             .http_client()
             .get("https://www.iposcoop.com/ipo-calendar/")
@@ -29,8 +30,8 @@ impl crate::data_source::Source for IposcoopCalendar {
         let html_text = response.text().await?;
 
         let fragment = Html::parse_fragment(&html_text);
-        let tr_sel = tool::parse_sel("tr")?;
-        let td_sel = tool::parse_sel("td")?;
+        let tr_sel = scraper::Selector::parse("tr")?;
+        let td_sel = scraper::Selector::parse("td")?;
 
         let mut items = Vec::new();
 

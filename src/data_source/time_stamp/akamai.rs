@@ -1,14 +1,15 @@
-use crate::AppState;
-use serde::{Deserialize, Serialize};
+use crate::{Api, AppState, Error};
+use serde::Deserialize;
 use std::sync::Arc;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct AkamaiTimeStamp {}
 
-impl crate::data_source::Source for AkamaiTimeStamp {
+impl Api for AkamaiTimeStamp {
     type Output = u64;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let response = state
             .http_client()
             .get("https://time.akamai.com")

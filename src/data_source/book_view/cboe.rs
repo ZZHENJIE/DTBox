@@ -1,8 +1,8 @@
-use crate::{AppState, utils::market::Cboe};
+use crate::{Api, AppState, Error, utils::market::Cboe};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
     #[serde(rename = "Name")]
     pub symbol: String,
@@ -24,15 +24,16 @@ pub struct Item {
     pub shares_routed: u64,
 }
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Default, Deserialize)]
 pub struct BookViewCboe {
     pub market: Cboe,
 }
 
-impl crate::data_source::Source for BookViewCboe {
+impl Api for BookViewCboe {
     type Output = Vec<Item>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url = format!(
             "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
             self.market.to_string()

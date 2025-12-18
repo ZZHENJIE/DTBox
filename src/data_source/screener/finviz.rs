@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -28,15 +28,16 @@ pub struct ScreenerItem {
     pub volume: Option<u64>,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct ScreenerFinviz {
     pub query: String,
 }
 
-impl crate::data_source::Source for ScreenerFinviz {
+impl Api for ScreenerFinviz {
     type Output = Vec<ScreenerItem>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url = format!(
             "https://elite.finviz.com/export.ashx?v=111&f={}&auth={}",
             self.query,

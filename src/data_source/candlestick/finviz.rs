@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -18,7 +18,7 @@ pub struct Item {
     pub volume: u64,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct CandlestickFinviz {
     pub symbol: String,
     pub interval: String, // i1 | i3 | i5
@@ -34,10 +34,11 @@ impl CandlestickFinviz {
     }
 }
 
-impl crate::data_source::Source for CandlestickFinviz {
+impl Api for CandlestickFinviz {
     type Output = Vec<Item>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url = self.url(&state.settings().finviz.auto_token);
         let response = state.http_client().get(url).send().await?;
         let csv = response.text().await?;

@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -58,10 +58,11 @@ impl From<&EventFinviz> for String {
     }
 }
 
-impl crate::data_source::Source for EventFinviz {
+impl Api for EventFinviz {
     type Output = ItemsRecord;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url: String = format!(
             "{}&auth={}",
             String::from(self),

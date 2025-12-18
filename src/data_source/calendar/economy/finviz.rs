@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -24,16 +24,17 @@ pub struct Item {
     pub non_emptiness_score: i8,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct EconomyFinvizCalendar {
     begin: String,
     end: String,
 }
 
-impl crate::data_source::Source for EconomyFinvizCalendar {
+impl Api for EconomyFinvizCalendar {
     type Output = Vec<Item>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url = format!(
             "https://finviz.com/api/calendar/economic?dateFrom={}&dateTo={}",
             self.begin, self.end

@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::{fmt, sync::Arc};
 
@@ -86,16 +86,17 @@ impl fmt::Display for Asset {
     }
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct QuoteNasdaq {
     pub symbol: String,
     pub asset: Asset,
 }
 
-impl crate::data_source::Source for QuoteNasdaq {
+impl Api for QuoteNasdaq {
     type Output = Quote;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let url = format!(
             "https://api.nasdaq.com/api/quote/{}/info?assetclass={}",
             self.symbol,

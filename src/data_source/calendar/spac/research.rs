@@ -1,4 +1,4 @@
-use crate::{AppState, utils::tool};
+use crate::{Api, AppState, Error};
 use chrono::{Datelike, Local};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
@@ -32,13 +32,14 @@ pub struct Item {
     pub symbol: String,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct SpacResearchCalendar {}
 
-impl crate::data_source::Source for SpacResearchCalendar {
+impl Api for SpacResearchCalendar {
     type Output = Vec<Item>;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let response = state
             .http_client()
             .get("https://www.spacresearch.com/calendar")
@@ -47,10 +48,10 @@ impl crate::data_source::Source for SpacResearchCalendar {
         let html_text = response.text().await?;
 
         let doc = Html::parse_fragment(&html_text);
-        let day_li_sel = tool::parse_sel("li.day")?;
-        let date_sel = tool::parse_sel(".date")?;
-        let event_sel = tool::parse_sel(".event")?;
-        let link_sel = tool::parse_sel("a")?;
+        let day_li_sel = scraper::Selector::parse("li.day")?;
+        let date_sel = scraper::Selector::parse(".date")?;
+        let event_sel = scraper::Selector::parse(".event")?;
+        let link_sel = scraper::Selector::parse("a")?;
 
         let today = Local::now();
         let mut items = Vec::new();

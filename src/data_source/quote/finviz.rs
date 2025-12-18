@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
 use std::{
     sync::Arc,
@@ -33,16 +33,17 @@ pub struct Quote {
     pub chart_events: Vec<Option<serde_json::Value>>,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct QuoteFinviz {
     pub symbol: String,
     pub date_from: Option<u64>,
 }
 
-impl crate::data_source::Source for QuoteFinviz {
+impl Api for QuoteFinviz {
     type Output = Quote;
+    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, anyhow::Error> {
+    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
         let date_from = self.date_from.unwrap_or_else(|| {
             let now = SystemTime::now();
             let duration = now

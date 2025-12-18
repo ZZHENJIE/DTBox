@@ -1,34 +1,3 @@
-use crate::{AppState, Error, ResponseResult};
-use axum::{Json, extract::State};
-use serde::{Serialize, de::DeserializeOwned};
-use std::sync::Arc;
-
-pub trait Source
-where
-    Self: DeserializeOwned + Send + Sync,
-{
-    type Output: Serialize;
-    fn fetch(
-        &self,
-        state: Arc<AppState>,
-    ) -> impl std::future::Future<Output = Result<Self::Output, anyhow::Error>> + Send;
-
-    fn post(
-        State(state): State<Arc<AppState>>,
-        Json(payload): Json<Self>,
-    ) -> impl std::future::Future<Output = ResponseResult<Json<Self::Output>>> + Send
-    where
-        Self: Sized,
-    {
-        async move {
-            match payload.fetch(state).await {
-                Ok(result) => Ok(Json(result)),
-                Err(err) => Err(Error::BadRequest(err)),
-            }
-        }
-    }
-}
-
 pub mod book_view {
     pub mod cboe;
 }
