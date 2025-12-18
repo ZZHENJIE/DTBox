@@ -8,6 +8,18 @@ pub enum Error {
     Internal(String),
 }
 
+impl From<argon2::password_hash::Error> for Error {
+    fn from(value: argon2::password_hash::Error) -> Self {
+        Error::Internal(format!("Argon2 Password Hash Error:{}", value))
+    }
+}
+
+impl From<sqlx::Error> for Error {
+    fn from(value: sqlx::Error) -> Self {
+        Error::Internal(format!("SQLX Error:{}", value))
+    }
+}
+
 impl From<std::num::ParseIntError> for Error {
     fn from(value: std::num::ParseIntError) -> Self {
         Error::Internal(format!("Parse Error:{}", value))
@@ -42,10 +54,10 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         use Error::*;
         let (code, message) = match self {
-            NotFound => (StatusCode::NOT_FOUND, "Not Found".to_string()),
-            AuthError(err) => (StatusCode::UNAUTHORIZED, err),
-            BadRequest => (StatusCode::BAD_REQUEST, "Bad Request".to_string()),
-            Internal(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            NotFound => (StatusCode::NOT_FOUND, "Not Found:".to_string()),
+            AuthError(err) => (StatusCode::UNAUTHORIZED, format!("Auth Error:{}", err)),
+            BadRequest => (StatusCode::BAD_REQUEST, "Bad Request:".to_string()),
+            Internal(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
         };
         let body = Json(serde_json::json!({ "error": message }));
         (code, body).into_response()

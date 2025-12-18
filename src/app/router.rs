@@ -1,4 +1,4 @@
-use crate::{AppState, app::api, data_source};
+use crate::{AppState, app::api, data_source, database};
 // use crate::database;
 use axum::routing::{self, get_service};
 use std::sync::Arc;
@@ -70,6 +70,14 @@ impl Router {
             .route(
                 "/api/translate/google",
                 routing::post(api::post::<data_source::translate::google::GoogleTranslate>),
+            )
+            .route(
+                "/api/user/register",
+                routing::post(api::post::<database::user::register::Register>),
+            )
+            .route(
+                "/api/user/signin",
+                routing::post(api::post::<database::user::signin::Signin>),
             )
         // .route(
         //     "/api/user/name_exists/{name}",
