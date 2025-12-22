@@ -54,9 +54,9 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         use Error::*;
         let (code, message) = match self {
-            NotFound => (StatusCode::NOT_FOUND, "Not Found:".to_string()),
+            NotFound => (StatusCode::NOT_FOUND, "Not Found.".to_string()),
             AuthError(err) => (StatusCode::UNAUTHORIZED, format!("Auth Error:{}", err)),
-            BadRequest => (StatusCode::BAD_REQUEST, "Bad Request:".to_string()),
+            BadRequest => (StatusCode::BAD_REQUEST, "Bad Request.".to_string()),
             Internal(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
         };
         let body = Json(serde_json::json!({ "error": message }));

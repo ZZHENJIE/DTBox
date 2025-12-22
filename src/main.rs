@@ -8,7 +8,7 @@ async fn main() -> anyhow::Result<()> {
     let server = format!("{}:{}", server_config.host, server_config.port);
     // create state and router
     let state = Arc::new(dtbox_lib::AppState::new(settings).await?);
-    let app = dtbox_lib::Router::new(state.settings()).with_state(Arc::clone(&state));
+    let app = dtbox_lib::app::router::new(state.settings()).with_state(Arc::clone(&state));
     // verify listener and start server
     let listener = tokio::net::TcpListener::bind(server).await?;
     println!("Server created successfully.");
