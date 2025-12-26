@@ -1,9 +1,5 @@
 use rand::RngCore;
 
-pub async fn version() -> &'static str {
-    env!("CARGO_PKG_VERSION")
-}
-
 pub fn normalize_ws(s: String) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }

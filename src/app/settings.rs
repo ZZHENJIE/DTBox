@@ -6,6 +6,7 @@ pub struct Server {
     pub port: u16,
     pub background_tasks_refresh: u64,
     pub static_dir: String,
+    pub jwt_secret: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

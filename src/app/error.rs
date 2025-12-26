@@ -8,6 +8,12 @@ pub enum Error {
     Internal(String),
 }
 
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        Error::Internal(format!("Json Web Token Error:{}", value))
+    }
+}
+
 impl From<argon2::password_hash::Error> for Error {
     fn from(value: argon2::password_hash::Error) -> Self {
         Error::Internal(format!("Argon2 Password Hash Error:{}", value))

@@ -1,6 +1,11 @@
-use crate::{Api, Error};
+use crate::{Api, Error, database::user::jwt::Claims};
 use argon2::PasswordVerifier;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize)]
+pub struct OutPut {
+    pub token: String,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Signin {
@@ -9,7 +14,7 @@ pub struct Signin {
 }
 
 impl Api for Signin {
-    type Output = bool;
+    type Output = OutPut;
     type Error = Error;
 
     async fn fetch(
@@ -24,6 +29,12 @@ impl Api for Signin {
         let is_ok = argon2::Argon2::default()
             .verify_password(self.password.as_bytes(), &parsed_hash)
             .is_ok();
-        Ok(is_ok)
+
+        if is_ok {
+            let token = Claims::encode(user.id, state.settings().server.jwt_secret.as_bytes())?;
+            Ok(OutPut { token })
+        } else {
+            Err(Error::AuthError("Username or password incorrect.".into()))
+        }
     }
 }

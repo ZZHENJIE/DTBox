@@ -23,3 +23,4 @@ csv = "1.4.0"
 serde = "1.0.228"
 scraper = "0.24.0"
 argon2 = "0.5.3"
+jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
