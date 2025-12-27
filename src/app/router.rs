@@ -19,7 +19,6 @@ pub fn new(state: Arc<AppState>) -> axum::Router<Arc<AppState>> {
         .fallback_service(ServeDir::new(&state.settings().server.static_dir))
         .pipe(router, state.clone())
         .pipe(crate::source::router, state.clone())
-        .pipe(crate::database::router, state.clone())
 }
 
 fn router(router: axum::Router<Arc<AppState>>, _: Arc<AppState>) -> axum::Router<Arc<AppState>> {

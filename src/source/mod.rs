@@ -35,12 +35,14 @@ pub mod screener {
     pub mod finviz;
 }
 
-pub mod translate {
-    pub mod google;
-}
+pub mod utils {
+    pub mod translate {
+        pub mod google;
+    }
 
-pub mod time_stamp {
-    pub mod akamai;
+    pub mod time_stamp {
+        pub mod akamai;
+    }
 }
 
 pub fn router(
@@ -86,10 +88,10 @@ pub fn router(
         )
         .route(
             "/api/time_stamp/akamai",
-            routing::get(api::get::<time_stamp::akamai::AkamaiTimeStamp>),
+            routing::get(api::get::<utils::time_stamp::akamai::AkamaiTimeStamp>),
         )
         .route(
             "/api/translate/google",
-            routing::post(api::post::<translate::google::GoogleTranslate>),
+            routing::post(api::post::<utils::translate::google::GoogleTranslate>),
         )
 }

@@ -7,13 +7,13 @@ use axum::{Router, middleware, routing};
 use std::sync::Arc;
 
 pub mod user {
-    pub mod auth;
-    pub mod jwt;
-    pub mod name_is_exists;
-    pub mod operation;
-    pub mod profile;
-    pub mod register;
-    pub mod signin;
+    // pub mod auth;
+    // pub mod jwt;
+    // pub mod name_is_exists;
+    // pub mod operation;
+    // pub mod profile;
+    // pub mod register;
+    // pub mod signin;
 }
 
 pub fn router(
