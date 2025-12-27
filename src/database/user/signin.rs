@@ -31,7 +31,9 @@ impl Api for Signin {
             .is_ok();
 
         if is_ok {
-            let token = Claims::encode(user.id, state.settings().server.jwt_secret.as_bytes())?;
+            let (token, uuid) =
+                Claims::encode(user.id, state.settings().server.jwt_secret.as_bytes())?;
+            let _ = state.jwt_uuid().insert(user.id, uuid);
             Ok(OutPut { token })
         } else {
             Err(Error::AuthError("Username or password incorrect.".into()))

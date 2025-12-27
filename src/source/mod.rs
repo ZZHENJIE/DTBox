@@ -43,7 +43,10 @@ pub mod time_stamp {
     pub mod akamai;
 }
 
-pub fn router(router: axum::Router<Arc<AppState>>) -> axum::Router<Arc<AppState>> {
+pub fn router(
+    router: axum::Router<Arc<AppState>>,
+    _: Arc<AppState>,
+) -> axum::Router<Arc<AppState>> {
     router
         .route(
             "/api/book_view/cboe",

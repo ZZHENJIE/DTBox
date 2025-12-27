@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct User {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
     pub pass_hash: String,
     pub config: serde_json::Value,
@@ -10,7 +10,7 @@ pub struct User {
     pub create_time: chrono::DateTime<chrono::Utc>,
 }
 
-pub async fn find_for_id(id: i64, pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<Option<User>> {
+pub async fn find_for_id(id: i32, pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -24,7 +24,7 @@ pub async fn find_for_id(id: i64, pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Re
         WHERE  id = $1
         LIMIT  1
         "#,
-        id as i32
+        id
     )
     .fetch_optional(pool)
     .await?;

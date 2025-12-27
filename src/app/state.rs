@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub struct AppState {
     settings: crate::Settings,
@@ -35,6 +35,7 @@ impl AppState {
         Ok(Self {
             database: Self::open_database(connectoptions).await?,
             http_client: Arc::new(client_builder.build()?),
+            jwt_uuid: Arc::new(HashMap::new()),
             settings,
         })
     }
@@ -52,6 +53,9 @@ impl AppState {
     }
     pub fn database_pool(&self) -> &sqlx::Pool<sqlx::Postgres> {
         &self.database
+    }
+    pub fn jwt_uuid(&self) -> &Arc<HashMap<i32, String>> {
+        &self.jwt_uuid
     }
     // pub fn init_background_task(state: Arc<AppState>) -> Vec<tokio::task::JoinHandle<()>> {
     //     let stocks_state = Arc::clone(&state);

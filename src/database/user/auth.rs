@@ -1,26 +1,40 @@
-use axum::{extract::Request, middleware::Next, response::Response};
+use std::sync::Arc;
+
+use axum::{
+    extract::{Request, State},
+    middleware::Next,
+    response::Response,
+};
 use reqwest::StatusCode;
 
-async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
-    // 3.1 取 header
-    let hdr = req.headers();
-    let token = hdr
-        .get("authorization")
-        .and_then(|hv| hv.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "))
-        .ok_or(StatusCode::UNAUTHORIZED)?;
+use crate::{AppState, database::user::jwt};
 
-    // 3.2 验签 + 解析
-    let claims = decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(SECRET),
-        &Validation::default(),
-    )
-    .map_err(|_| StatusCode::UNAUTHORIZED)?
-    .claims;
+pub async fn auth(
+    State(state): State<Arc<AppState>>,
+    mut request: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let auth_header = request
+        .headers()
+        .get(axum::http::header::AUTHORIZATION)
+        .and_then(|header| header.to_str().ok());
 
-    // 3.3 把 uid 塞进 extensions，下游直接取
-    req.extensions_mut().insert(claims.sub);
+    let token = match auth_header.and_then(|h| h.strip_prefix("Bearer ")) {
+        Some(t) => t,
+        None => return Err(StatusCode::UNAUTHORIZED),
+    };
 
-    Ok(next.run(req).await)
+    let claims = jwt::Claims::decode(token, state.settings().server.jwt_secret.as_bytes());
+
+    match claims {
+        Ok(value) => {
+            let now = chrono::Utc::now().timestamp() as usize;
+            if value.exp < now {
+                return Err(StatusCode::UNAUTHORIZED);
+            }
+            request.extensions_mut().insert(value.sub);
+            Ok(next.run(request).await)
+        }
+        Err(_) => Err(StatusCode::UNAUTHORIZED),
+    }
 }
