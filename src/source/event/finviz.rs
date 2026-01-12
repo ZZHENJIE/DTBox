@@ -66,7 +66,7 @@ impl Api for EventFinviz {
         let url: String = format!(
             "{}&auth={}",
             String::from(self),
-            state.settings().finviz.auto_token
+            state.settings().finviz.api_token
         );
         let response = state.http_client().get(url).send().await?;
         let csv = response.text().await?;

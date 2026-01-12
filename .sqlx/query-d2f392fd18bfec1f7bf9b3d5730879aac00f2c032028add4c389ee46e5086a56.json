@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM sqlite_sequence WHERE name='stocks'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "d2f392fd18bfec1f7bf9b3d5730879aac00f2c032028add4c389ee46e5086a56"
+}

@@ -4,44 +4,35 @@ use serde::{Deserialize, Serialize};
 pub struct Server {
     pub host: String,
     pub port: u16,
-    pub background_tasks_refresh: u64,
-    pub static_dir: String,
-    pub jwt_secret: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Finviz {
-    pub auto_token: String,
+    pub api_token: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Source {
-    pub host: String,
+pub struct Sqlite {
+    pub path: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Proxy {
-    pub http: Option<String>,
-    pub https: Option<String>,
-    pub username: Option<String>,
-    pub password: Option<String>,
+pub struct Jwt {
+    pub secret: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Postgres {
-    pub host: String,
-    pub port: u16,
-    pub username: String,
-    pub password: String,
+pub struct Web {
+    pub path: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Settings {
     pub server: Server,
-    pub postgres: Postgres,
+    pub sqlite: Sqlite,
     pub finviz: Finviz,
-    pub source: Source,
-    pub proxy: Proxy,
+    pub web: Web,
+    pub jwt: Jwt,
 }
 
 impl Settings {

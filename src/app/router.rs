@@ -16,7 +16,7 @@ impl RouterExt for axum::Router<Arc<AppState>> {}
 
 pub fn new(state: Arc<AppState>) -> axum::Router<Arc<AppState>> {
     axum::Router::new()
-        .fallback_service(ServeDir::new(&state.settings().server.static_dir))
+        .fallback_service(ServeDir::new(&state.settings().web.path))
         .pipe(router, state.clone())
         .pipe(crate::source::router, state.clone())
 }

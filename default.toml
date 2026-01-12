@@ -1,24 +1,15 @@
 [server]
 host = "0.0.0.0"
 port = 56789
-background_tasks_refresh = 10 # seconds
-static_dir = "./static"
-jwt_secret = "your_jwt_secret_here"
 
-[postgres]
-host = "localhost"
-port = 5432
-username = "postgres"
-password = "postgres"
+[web]
+path = "./static"
+
+[jwt]
+secret = "your_jwt_secret_here"
+
+[sqlite]
+path = "./data.sqlite"
 
 [finviz]
-auto_token = ""
-
-[source]
-host = "http://47.115.95.50"
-
-[proxy]
-# username = ""
-# password = ""
-# http = ""
-# https = ""
+api_token = ""

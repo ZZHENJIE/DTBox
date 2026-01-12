@@ -41,7 +41,7 @@ impl Api for ScreenerFinviz {
         let url = format!(
             "https://elite.finviz.com/export.ashx?v=111&f={}&auth={}",
             self.query,
-            state.settings().finviz.auto_token
+            state.settings().finviz.api_token
         );
         let response = state.http_client().get(&url).send().await?;
         let csv = response.text().await?;

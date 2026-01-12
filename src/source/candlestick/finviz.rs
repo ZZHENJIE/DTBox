@@ -39,7 +39,7 @@ impl Api for CandlestickFinviz {
     type Error = Error;
 
     async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
-        let url = self.url(&state.settings().finviz.auto_token);
+        let url = self.url(&state.settings().finviz.api_token);
         let response = state.http_client().get(url).send().await?;
         let csv = response.text().await?;
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());

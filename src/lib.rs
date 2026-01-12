@@ -1,5 +1,5 @@
 pub mod app;
-// pub mod database;
+pub mod database;
 pub mod source;
 pub mod utils;
 

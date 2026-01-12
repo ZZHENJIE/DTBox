@@ -2,3 +2,5 @@
 .DS_Store
 .replit
 settings.toml
+*.db*
+.env
