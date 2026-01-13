@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "CREATE TABLE IF NOT EXISTS stocks (\n                            id          INTEGER PRIMARY KEY AUTOINCREMENT,\n                            symbol      TEXT NOT NULL UNIQUE,\n                            company     TEXT NOT NULL,\n                            sector      TEXT NOT NULL,\n                            industry    TEXT NOT NULL,\n                            country     TEXT NOT NULL\n                        );",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "24e810dbb68f6b1e131b59ee58d14dfb182f870b60f45382b33b8f37d453f35f"
+}

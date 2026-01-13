@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "DELETE FROM stocks",
+  "query": "DROP TABLE IF EXISTS stocks",
   "describe": {
     "columns": [],
     "parameters": {
@@ -8,5 +8,5 @@
     },
     "nullable": []
   },
-  "hash": "1639def01bdf9ac94145e5263fa662fe439b33741cae4c32499258f4b9410342"
+  "hash": "cb0cf5062d66c5c6b379939980969f9b3acb92bdeada61fb905ee072d53de223"
 }

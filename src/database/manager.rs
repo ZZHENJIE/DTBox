@@ -43,15 +43,6 @@ CREATE TABLE IF NOT EXISTS refresh_token (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS stocks (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    symbol      TEXT NOT NULL UNIQUE,
-    company     TEXT NOT NULL,
-    sector      TEXT NOT NULL,
-    industry    TEXT NOT NULL,
-    country     TEXT NOT NULL
-);
         "#,
     )
     .execute(pool)
