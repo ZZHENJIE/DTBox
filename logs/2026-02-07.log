@@ -1,0 +1,3 @@
+2026-02-07T01:15:24.198976Z  INFO DTBox: Log System Init Success.
+2026-02-07T01:15:24.199551Z  INFO DTBox: Settings Init Success.
+2026-02-07T01:15:24.203428Z  INFO connect:connect{options=ConnectOptions { url: "sqlite://./DTBox.db?mode=rwc", max_connections: None, min_connections: None, connect_timeout: None, idle_timeout: None, acquire_timeout: None, max_lifetime: None, sqlx_logging: true, sqlx_logging_level: Info, sqlx_slow_statements_logging_level: Off, sqlx_slow_statements_logging_threshold: 1s, sqlcipher_key: None, schema_search_path: None, test_before_acquire: true, connect_lazy: false, .. }}: sqlx::query: summary="PRAGMA foreign_keys = ON; …" db.statement="\n\nPRAGMA foreign_keys = ON; \n" rows_affected=0 rows_returned=0 elapsed=294.208µs elapsed_secs=0.000294208

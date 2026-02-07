@@ -1,52 +1,10 @@
 # DTBox
 
 <div align="center">
-  <img src="./logo.svg" alt="Logo" width="200" />
+  <img src="./assets/logo.svg" alt="Logo" width="200" />
 </div>
 
 ## 简介(新手项目)
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
 ## 软件仅限个人交流学习/投资研究，请于下载后的 24 小时内卸载！
 ## 如果本项目存在侵犯您的合法权益的情况，请及时与开发者联系，开发者将会及时删除有关内容。
-
-## 安装步骤
-1. 安装PostgradSQL
-2. 创建DTBox数据库
-- 按需修改init.sql文件内容
-- 在shell环境下执行 init.sql `psql -U postgres -d postgres -f init.sql`
-3. 下载DTBox文件
-4. 配置DTBox
-
-## 路线图
-```mermaid
----
-config:
-  theme: redux-dark
----
-timeline
-  title 开发线路图
-  0.1.0 Beta
-    : 自定义窗口标题栏 时间按钮与Pin按钮
-    : 保存读取窗口状态
-    : 多语言系统
-  0.2.0 Beta
-    : 时间小窗口
-    : Finviz筛选器 新闻 表格 图表
-    : IPO日历 SPAC日历 宏观数据日历
-    : 状态保存
-  0.3.0 Beta
-    : 配合L2数据的筛选器系统
-  0.4.0 Beta
-    : K线图系统
-  0.5.0 Beta
-    : 云端布局保存系统
-  1.0.0 Release
-    : 第一个正式版发布
-  1.1.0 Beta
-    : 自定义筛选器脚本
-```
-
-API 数据特别感谢 Finviz提供 文档`https://finviz.com/api_explanation.ashx`
-
-
-- [ ] Cboe市场Book深度

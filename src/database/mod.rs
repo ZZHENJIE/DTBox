@@ -1,42 +1,42 @@
-// use crate::{
-//     AppState,
-//     app::api,
-//     database::user::{auth, profile},
-// };
-// use axum::{Router, middleware, routing};
-// use std::sync::Arc;
+pub mod entity;
+use crate::utils::settings::Database as DBSettings;
+use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbBackend, Schema};
 
-pub mod user {
-    // pub mod auth;
-    // pub mod jwt;
-    // pub mod name_is_exists;
-    // pub mod operation;
-    // pub mod profile;
-    // pub mod register;
-    // pub mod signin;
+pub async fn connect(settings: &DBSettings) -> anyhow::Result<DatabaseConnection> {
+    if let Some(parent) = std::path::Path::new(&settings.path).parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
+    let connection_string = format!("sqlite://{}?mode=rwc", settings.path);
+    let db = Database::connect(connection_string).await?;
+    Ok(db)
 }
 
-pub mod manager;
+pub async fn setup_schema(db: &DatabaseConnection) -> anyhow::Result<()> {
+    let schema = Schema::new(DbBackend::Sqlite);
 
-// pub fn router(
-//     router: axum::Router<Arc<AppState>>,
-//     state: Arc<AppState>,
-// ) -> axum::Router<Arc<AppState>> {
-//     let protected = Router::new()
-//         .route("/api/user/profile", routing::get(profile::fetch))
-//         .route_layer(middleware::from_fn_with_state(state.clone(), auth::auth));
-//     router
-//         .route(
-//             "/api/user/register",
-//             routing::post(api::post::<user::register::Register>),
-//         )
-//         .route(
-//             "/api/user/signin",
-//             routing::post(api::post::<user::signin::Signin>),
-//         )
-//         .route(
-//             "/api/user/name_is_exists",
-//             routing::post(api::post::<user::name_is_exists::NameIsExists>),
-//         )
-//         .merge(protected)
-// }
+    let mut statements = Vec::new();
+    statements.push(
+        schema
+            .create_table_from_entity(entity::UsersEntity)
+            .if_not_exists()
+            .to_owned(),
+    );
+    statements.push(
+        schema
+            .create_table_from_entity(entity::RefreshTokenEntity)
+            .if_not_exists()
+            .to_owned(),
+    );
+    statements.push(
+        schema
+            .create_table_from_entity(entity::StocksEntity)
+            .if_not_exists()
+            .to_owned(),
+    );
+
+    for stmt in statements {
+        db.execute(db.get_database_backend().build(&stmt)).await?;
+    }
+
+    Ok(())
+}

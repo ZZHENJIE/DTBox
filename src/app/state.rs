@@ -1,27 +1,30 @@
-use crate::database::manager::open_database;
+use crate::utils::Settings;
+use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 
-pub struct AppState {
-    settings: crate::Settings,
-    database: sqlx::Pool<sqlx::Sqlite>,
+#[derive(Clone)]
+pub struct State {
+    db_conn: DatabaseConnection,
+    settings: Settings,
     http_client: Arc<reqwest::Client>,
 }
 
-impl AppState {
-    pub async fn new(settings: crate::Settings) -> anyhow::Result<Self, anyhow::Error> {
-        Ok(Self {
-            database: open_database(&settings.sqlite.path).await?,
-            http_client: Arc::new(reqwest::Client::new()),
+impl State {
+    pub fn new(db_conn: DatabaseConnection, settings: Settings) -> Self {
+        let http_client = reqwest::Client::new();
+        Self {
+            db_conn,
             settings,
-        })
-    }
-    pub fn settings(&self) -> &crate::Settings {
-        &self.settings
+            http_client: Arc::new(http_client),
+        }
     }
     pub fn http_client(&self) -> &reqwest::Client {
         &self.http_client
     }
-    pub fn database_pool(&self) -> &sqlx::Pool<sqlx::Sqlite> {
-        &self.database
+    pub fn settings(&self) -> &Settings {
+        &self.settings
+    }
+    pub fn db_conn(&self) -> &DatabaseConnection {
+        &self.db_conn
     }
 }
