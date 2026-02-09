@@ -19,6 +19,10 @@ async fn main() -> anyhow::Result<()> {
     let db_conn = database::connect(&settings.database).await?;
     info!("Database Connection Success.");
 
+    // Initialize database
+    let _ = database::setup_schema(&db_conn).await?;
+    info!("Database Initialize Success.");
+
     // Create app state
     let address = format!("{}:{}", settings.server.host, settings.server.port);
     let app_state = Arc::new(app::State::new(db_conn, settings));
