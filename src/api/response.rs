@@ -2,14 +2,14 @@ use axum::response::IntoResponse;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct ApiResponse<T: Serialize> {
+pub struct Response<T: Serialize> {
     pub code: i32,
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<T>,
 }
 
-impl<T: Serialize> ApiResponse<T> {
+impl<T: Serialize> Response<T> {
     pub fn success() -> Self {
         Self {
             code: 0,
@@ -43,7 +43,7 @@ impl<T: Serialize> ApiResponse<T> {
     }
 }
 
-impl<T: Serialize> IntoResponse for ApiResponse<T> {
+impl<T: Serialize> IntoResponse for Response<T> {
     fn into_response(self) -> axum::response::Response {
         axum::Json(self).into_response()
     }
