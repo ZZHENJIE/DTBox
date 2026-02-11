@@ -1,23 +1,11 @@
-use argon2::{
-    Argon2,
-    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
-};
 use sea_orm::{ActiveValue::Set, EntityTrait};
 use serde::Deserialize;
 
 use crate::{
     api::{API, Response},
     database::entity::users,
+    utils::hash,
 };
-
-fn hash_password(password: &[u8]) -> Result<String, String> {
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    match argon2.hash_password(password, &salt) {
-        Ok(hash) => Ok(hash.to_string()),
-        Err(e) => Err(e.to_string()),
-    }
-}
 
 #[derive(Deserialize)]
 pub struct RegisterPayload {
@@ -28,7 +16,7 @@ pub struct RegisterPayload {
 impl API for RegisterPayload {
     type Output = bool;
     async fn request(&self, state: std::sync::Arc<crate::app::State>) -> Response<Self::Output> {
-        let pass_hash = match hash_password(self.password.as_bytes()) {
+        let pass_hash = match hash(self.password.as_bytes()) {
             Ok(value) => value,
             Err(err) => return Response::error(err),
         };

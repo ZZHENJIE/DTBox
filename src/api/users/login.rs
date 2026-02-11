@@ -1,10 +1,15 @@
 use argon2::PasswordVerifier;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use chrono::{Duration, Utc};
+use sea_orm::{ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 
 use crate::{
     api::{API, Response},
-    database::entity::users::{self, Column},
+    database::entity::{
+        refresh_token,
+        users::{self, Column},
+    },
+    utils::hash,
 };
 
 #[derive(Deserialize)]
@@ -43,6 +48,41 @@ impl API for LoginPayload {
             .verify_password(self.password.as_bytes(), &parsed_hash)
             .is_ok();
 
-        Response::success_with_data(is_ok)
+        if is_ok {
+            let token = uuid::Uuid::new_v4().to_string();
+            let token_hash = match hash(token.as_bytes()) {
+                Ok(value) => value,
+                Err(err) => return Response::error(err.to_string()),
+            };
+
+            let now = Utc::now();
+            let expires_at = now + Duration::days(7);
+
+            if let Err(err) = refresh_token::Entity::delete_by_id(user.id)
+                .exec(state.db_conn())
+                .await
+            {
+                return Response::error(err.to_string());
+            }
+
+            let refresh_token = refresh_token::ActiveModel {
+                user_id: Set(user.id),
+                token_hash: Set(token_hash),
+                issued_at: Set(now.into()),
+                expires_at: Set(expires_at.into()),
+                revoked: Set(0),
+                ..Default::default()
+            };
+
+            match refresh_token::Entity::insert(refresh_token)
+                .exec(state.db_conn())
+                .await
+            {
+                Ok(_) => Response::success_with_token(true, token),
+                Err(err) => Response::error(err.to_string()),
+            }
+        } else {
+            Response::success_with_data(false)
+        }
     }
 }

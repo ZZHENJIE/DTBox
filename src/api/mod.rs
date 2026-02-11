@@ -22,19 +22,19 @@ pub trait API: Send + Sync {
 pub async fn post<T>(
     State(state): State<Arc<crate::app::State>>,
     Json(payload): Json<T>,
-) -> Json<Response<T::Output>>
+) -> Response<T::Output>
 where
     T: API + DeserializeOwned + Sized,
 {
-    Json(payload.request(state).await)
+    payload.request(state).await
 }
 
 pub async fn get<T>(
     State(state): State<Arc<crate::app::State>>,
     Query(input): Query<T>,
-) -> Json<Response<T::Output>>
+) -> Response<T::Output>
 where
     T: API + DeserializeOwned + Sized,
 {
-    Json(input.request(state).await)
+    input.request(state).await
 }
