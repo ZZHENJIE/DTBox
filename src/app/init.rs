@@ -1,15 +1,15 @@
-use crate::{api, app, utils::settings};
+use crate::{api, app, utils::SETTINGS};
 use axum::Router;
 use std::{path::PathBuf, sync::Arc};
 use tower_http::services::{ServeDir, ServeFile};
 
-pub async fn start(state: &app::State) -> anyhow::Result<Router<Arc<app::State>>> {
-    let result = router(&state.settings().web);
+pub async fn start(_: &app::State) -> anyhow::Result<Router<Arc<app::State>>> {
+    let result = router();
     Ok(result)
 }
 
-fn router(settings: &settings::Web) -> Router<Arc<app::State>> {
-    let web_path = PathBuf::from(&settings.path);
+fn router() -> Router<Arc<app::State>> {
+    let web_path = PathBuf::from(&SETTINGS.web.path);
     let service = ServeDir::new(&web_path).fallback(ServeFile::new(web_path.join("index.html")));
     let router = axum::Router::new().fallback_service(service);
     api::register::result(router)

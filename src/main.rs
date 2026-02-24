@@ -1,6 +1,6 @@
 use dtbox::{
     app, database,
-    utils::{Settings, log},
+    utils::{SETTINGS, log},
 };
 use std::sync::Arc;
 use tracing::info;
@@ -11,12 +11,8 @@ async fn main() -> anyhow::Result<()> {
     let _guard = log::log_system_init()?;
     info!("Log System Initialize Success.");
 
-    // Load settings
-    let settings = Settings::new("./settings.json").await?;
-    info!("Settings Load Success.");
-
     // Connect to database
-    let db_conn = database::connect(&settings.database).await?;
+    let db_conn = database::connect(&SETTINGS.database).await?;
     info!("Database Connection Success.");
 
     // Initialize database
@@ -24,8 +20,8 @@ async fn main() -> anyhow::Result<()> {
     info!("Database Initialize Success.");
 
     // Create app state
-    let address = format!("{}:{}", settings.server.host, settings.server.port);
-    let app_state = Arc::new(app::State::new(db_conn, settings));
+    let address = format!("{}:{}", &SETTINGS.server.host, &SETTINGS.server.port);
+    let app_state = Arc::new(app::State::new(db_conn));
 
     // Initialize app
     let router = app::start_app_init(&app_state).await?;

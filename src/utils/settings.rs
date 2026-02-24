@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
+use once_cell::sync::Lazy;
 use serde::Deserialize;
-use tracing::warn;
+use tracing::{info, warn};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Server {
@@ -25,6 +28,7 @@ pub struct Finviz {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Jwt {
     pub secret: String,
+    pub expires_minutes: i64,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -36,9 +40,17 @@ pub struct Settings {
     pub jwt: Jwt,
 }
 
+pub static SETTINGS: Lazy<Arc<Settings>> = Lazy::new(|| {
+    let settings = Settings::new("./settings.json").unwrap_or_else(|err| {
+        panic!("Failed to load settings: {}", err);
+    });
+    info!("Settings Load Success.");
+    Arc::new(settings)
+});
+
 impl Settings {
-    pub async fn new(path: &str) -> anyhow::Result<Self> {
-        match tokio::fs::read(path).await {
+    pub fn new(path: &str) -> anyhow::Result<Self> {
+        match std::fs::read(path) {
             Ok(bytes) => {
                 let settings: Self = serde_json::from_slice(&bytes)?;
                 Ok(settings)
@@ -49,14 +61,14 @@ impl Settings {
                         "Failed to find settings file,load default,please create {} file.",
                         path
                     );
-                    return Self::default().await;
+                    return Self::default();
                 }
                 Err(err.into())
             }
         }
     }
-    pub async fn default() -> anyhow::Result<Self> {
-        let bytes = tokio::fs::read("./default.json").await?;
+    pub fn default() -> anyhow::Result<Self> {
+        let bytes = std::fs::read("./default.json")?;
         let settings: Self = serde_json::from_slice(&bytes)?;
         Ok(settings)
     }

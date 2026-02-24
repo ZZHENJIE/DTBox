@@ -13,6 +13,7 @@
     "api_key": ""
   },
   "jwt": {
-    "secret": ""
+    "secret": "",
+    "expires_minutes": 10
   }
 }

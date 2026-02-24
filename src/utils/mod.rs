@@ -1,7 +1,8 @@
+pub mod jwt;
 pub mod log;
 pub mod settings;
 
-pub use settings::Settings;
+pub use settings::SETTINGS;
 
 use argon2::{
     Argon2,
