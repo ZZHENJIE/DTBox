@@ -10,7 +10,7 @@ pub struct Response<T: Serialize> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<T>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub refresh_token: Option<String>,
+    pub token: Option<String>,
 }
 
 impl<T: Serialize> Response<T> {
@@ -19,7 +19,7 @@ impl<T: Serialize> Response<T> {
             code: 0,
             message: "success".to_string(),
             data: None,
-            refresh_token: None,
+            token: None,
         }
     }
 
@@ -28,16 +28,16 @@ impl<T: Serialize> Response<T> {
             code: 0,
             message: "success".to_string(),
             data: Some(data),
-            refresh_token: None,
+            token: None,
         }
     }
 
-    pub fn success_with_token(data: T, refresh_token: String) -> Self {
+    pub fn success_with_token(data: T, token: String) -> Self {
         Self {
             code: 0,
             message: "success".to_string(),
             data: Some(data),
-            refresh_token: Some(refresh_token),
+            token: Some(token),
         }
     }
 
@@ -46,7 +46,7 @@ impl<T: Serialize> Response<T> {
             code: -1,
             message: message.into(),
             data: None,
-            refresh_token: None,
+            token: None,
         }
     }
 
@@ -55,7 +55,7 @@ impl<T: Serialize> Response<T> {
             code,
             message: message.into(),
             data: None,
-            refresh_token: None,
+            token: None,
         }
     }
 }
@@ -70,7 +70,7 @@ impl<T: Serialize> IntoResponse for Response<T> {
         #[cfg(debug_assertions)]
         let secure = false;
 
-        if let Some(token) = &self.refresh_token {
+        if let Some(token) = &self.token {
             let cookie = Cookie::build(("refresh_token", token.clone()))
                 .http_only(true)
                 .secure(secure)

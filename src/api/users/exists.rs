@@ -6,11 +6,11 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-pub struct NameIsExistsQuery {
+pub struct ExistsQuery {
     name: String,
 }
 
-impl API for NameIsExistsQuery {
+impl API for ExistsQuery {
     type Output = bool;
     async fn request(
         &self,

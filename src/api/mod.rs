@@ -1,5 +1,5 @@
-pub mod register;
 pub mod response;
+pub mod router;
 pub mod users;
 
 use std::sync::Arc;

@@ -56,7 +56,7 @@ impl API for RefreshPayload {
         let claims = Claims::new(token.user_id);
 
         match claims.encode() {
-            Ok(value) => Response::success_with_token(false, value),
+            Ok(value) => Response::success_with_token(true, value),
             Err(err) => Response::error(err.to_string()),
         }
     }
