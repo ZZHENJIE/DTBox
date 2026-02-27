@@ -37,7 +37,7 @@ impl Claims {
         )?;
         Ok(token)
     }
-    pub fn decode(token: &str) -> anyhow::Result<Self> {
+    pub fn decode(token: &[u8]) -> anyhow::Result<Self> {
         let secret = SETTINGS.jwt.secret.as_bytes();
         let mut validation = jsonwebtoken::Validation::default();
         validation.set_audience(&["dtbox.com"]);

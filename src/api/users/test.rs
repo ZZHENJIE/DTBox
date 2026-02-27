@@ -16,13 +16,6 @@ impl API for TestPayload {
         &self,
         _: std::sync::Arc<crate::app::State>,
     ) -> crate::api::Response<Self::Output> {
-        let claims = Claims::decode(self.token.as_str());
-        match claims {
-            Ok(value) => {
-                println!("{:#?}", value);
-                Response::success_with_data("Hello".into())
-            }
-            Err(err) => Response::error(err.to_string()),
-        }
+        Response::success_with_data("Hello".into())
     }
 }
