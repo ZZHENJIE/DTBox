@@ -13,17 +13,18 @@ use crate::{
 };
 
 #[derive(Deserialize)]
-pub struct LoginPayload {
+pub struct Payload {
     pub name: String,
     pub password: String,
 }
 
-impl API for LoginPayload {
-    type Output = bool;
+impl API for Payload {
+    type Output = i64;
     async fn request(
         &self,
+        _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> crate::api::Response<Self::Output> {
+    ) -> Response<Self::Output> {
         // 使用用户名查找用户
         let user = match users::Entity::find()
             .filter(Column::Name.eq(self.name.clone()))
@@ -86,11 +87,11 @@ impl API for LoginPayload {
                 .exec(state.db_conn())
                 .await
             {
-                Ok(_) => Response::success_with_token(true, token),
+                Ok(_) => Response::success_with_token(user.id, token),
                 Err(err) => Response::error(err.to_string()),
             }
         } else {
-            Response::success_with_data(false)
+            Response::error("Incorrect Password.")
         }
     }
 }

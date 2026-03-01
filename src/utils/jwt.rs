@@ -2,7 +2,7 @@ use crate::utils::SETTINGS;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Claims {
     jti: String,         // JWT ID
     sub: i64,            // 用户ID
@@ -27,6 +27,9 @@ impl Claims {
             sub: user_id,
             jti: uuid,
         }
+    }
+    pub fn sub_data(&self) -> i64 {
+        self.sub
     }
     pub fn encode(&self) -> anyhow::Result<String> {
         let secret = SETTINGS.jwt.secret.as_bytes();

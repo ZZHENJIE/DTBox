@@ -9,17 +9,19 @@ use crate::{
 };
 
 #[derive(Deserialize)]
-pub struct RefreshPayload {
+pub struct Payload {
     pub user_id: i64,
     pub token: String,
 }
 
-impl API for RefreshPayload {
+impl API for Payload {
     type Output = bool;
     async fn request(
         &self,
+        _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> crate::api::Response<Self::Output> {
+    ) -> Response<Self::Output> {
+        // 根据用户ID查找Token
         let token = match refresh_token::Entity::find()
             .filter(Column::UserId.eq(self.user_id))
             .one(state.db_conn())
@@ -35,29 +37,33 @@ impl API for RefreshPayload {
             Err(err) => return Response::error(err.to_string()),
         };
 
+        // 判断Token是否过期
         let now = chrono::Utc::now().fixed_offset();
         if now > token.expires_at {
             return Response::error("Refresh Token expired.");
         }
 
+        // 解析Token Hash
         let parsed_hash = match argon2::password_hash::PasswordHash::new(&token.token_hash) {
             Ok(value) => value,
             Err(err) => return Response::error(err.to_string()),
         };
 
+        // 判断Token是否正确
         let is_ok = argon2::Argon2::default()
             .verify_password(self.token.as_bytes(), &parsed_hash)
             .is_ok();
 
-        if !is_ok {
-            return Response::error("Invalid Refresh Token.");
-        }
+        if is_ok {
+            // 创建JWT声明
+            let claims = Claims::new(token.user_id);
 
-        let claims = Claims::new(token.user_id);
-
-        match claims.encode() {
-            Ok(value) => Response::success_with_token(true, value),
-            Err(err) => Response::error(err.to_string()),
+            match claims.encode() {
+                Ok(value) => Response::success_with_token(true, value),
+                Err(err) => Response::error(err.to_string()),
+            }
+        } else {
+            Response::error("Incorrect Refresh Token.")
         }
     }
 }
