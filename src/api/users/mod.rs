@@ -1,11 +1,10 @@
 pub mod exists; // 查询用户名(用户)是否已经存在
+pub mod follow_change; // 添加关注
 pub mod info; // 获取用户信息
 pub mod login; // 用户登录
+pub mod name_change; // 修改用户名
 pub mod refresh; // 刷新JWT
 pub mod register; // 用户注册
-pub mod test;
-
-use std::sync::Arc;
 
 use crate::{api, app, utils::jwt::Claims};
 use axum::{
@@ -14,6 +13,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
+use std::sync::Arc;
 
 type Router = axum::Router<Arc<app::State>>;
 
@@ -25,8 +25,12 @@ pub fn register() -> Router {
             get(api::handler::get_auth::<info::Output>),
         )
         .route(
-            "/api/users/test",
-            post(api::handler::post_auth::<test::Payload>),
+            "/api/users/follow_change",
+            post(api::handler::post_auth::<follow_change::Payload>),
+        )
+        .route(
+            "/api/users/name_change",
+            post(api::handler::post_auth::<name_change::Payload>),
         )
         .route_layer(middleware::from_fn(auth));
     // 正常接口
