@@ -10,17 +10,10 @@ pub struct Model {
     pub name: String,
     pub pass_hash: String,
     pub config: serde_json::Value,
-    pub follow: serde_json::Value,
     #[sea_orm(default_value = "0")]
     pub permissions: i32,
     #[sea_orm(default_value = "CURRENT_TIMESTAMP")]
     pub create_time: DateTimeWithTimeZone,
-}
-
-impl Model {
-    pub fn follow(&self) -> Result<Vec<String>, serde_json::Error> {
-        serde_json::from_value::<Vec<String>>(self.follow.clone())
-    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

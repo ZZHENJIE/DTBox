@@ -1,8 +1,7 @@
+pub mod change; // 信息修改
 pub mod exists; // 查询用户名(用户)是否已经存在
-pub mod follow_change; // 添加关注
 pub mod info; // 获取用户信息
 pub mod login; // 用户登录
-pub mod name_change; // 修改用户名
 pub mod refresh; // 刷新JWT
 pub mod register; // 用户注册
 
@@ -25,14 +24,17 @@ pub fn register() -> Router {
             get(api::handler::get_auth::<info::Output>),
         )
         .route(
-            "/api/users/follow_change",
-            post(api::handler::post_auth::<follow_change::Payload>),
+            "/api/users/change",
+            post(api::handler::post_auth::<change::Event>),
         )
+        .route_layer(middleware::from_fn(jwt_auth));
+    // 刷新接口
+    let refresh = Router::new()
         .route(
-            "/api/users/name_change",
-            post(api::handler::post_auth::<name_change::Payload>),
+            "/api/users/refresh",
+            post(api::handler::post::<refresh::Payload>),
         )
-        .route_layer(middleware::from_fn(auth));
+        .route_layer(middleware::from_fn(refresh_auth));
     // 正常接口
     let public_router = Router::new()
         .route(
@@ -43,15 +45,14 @@ pub fn register() -> Router {
             "/api/users/login",
             post(api::handler::post::<login::Payload>),
         )
-        .route(
-            "/api/users/refresh",
-            post(api::handler::post::<refresh::Payload>),
-        )
         .route("/api/users/exists", get(api::handler::get::<exists::Query>));
-    Router::new().merge(protected_router).merge(public_router)
+    Router::new()
+        .merge(protected_router)
+        .merge(public_router)
+        .merge(refresh)
 }
 
-async fn auth(mut req: Request, next: Next) -> Response {
+async fn jwt_auth(mut req: Request, next: Next) -> Response {
     if let Some(token) = req.headers().get("Token") {
         return match Claims::decode(token.as_bytes()) {
             Ok(claims) => {
@@ -62,4 +63,14 @@ async fn auth(mut req: Request, next: Next) -> Response {
         };
     }
     api::Response::<()>::error("Not Found Token!").into_response()
+}
+
+async fn refresh_auth(req: Request, next: Next) -> Response {
+    if let Some(cookie) = req.headers().get("Cookie") {
+        return match cookie.to_str() {
+            Ok(cookie_string) => next.run(req).await,
+            Err(err) => api::Response::<()>::error(err.to_string()).into_response(),
+        };
+    }
+    api::Response::<()>::error("Not Found Cookie!").into_response()
 }

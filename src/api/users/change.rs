@@ -8,12 +8,14 @@ use crate::{
     database::entity::users::{self, Column},
 };
 
-#[derive(Deserialize)]
-pub struct Payload {
-    pub name: String,
+#[derive(Deserialize, Debug)]
+#[serde(tag = "type", content = "data")]
+pub enum Event {
+    Name(String),
+    Config(serde_json::Value),
 }
 
-impl API for Payload {
+impl API for Event {
     type Output = bool;
     async fn request(
         &self,
@@ -23,24 +25,31 @@ impl API for Payload {
         if let Some(claims) = claims {
             let user_id = claims.sub_data();
             // 根据ID查询用户
-            let user = match users::Entity::find()
+            let mut current_user = match users::Entity::find()
                 .filter(Column::Id.eq(user_id))
                 .one(state.db_conn())
                 .await
             {
                 Ok(value) => {
                     if let Some(value) = value {
-                        value
+                        value.into_active_model()
                     } else {
                         return Response::error(format!("User ID {} not found.", user_id));
                     }
                 }
                 Err(err) => return Response::error(err.to_string()),
             };
-            // 更新用户名字
-            let mut active_model = user.into_active_model();
-            active_model.name = Set(self.name.clone());
-            return match active_model.update(state.db_conn()).await {
+            // 匹配处理事件
+            match self {
+                Event::Name(name) => {
+                    current_user.name = Set(name.clone());
+                }
+                Event::Config(config) => {
+                    current_user.config = Set(config.clone());
+                }
+            }
+            // 修改数据库内容
+            return match current_user.update(state.db_conn()).await {
                 Ok(_) => Response::success_with_data(true),
                 Err(err) => Response::error(err.to_string()),
             };

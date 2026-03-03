@@ -1,6 +1,5 @@
 use sea_orm::{ActiveValue::Set, EntityTrait};
 use serde::Deserialize;
-use serde_json::Map;
 
 use crate::{
     api::{API, Response},
@@ -28,8 +27,11 @@ impl API for Payload {
         let user = users::ActiveModel {
             name: Set(self.name.clone()),
             pass_hash: Set(pass_hash),
-            config: Set(serde_json::Value::Object(Map::new())),
-            follow: Set(serde_json::Value::Array(vec![])),
+            config: Set(serde_json::json!(
+                {
+                    "follow":[]
+                }
+            )),
             permissions: Set(0),
             create_time: Set(chrono::Utc::now().into()),
             ..Default::default()

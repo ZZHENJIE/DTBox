@@ -11,7 +11,6 @@ pub struct OutputData {
     pub id: i64,
     pub name: String,
     pub config: serde_json::Value,
-    pub follow: serde_json::Value,
     pub permissions: i32,
     pub create_time: DateTime<FixedOffset>,
 }
@@ -48,7 +47,6 @@ impl API for Output {
                 id: user.id,
                 name: user.name,
                 config: user.config,
-                follow: user.follow,
                 permissions: user.permissions,
                 create_time: user.create_time,
             });

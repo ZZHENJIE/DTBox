@@ -15,7 +15,7 @@ pub struct Payload {
 }
 
 impl API for Payload {
-    type Output = bool;
+    type Output = String;
     async fn request(
         &self,
         _: Option<crate::utils::jwt::Claims>,
@@ -59,7 +59,7 @@ impl API for Payload {
             let claims = Claims::new(token.user_id);
 
             match claims.encode() {
-                Ok(value) => Response::success_with_token(true, value),
+                Ok(value) => Response::success_with_data(value),
                 Err(err) => Response::error(err.to_string()),
             }
         } else {

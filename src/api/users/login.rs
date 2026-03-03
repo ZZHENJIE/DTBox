@@ -1,7 +1,7 @@
 use argon2::PasswordVerifier;
 use chrono::{Duration, Utc};
 use sea_orm::{ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     api::{API, Response},
@@ -12,6 +12,12 @@ use crate::{
     utils::hash,
 };
 
+#[derive(Serialize)]
+pub struct Output {
+    pub user_id: i64,
+    pub refresh_token: String,
+}
+
 #[derive(Deserialize)]
 pub struct Payload {
     pub name: String,
@@ -19,7 +25,7 @@ pub struct Payload {
 }
 
 impl API for Payload {
-    type Output = i64;
+    type Output = Output;
     async fn request(
         &self,
         _: Option<crate::utils::jwt::Claims>,
@@ -87,7 +93,10 @@ impl API for Payload {
                 .exec(state.db_conn())
                 .await
             {
-                Ok(_) => Response::success_with_token(user.id, token),
+                Ok(_) => Response::success_with_data(Output {
+                    user_id: user.id,
+                    refresh_token: token,
+                }),
                 Err(err) => Response::error(err.to_string()),
             }
         } else {
