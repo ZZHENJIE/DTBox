@@ -12,6 +12,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
+use axum_extra::extract::CookieJar;
 use std::sync::Arc;
 
 type Router = axum::Router<Arc<app::State>>;
@@ -30,10 +31,7 @@ pub fn register() -> Router {
         .route_layer(middleware::from_fn(jwt_auth));
     // 刷新接口
     let refresh = Router::new()
-        .route(
-            "/api/users/refresh",
-            post(api::handler::post::<refresh::Payload>),
-        )
+        .route("/api/users/refresh", post(refresh::request))
         .route_layer(middleware::from_fn(refresh_auth));
     // 正常接口
     let public_router = Router::new()
@@ -41,10 +39,7 @@ pub fn register() -> Router {
             "/api/users/register",
             post(api::handler::post::<register::Payload>),
         )
-        .route(
-            "/api/users/login",
-            post(api::handler::post::<login::Payload>),
-        )
+        .route("/api/users/login", post(login::request))
         .route("/api/users/exists", get(api::handler::get::<exists::Query>));
     Router::new()
         .merge(protected_router)
@@ -65,12 +60,8 @@ async fn jwt_auth(mut req: Request, next: Next) -> Response {
     api::Response::<()>::error("Not Found Token!").into_response()
 }
 
-async fn refresh_auth(req: Request, next: Next) -> Response {
-    if let Some(cookie) = req.headers().get("Cookie") {
-        return match cookie.to_str() {
-            Ok(cookie_string) => next.run(req).await,
-            Err(err) => api::Response::<()>::error(err.to_string()).into_response(),
-        };
-    }
-    api::Response::<()>::error("Not Found Cookie!").into_response()
+async fn refresh_auth(mut req: Request, next: Next) -> Response {
+    let jar = CookieJar::from_headers(req.headers());
+    req.extensions_mut().insert(jar);
+    next.run(req).await
 }
