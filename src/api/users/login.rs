@@ -23,8 +23,8 @@ use crate::{
     utils::hash,
 };
 
-fn response_error(err: impl Into<String>) -> Response {
-    api::Response::<()>::error(err).into_response()
+fn response(code: i32, err: impl Into<String>) -> Response {
+    api::Response::<()>::error_with_code(code, err).into_response()
 }
 
 #[derive(Deserialize)]
@@ -47,16 +47,16 @@ pub async fn request(
             if let Some(value) = value {
                 value
             } else {
-                return response_error(format!("User {} not found.", payload.name));
+                return response(-301, format!("User {} not found.", payload.name));
             }
         }
-        Err(err) => return response_error(err.to_string()),
+        Err(err) => return response(-2, err.to_string()),
     };
 
     // 解析密码Hash
     let parsed_hash = match argon2::password_hash::PasswordHash::new(&user.pass_hash) {
         Ok(value) => value,
-        Err(err) => return response_error(err.to_string()),
+        Err(err) => return response(-4, err.to_string()),
     };
 
     // 判断密码是否正确
@@ -70,7 +70,7 @@ pub async fn request(
         // 生成Hash值
         let token_hash = match hash(token.as_bytes()) {
             Ok(value) => value,
-            Err(err) => return response_error(err.to_string()),
+            Err(err) => return response(-4, err.to_string()),
         };
 
         let now = Utc::now();
@@ -81,7 +81,7 @@ pub async fn request(
             .exec(state.db_conn())
             .await
         {
-            return response_error(err.to_string());
+            return response(-3, err.to_string());
         }
 
         // 创建Token记录
@@ -91,7 +91,6 @@ pub async fn request(
             issued_at: Set(now.into()),
             expires_at: Set(expires_at.into()),
             revoked: Set(0),
-            ..Default::default()
         };
 
         // 写入数据库并返回Token
@@ -120,9 +119,9 @@ pub async fn request(
 
                 jar.into_response()
             }
-            Err(err) => response_error(err.to_string()),
+            Err(err) => response(-3, err.to_string()),
         }
     } else {
-        response_error("Incorrect Password.")
+        response(-302, "Incorrect Password.")
     }
 }

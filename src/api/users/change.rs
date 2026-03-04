@@ -34,10 +34,13 @@ impl API for Event {
                     if let Some(value) = value {
                         value.into_active_model()
                     } else {
-                        return Response::error(format!("User ID {} not found.", user_id));
+                        return Response::error_with_code(
+                            -301,
+                            format!("User ID {} not found.", user_id),
+                        );
                     }
                 }
-                Err(err) => return Response::error(err.to_string()),
+                Err(err) => return Response::error_with_code(-2, err.to_string()),
             };
             // 匹配处理事件
             match self {
@@ -51,9 +54,9 @@ impl API for Event {
             // 修改数据库内容
             return match current_user.update(state.db_conn()).await {
                 Ok(_) => Response::success_with_data(true),
-                Err(err) => Response::error(err.to_string()),
+                Err(err) => Response::error_with_code(-3, err.to_string()),
             };
         }
-        Response::error("Claims is None.")
+        Response::error_with_code(-104, "Claims is None.")
     }
 }

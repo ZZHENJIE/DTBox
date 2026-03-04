@@ -23,14 +23,14 @@ pub async fn request(
 ) -> Response<String> {
     let refresh_token = match cookie_jar.get("refresh_token") {
         Some(value) => value.value(),
-        None => return Response::error("Not Find Refresh Token."),
+        None => return Response::error_with_code(-5, "Not Find Refresh Token."),
     };
     let user_id: i64 = match cookie_jar.get("user_id") {
         Some(value) => match value.value().parse() {
             Ok(value) => value,
-            Err(err) => return Response::error(err.to_string()),
+            Err(err) => return Response::error_with_code(-6, err.to_string()),
         },
-        None => return Response::error("Not Find Refresh Token."),
+        None => return Response::error_with_code(-5, "Not Find Refresh Token."),
     };
     // 根据用户ID查找Token Hash
     let token = match refresh_token::Entity::find()
@@ -42,22 +42,22 @@ pub async fn request(
             if let Some(value) = value {
                 value
             } else {
-                return Response::error("Refresh Token not found.");
+                return Response::error_with_code(-201, "Refresh Token not found.");
             }
         }
-        Err(err) => return Response::error(err.to_string()),
+        Err(err) => return Response::error_with_code(-2, err.to_string()),
     };
 
     // 判断Token是否过期
     let now = chrono::Utc::now().fixed_offset();
     if now > token.expires_at {
-        return Response::error("Refresh Token expired.");
+        return Response::error_with_code(-202, "Refresh Token expired.");
     }
 
     // 解析Token Hash
     let parsed_hash = match argon2::password_hash::PasswordHash::new(&token.token_hash) {
         Ok(value) => value,
-        Err(err) => return Response::error(err.to_string()),
+        Err(err) => return Response::error_with_code(-4, err.to_string()),
     };
 
     // 判断Token是否正确
@@ -71,9 +71,9 @@ pub async fn request(
 
         match claims.encode() {
             Ok(value) => Response::success_with_data(value),
-            Err(err) => Response::error(err.to_string()),
+            Err(err) => Response::error_with_code(-103, err.to_string()),
         }
     } else {
-        Response::error("Incorrect Refresh Token.")
+        Response::error_with_code(-203, "Incorrect Refresh Token.")
     }
 }

@@ -48,16 +48,23 @@ pub fn register() -> Router {
 }
 
 async fn jwt_auth(mut req: Request, next: Next) -> Response {
-    if let Some(token) = req.headers().get("Token") {
-        return match Claims::decode(token.as_bytes()) {
+    if let Some(auth_str) = req.headers().get("Authorization") {
+        let token = match auth_str.as_bytes().strip_prefix(b"Bearer ") {
+            Some(value) => value,
+            None => {
+                return api::Response::<()>::error_with_code(-101, "Invalid Token Format!")
+                    .into_response();
+            }
+        };
+        return match Claims::decode(token) {
             Ok(claims) => {
                 req.extensions_mut().insert(claims);
                 next.run(req).await
             }
-            Err(err) => api::Response::<()>::error(err.to_string()).into_response(),
+            Err(err) => api::Response::<()>::error_with_code(-103, err.to_string()).into_response(),
         };
     }
-    api::Response::<()>::error("Not Found Token!").into_response()
+    api::Response::<()>::error_with_code(-102, "Not Found Token!").into_response()
 }
 
 async fn refresh_auth(mut req: Request, next: Next) -> Response {

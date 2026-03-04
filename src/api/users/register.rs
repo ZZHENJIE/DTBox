@@ -22,7 +22,7 @@ impl API for Payload {
     ) -> Response<Self::Output> {
         let pass_hash = match hash(self.password.as_bytes()) {
             Ok(value) => value,
-            Err(err) => return Response::error(err),
+            Err(err) => return Response::error_with_code(-4, err),
         };
         let user = users::ActiveModel {
             name: Set(self.name.clone()),
@@ -38,7 +38,7 @@ impl API for Payload {
         };
         match users::Entity::insert(user).exec(state.db_conn()).await {
             Ok(_) => Response::success_with_data(true),
-            Err(err) => Response::error(err.to_string()),
+            Err(err) => Response::error_with_code(-3, err.to_string()),
         }
     }
 }

@@ -37,10 +37,13 @@ impl API for Output {
                     if let Some(value) = value {
                         value
                     } else {
-                        return Response::error(format!("User ID {} not found.", user_id));
+                        return Response::error_with_code(
+                            -301,
+                            format!("User ID {} not found.", user_id),
+                        );
                     }
                 }
-                Err(err) => return Response::error(err.to_string()),
+                Err(err) => return Response::error_with_code(-2, err.to_string()),
             };
 
             return Response::success_with_data(OutputData {
@@ -51,6 +54,6 @@ impl API for Output {
                 create_time: user.create_time,
             });
         }
-        Response::error("Claims is None.")
+        Response::error_with_code(-104, "Claims is None.")
     }
 }

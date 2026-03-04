@@ -23,7 +23,7 @@ impl API for Query {
             .await
         {
             Ok(value) => Response::success_with_data(value.is_some()),
-            Err(err) => Response::error(err.to_string()),
+            Err(err) => Response::error_with_code(-2, err.to_string()),
         }
     }
 }
