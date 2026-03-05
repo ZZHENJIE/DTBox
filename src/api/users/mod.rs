@@ -2,6 +2,7 @@ pub mod change; // 信息修改
 pub mod exists; // 查询用户名(用户)是否已经存在
 pub mod info; // 获取用户信息
 pub mod login; // 用户登录
+pub mod logout; // 用户登出
 pub mod refresh; // 刷新JWT
 pub mod register; // 用户注册
 
@@ -27,6 +28,10 @@ pub fn register() -> Router {
         .route(
             "/api/users/change",
             post(api::handler::post_auth::<change::Event>),
+        )
+        .route(
+            "/api/users/logout",
+            post(api::handler::post_auth::<logout::Output>),
         )
         .route_layer(middleware::from_fn(jwt_auth));
     // 刷新接口

@@ -32,7 +32,7 @@ pub async fn request(
         },
         None => return Response::error_with_code(-5, "Not Find Refresh Token."),
     };
-    // 根据用户ID查找Token Hash
+    // 根据用户ID查找Token
     let token = match refresh_token::Entity::find()
         .filter(Column::UserId.eq(user_id))
         .one(state.db_conn())
@@ -48,10 +48,13 @@ pub async fn request(
         Err(err) => return Response::error_with_code(-2, err.to_string()),
     };
 
-    // 判断Token是否过期
+    // 判断Token是否过期或者失效
     let now = chrono::Utc::now().fixed_offset();
     if now > token.expires_at {
         return Response::error_with_code(-202, "Refresh Token expired.");
+    }
+    if token.revoked != 0 {
+        return Response::error_with_code(-204, "Refresh Token revoked.");
     }
 
     // 解析Token Hash
