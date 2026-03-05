@@ -47,10 +47,14 @@ jobs:
       - name: Rename binary
         run: |
           cd target/release
+          SRC=${{ steps.find_binary.outputs.binary }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp ${{ steps.find_binary.outputs.binary }} DTBox.exe
+            DST=DTBox.exe
           else
-            cp ${{ steps.find_binary.outputs.binary }} DTBox
+            DST=DTBox
+          fi
+          if [ "$SRC" != "$DST" ]; then
+            cp "$SRC" "$DST"
           fi
 
       - name: Upload artifact
