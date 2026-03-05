@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -47,14 +48,10 @@ jobs:
       - name: Rename binary
         run: |
           cd target/release
-          SRC=${{ steps.find_binary.outputs.binary }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            DST=DTBox.exe
+            [ ! -f DTBox.exe ] && cp dtbox DTBox.exe 2>/dev/null || cp DTBox DTBox.exe 2>/dev/null || true
           else
-            DST=DTBox
-          fi
-          if [ "$SRC" != "$DST" ]; then
-            cp "$SRC" "$DST"
+            [ ! -f DTBox ] && cp dtbox DTBox 2>/dev/null || true
           fi
 
       - name: Upload artifact
