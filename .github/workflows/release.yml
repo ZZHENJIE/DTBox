@@ -38,6 +38,7 @@ jobs:
 
       - name: Find binary
         id: find_binary
+        shell: bash
         run: |
           cd target/release
           echo "=== Files in target/release ==="
@@ -46,6 +47,7 @@ jobs:
           echo "binary=$BINARY" >> $GITHUB_OUTPUT
 
       - name: Rename binary
+        shell: bash
         run: |
           cd target/release
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
