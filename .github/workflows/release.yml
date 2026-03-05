@@ -36,24 +36,12 @@ jobs:
       - name: Build release
         run: cargo build --release --locked
 
-      - name: Find binary
-        id: find_binary
+      - name: Ensure binary name
         shell: bash
         run: |
           cd target/release
-          echo "=== Files in target/release ==="
-          ls -la
-          BINARY=$(ls -1 dtbox DTBox DTBox.exe 2>/dev/null | head -1)
-          echo "binary=$BINARY" >> $GITHUB_OUTPUT
-
-      - name: Rename binary
-        shell: bash
-        run: |
-          cd target/release
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            [ ! -f DTBox.exe ] && cp dtbox DTBox.exe 2>/dev/null || cp DTBox DTBox.exe 2>/dev/null || true
-          else
-            [ ! -f DTBox ] && cp dtbox DTBox 2>/dev/null || true
+          if [ ! -f DTBox ] && [ ! -f DTBox.exe ]; then
+            cp dtbox DTBox 2>/dev/null || true
           fi
 
       - name: Upload artifact
@@ -63,6 +51,10 @@ jobs:
           path: |
             target/release/DTBox
             target/release/DTBox.exe
+
+      - name: List artifacts
+        shell: bash
+        run: ls -la target/release/DTBox* target/release/dtbox* 2>/dev/null || true
 
   create-release:
     needs: release
