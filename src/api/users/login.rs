@@ -117,7 +117,7 @@ pub async fn request(
                             .build(),
                     );
 
-                jar.into_response()
+                (jar, api::Response::<()>::success()).into_response()
             }
             Err(err) => response(-3, err.to_string()),
         }
