@@ -1,8 +1,1 @@
-/target
 .DS_Store
-.replit
-settings.json
-*.db
-.env
-/logs
-Todo.md
