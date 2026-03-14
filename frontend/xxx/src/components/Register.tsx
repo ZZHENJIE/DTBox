@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Exists, Register as UserRegister } from "../utils/API/User";
 import { ResponseToast } from "../utils/API/Core";

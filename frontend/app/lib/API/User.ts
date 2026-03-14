@@ -29,7 +29,7 @@ export async function Info() {
 
 type ChangeType = "Name" | "Config";
 
-export async function Change(type: ChangeType, data: string) {
+export async function Change(type: ChangeType, data: object) {
   const response = await Post<boolean>("/api/users/change", {
     type,
     data,

@@ -1,17 +1,24 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Version } from "~/lib/API/utils";
 
 const Help = () => {
   const navigate = useNavigate();
+  const [version, setVersion] = useState<string>();
+  useEffect(() => {
+    Version().then((response) => {
+      if (response.value.code == 0) {
+        setVersion(response.value.data!);
+      }
+    });
+  }, []);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,6 +33,7 @@ const Help = () => {
         >
           GitHub
         </DropdownMenuItem>
+        <DropdownMenuItem>{version}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
