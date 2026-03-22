@@ -1,6 +1,6 @@
 class JWTToken {
   private static instance: JWTToken;
-  private token: string = "";
+  private value: string = "";
 
   private constructor() {}
 
@@ -12,11 +12,11 @@ class JWTToken {
   }
 
   public Get(): string {
-    return this.token;
+    return this.value;
   }
 
   public Set(value: string): void {
-    this.token = value;
+    this.value = value;
   }
 }
 

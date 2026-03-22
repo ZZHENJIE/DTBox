@@ -22,8 +22,13 @@ export async function Login(name: string, password: string) {
   return response;
 }
 
+export async function Logout() {
+  const response = await Post<boolean>("/api/users/logout", {}, true);
+  return response;
+}
+
 export async function Info() {
-  const response = await Get<boolean>("/api/users/info", true);
+  const response = await Get<object>("/api/users/info", true);
   return response;
 }
 
@@ -34,5 +39,10 @@ export async function Change(type: ChangeType, data: object) {
     type,
     data,
   });
+  return response;
+}
+
+export async function Refresh() {
+  const response = await Post<string>("/api/users/refresh", {}, true);
   return response;
 }

@@ -1,20 +1,42 @@
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Field, FieldGroup } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { ResponseToast } from "~/lib/API/Core";
+import { Login as UserLogin } from "~/lib/API/User";
 
 const Login = () => {
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <FieldGroup>
       <Field>
         <Label>Name</Label>
-        <Input />
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
       <Field>
         <Label>Password</Label>
-        <Input type="password" />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </Field>
-      <Button>Login</Button>
+      <Button
+        disabled={!(name.length > 0 && password.length > 0)}
+        onClick={() =>
+          UserLogin(name, password).then((response) => {
+            if (response.value.code == 0) {
+              location.reload();
+            } else {
+              ResponseToast(response);
+            }
+          })
+        }
+      >
+        Login
+      </Button>
     </FieldGroup>
   );
 };

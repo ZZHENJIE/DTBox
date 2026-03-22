@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Version } from "~/lib/API/utils";
+import { Version } from "~/lib/API/Utils";
 
 const Help = () => {
   const navigate = useNavigate();
