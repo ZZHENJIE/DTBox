@@ -38,7 +38,7 @@ const User = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-32">
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate("/profile")}>
+          <DropdownMenuItem onClick={() => navigate("profile")}>
             Profile
           </DropdownMenuItem>
         </DropdownMenuGroup>

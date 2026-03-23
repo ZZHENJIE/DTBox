@@ -25,7 +25,7 @@ const Help = () => {
         <Button variant="outline">Help</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate("/about")}>
+        <DropdownMenuItem onClick={() => navigate("about")}>
           About
         </DropdownMenuItem>
         <DropdownMenuItem

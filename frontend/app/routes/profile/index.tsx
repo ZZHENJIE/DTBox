@@ -5,6 +5,7 @@ import JWTToken from "~/lib/JWTToken";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { useEffect } from "react";
 
 const permissions_to_string = (perms: number) => {
   switch (perms) {
@@ -18,11 +19,18 @@ const permissions_to_string = (perms: number) => {
 };
 
 const Profile = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (UserInfo.IsNone()) {
+      navigate("/");
+    }
+  }, []);
+
   const info = UserInfo.Get() as any;
 
   return (
     <div className="flex justify-center pt-10">
-      <Card className="">
+      <Card className="w-full">
         <CardContent>
           <FieldGroup>
             <Field>
@@ -51,12 +59,6 @@ const Profile = () => {
             </Field>
           </FieldGroup>
         </CardContent>
-        <CardFooter>
-          <Button variant="destructive">
-            Please do not refresh this page, otherwise the information will not
-            be rendered.
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

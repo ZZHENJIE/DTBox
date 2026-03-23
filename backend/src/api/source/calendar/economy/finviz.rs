@@ -1,6 +1,5 @@
-use crate::{Api, AppState, Error};
+use crate::api::{API, Response};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,23 +23,32 @@ pub struct Item {
     pub non_emptiness_score: i8,
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Deserialize)]
 pub struct EconomyFinvizCalendar {
     begin: String,
     end: String,
 }
 
-impl Api for EconomyFinvizCalendar {
+impl API for EconomyFinvizCalendar {
     type Output = Vec<Item>;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> crate::api::Response<Self::Output> {
         let url = format!(
             "https://finviz.com/api/calendar/economic?dateFrom={}&dateTo={}",
             self.begin, self.end
         );
-        let response = state.http_client().get(url).send().await?;
-        let items: Vec<Item> = response.json().await?;
-        Ok(items)
+        let response = match state.http_client().get(url).send().await {
+            Ok(response) => response,
+            Err(e) => return Response::error(e.to_string()),
+        };
+        let items: Vec<Item> = match response.json().await {
+            Ok(items) => items,
+            Err(e) => return Response::error(e.to_string()),
+        };
+        Response::success_with_data(items)
     }
 }

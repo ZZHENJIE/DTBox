@@ -1,6 +1,5 @@
-use crate::{Api, AppState, Error, utils::market::Cboe};
+use crate::api::{API, Response};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -24,28 +23,59 @@ pub struct Item {
     pub shares_routed: u64,
 }
 
-#[derive(Default, Deserialize)]
-pub struct BookViewCboe {
-    pub market: Cboe,
+#[derive(Deserialize)]
+pub enum Market {
+    EDGA,
+    EDGX,
+    BYX,
+    BZX,
 }
 
-impl Api for BookViewCboe {
-    type Output = Vec<Item>;
-    type Error = Error;
+impl ToString for Market {
+    fn to_string(&self) -> String {
+        match self {
+            Market::EDGA => "edga".to_string(),
+            Market::EDGX => "edgx".to_string(),
+            Market::BYX => "byx".to_string(),
+            Market::BZX => "bzx".to_string(),
+        }
+    }
+}
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+#[derive(Deserialize)]
+pub struct BookViewCboe {
+    pub market: Market,
+}
+
+impl API for BookViewCboe {
+    type Output = Vec<Item>;
+
+    async fn request(
+        &self,
+        claims: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> crate::api::Response<Self::Output> {
         let url = format!(
             "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
             self.market.to_string()
         );
-        let response = state.http_client().get(&url).send().await?;
-        let csv = response.text().await?;
+        let response = match state.http_client().get(&url).send().await {
+            Ok(resp) => resp,
+            Err(e) => return Response::error(e.to_string()),
+        };
+        let csv = match response.text().await {
+            Ok(text) => text,
+            Err(e) => return Response::error(e.to_string()),
+        };
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());
         let mut items: Vec<Item> = Vec::new();
         for result in rdr.deserialize() {
-            let record: Item = result?;
+            let record: Item = match result {
+                Ok(record) => record,
+                Err(e) => return Response::error(e.to_string()),
+            };
             items.push(record);
         }
-        Ok(items)
+        Response::success_with_data(items)
     }
 }
