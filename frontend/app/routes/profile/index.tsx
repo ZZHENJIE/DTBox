@@ -1,11 +1,10 @@
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
-import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import UserInfo from "~/lib/UserInfo";
-import JWTToken from "~/lib/JWTToken";
-import { useNavigate } from "react-router";
+import { Card, CardContent } from "~/components/ui/card";
+import { getUserInfo } from "~/lib/UserInfo";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { UserInfo } from "~/lib/API/User";
 
 const permissions_to_string = (perms: number) => {
   switch (perms) {
@@ -19,14 +18,11 @@ const permissions_to_string = (perms: number) => {
 };
 
 const Profile = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (UserInfo.IsNone()) {
-      navigate("/");
-    }
-  }, []);
+  const [info, setInfo] = useState<UserInfo | null>(null);
 
-  const info = UserInfo.Get() as any;
+  useEffect(() => {
+    setInfo(getUserInfo());
+  }, []);
 
   return (
     <div className="flex justify-center pt-10">
@@ -38,7 +34,7 @@ const Profile = () => {
                 Name
                 <Button variant="outline">Change</Button>
               </FieldLabel>
-              <Badge variant="secondary">{info.name}</Badge>
+              <Badge variant="secondary">{info?.name}</Badge>
             </Field>
             <Field>
               <FieldLabel>
@@ -50,12 +46,12 @@ const Profile = () => {
             <Field>
               <FieldLabel>Permissions</FieldLabel>
               <Badge variant="secondary">
-                {permissions_to_string(info.permissions)}
+                {permissions_to_string(info?.permissions!)}
               </Badge>
             </Field>
             <Field>
               <FieldLabel>Create Time</FieldLabel>
-              <Badge variant="secondary">{info.create_time}</Badge>
+              <Badge variant="secondary">{info?.create_time}</Badge>
             </Field>
           </FieldGroup>
         </CardContent>

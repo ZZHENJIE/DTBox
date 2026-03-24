@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { ResponseToast } from "~/lib/API/Core";
 import { Info, Logout } from "~/lib/API/User";
-import UserInfo from "~/lib/UserInfo";
+import { setUserInfo } from "~/lib/UserInfo";
 
 const User = () => {
   const navigate = useNavigate();
@@ -20,8 +20,9 @@ const User = () => {
   useEffect(() => {
     Info().then((response) => {
       if (response.value.code == 0) {
-        UserInfo.Set(response.value.data!);
-        setName((UserInfo.Get() as any).name.slice(0, 2));
+        const data = response.value.data!;
+        setUserInfo(data);
+        setName(data.name.slice(0, 2));
       } else {
         ResponseToast(response);
       }

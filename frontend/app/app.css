@@ -5,36 +5,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 滚动条整体样式 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-/* 滚动条轨道 */
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* 滚动条滑块 */
-::-webkit-scrollbar-thumb {
-  background: oklch(0.7 0 0);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.6 0 0);
-}
-
-/* 暗色主题 */
-.dark ::-webkit-scrollbar-thumb {
-  background: oklch(0.4 0 0);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0);
-}
-
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

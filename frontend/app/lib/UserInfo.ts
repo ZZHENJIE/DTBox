@@ -1,29 +1,43 @@
-class UserInfo {
-  private static instance: UserInfo;
-  private value: object = {};
-  private none: boolean = true;
+import type { UserInfo } from "./API/User";
 
-  private constructor() {}
+const STORAGE_KEY = "user_info";
 
-  public static getInstance(): UserInfo {
-    if (!UserInfo.instance) {
-      UserInfo.instance = new UserInfo();
-    }
-    return UserInfo.instance;
-  }
-
-  public IsNone(): boolean {
-    return this.none;
-  }
-
-  public Get(): object {
-    return this.value;
-  }
-
-  public Set(value: object): void {
-    this.value = value;
-    this.none = false;
+export function getUserInfo(): UserInfo | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored) as UserInfo;
+  } catch (error) {
+    console.error("Failed to parse user info:", error);
+    return null;
   }
 }
 
-export default UserInfo.getInstance();
+export function setUserInfo(userInfo: UserInfo): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userInfo));
+  } catch (error) {
+    console.error("Failed to save user info:", error);
+  }
+}
+
+export function updateUserInfo(partial: Partial<UserInfo>): void {
+  const current = getUserInfo() || ({} as UserInfo);
+  const updated = { ...current, ...partial };
+  setUserInfo(updated as UserInfo);
+}
+
+export function clearUserInfo(): void {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+export function isLoggedIn(): boolean {
+  return getUserInfo() !== null;
+}
+
+export function getUserField<K extends keyof UserInfo>(
+  key: K,
+): UserInfo[K] | undefined {
+  const user = getUserInfo();
+  return user?.[key];
+}

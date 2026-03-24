@@ -27,8 +27,16 @@ export async function Logout() {
   return response;
 }
 
+export interface UserInfo {
+  id: number;
+  name: string;
+  config: object;
+  permissions: number;
+  create_time: string;
+}
+
 export async function Info() {
-  const response = await Get<object>("/api/users/info", true);
+  const response = await Get<UserInfo>("/api/users/info", true);
   return response;
 }
 

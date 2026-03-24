@@ -12,6 +12,10 @@ import type { Route } from "./+types/root";
 import Header from "./components/app/header";
 import { ThemeProvider } from "~/components/app/theme/theme-provider";
 import { Toaster } from "sonner";
+import { useLocation } from "react-router";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
+import { getUserField } from "./lib/UserInfo";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,6 +37,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const publicPaths = ["/", "/about", "/profile"];
+    if (publicPaths.includes(location.pathname)) return;
+
+    const checkAuth = async () => {
+      const permissions = getUserField("permissions");
+      if (permissions != 1 && permissions != 2) {
+        navigate("no-permission", { replace: true });
+      }
+    };
+
+    checkAuth();
+  }, [location.pathname]);
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <div className="m-1">
