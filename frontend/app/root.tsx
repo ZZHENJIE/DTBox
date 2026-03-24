@@ -16,6 +16,7 @@ import { useLocation } from "react-router";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { getUserField } from "./lib/UserInfo";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

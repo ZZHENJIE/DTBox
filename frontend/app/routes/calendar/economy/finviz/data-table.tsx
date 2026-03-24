@@ -40,7 +40,7 @@ const DataTable = <TData, TValue>({
                 return (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
-                      ? null
+                      ? "--"
                       : flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
