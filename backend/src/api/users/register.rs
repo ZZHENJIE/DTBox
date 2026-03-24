@@ -1,11 +1,7 @@
 use sea_orm::{ActiveValue::Set, EntityTrait};
 use serde::Deserialize;
 
-use crate::{
-    api::{API, Response},
-    database::entity::users,
-    utils::hash,
-};
+use crate::{api::API, database::entity::users, utils::hash};
 
 #[derive(Deserialize)]
 pub struct Payload {
@@ -15,15 +11,13 @@ pub struct Payload {
 
 impl API for Payload {
     type Output = bool;
+
     async fn request(
         &self,
         _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> Response<Self::Output> {
-        let pass_hash = match hash(self.password.as_bytes()) {
-            Ok(value) => value,
-            Err(err) => return Response::error_with_code(-4, err),
-        };
+    ) -> Result<Self::Output, crate::utils::error::Error> {
+        let pass_hash = hash(self.password.as_bytes())?;
         let user = users::ActiveModel {
             name: Set(self.name.clone()),
             pass_hash: Set(pass_hash),
@@ -36,9 +30,7 @@ impl API for Payload {
             create_time: Set(chrono::Utc::now().into()),
             ..Default::default()
         };
-        match users::Entity::insert(user).exec(state.db_conn()).await {
-            Ok(_) => Response::success_with_data(true),
-            Err(err) => Response::error_with_code(-3, err.to_string()),
-        }
+        let _ = users::Entity::insert(user).exec(state.db_conn()).await?;
+        Ok(true)
     }
 }

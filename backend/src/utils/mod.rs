@@ -1,3 +1,4 @@
+pub mod error;
 pub mod jwt;
 pub mod log;
 pub mod settings;
@@ -9,11 +10,13 @@ use argon2::{
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 
-pub fn hash(value: &[u8]) -> Result<String, String> {
+use crate::Error;
+
+pub fn hash(value: &[u8]) -> Result<String, Error> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
     match argon2.hash_password(value, &salt) {
         Ok(hash) => Ok(hash.to_string()),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(e.into()),
     }
 }

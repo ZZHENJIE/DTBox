@@ -59,10 +59,7 @@ impl API for BookViewCboe {
             "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
             self.market.to_string()
         );
-        let response = match state.http_client().get(&url).send().await {
-            Ok(resp) => resp,
-            Err(e) => return Response::error(e.to_string()),
-        };
+        let response = state.http_client().get(&url).send().await?;
         let csv = match response.text().await {
             Ok(text) => text,
             Err(e) => return Response::error(e.to_string()),

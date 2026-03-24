@@ -1,16 +1,19 @@
 use std::sync::Arc;
 
 use argon2::PasswordVerifier;
-use axum::{Extension, Json, extract::State};
+use axum::{
+    Extension, Json,
+    extract::State,
+    response::{IntoResponse, Response},
+};
 use axum_extra::extract::CookieJar;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 
 use crate::{
-    api::Response,
-    app,
+    ErrorCode, api, app,
     database::entity::refresh_token::{self, Column},
-    utils::jwt::Claims,
+    utils::{self, jwt::Claims},
 };
 
 #[derive(Deserialize)]
@@ -20,48 +23,37 @@ pub async fn request(
     Extension(cookie_jar): Extension<CookieJar>,
     State(state): State<Arc<app::State>>,
     Json(_): Json<Payload>,
-) -> Response<String> {
+) -> Result<Response, utils::error::Error> {
     let refresh_token = match cookie_jar.get("refresh_token") {
         Some(value) => value.value(),
-        None => return Response::error_with_code(-5, "Not Find Refresh Token."),
+        None => return Err(ErrorCode::CookieNotFound.into()),
     };
     let user_id: i64 = match cookie_jar.get("user_id") {
-        Some(value) => match value.value().parse() {
-            Ok(value) => value,
-            Err(err) => return Response::error_with_code(-6, err.to_string()),
-        },
-        None => return Response::error_with_code(-5, "Not Find Refresh Token."),
+        Some(value) => value.value().parse()?,
+        None => return Err(ErrorCode::CookieNotFound.into()),
     };
+
     // 根据用户ID查找Token
     let token = match refresh_token::Entity::find()
         .filter(Column::UserId.eq(user_id))
         .one(state.db_conn())
-        .await
+        .await?
     {
-        Ok(value) => {
-            if let Some(value) = value {
-                value
-            } else {
-                return Response::error_with_code(-201, "Refresh Token not found.");
-            }
-        }
-        Err(err) => return Response::error_with_code(-2, err.to_string()),
+        Some(value) => value,
+        None => return Err(ErrorCode::RefreshTokenNotFound.into()),
     };
 
     // 判断Token是否过期或者失效
     let now = chrono::Utc::now().fixed_offset();
     if now > token.expires_at {
-        return Response::error_with_code(-202, "Refresh Token expired.");
+        return Err(ErrorCode::RefreshTokenExpired.into());
     }
     if token.revoked != 0 {
-        return Response::error_with_code(-204, "Refresh Token revoked.");
+        return Err(ErrorCode::RefreshTokenRevoked.into());
     }
 
     // 解析Token Hash
-    let parsed_hash = match argon2::password_hash::PasswordHash::new(&token.token_hash) {
-        Ok(value) => value,
-        Err(err) => return Response::error_with_code(-4, err.to_string()),
-    };
+    let parsed_hash = argon2::password_hash::PasswordHash::new(&token.token_hash)?;
 
     // 判断Token是否正确
     let is_ok = argon2::Argon2::default()
@@ -71,12 +63,16 @@ pub async fn request(
     if is_ok {
         // 创建JWT声明
         let claims = Claims::new(token.user_id);
+        let jwt_token = claims.encode()?;
 
-        match claims.encode() {
-            Ok(value) => Response::success_with_data(value),
-            Err(err) => Response::error_with_code(-103, err.to_string()),
-        }
+        let data = api::Response::<String> {
+            code: 0,
+            message: "success".to_string(),
+            data: Some(jwt_token),
+        };
+
+        Ok(Json(data).into_response())
     } else {
-        Response::error_with_code(-203, "Incorrect Refresh Token.")
+        Err(ErrorCode::RefreshTokenIncorrect.into())
     }
 }

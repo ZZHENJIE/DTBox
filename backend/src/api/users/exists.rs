@@ -1,5 +1,5 @@
 use crate::{
-    api::{API, Response},
+    api::API,
     database::entity::users::{self, Column},
 };
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
@@ -12,18 +12,16 @@ pub struct Query {
 
 impl API for Query {
     type Output = bool;
+
     async fn request(
         &self,
         _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> Response<Self::Output> {
-        match users::Entity::find()
+    ) -> Result<Self::Output, crate::utils::error::Error> {
+        let value = users::Entity::find()
             .filter(Column::Name.eq(self.name.clone()))
             .one(state.db_conn())
-            .await
-        {
-            Ok(value) => Response::success_with_data(value.is_some()),
-            Err(err) => Response::error_with_code(-2, err.to_string()),
-        }
+            .await?;
+        Ok(value.is_some())
     }
 }

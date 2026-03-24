@@ -31,7 +31,7 @@ impl Claims {
     pub fn sub_data(&self) -> i64 {
         self.sub
     }
-    pub fn encode(&self) -> anyhow::Result<String> {
+    pub fn encode(&self) -> Result<String, super::Error> {
         let secret = SETTINGS.jwt.secret.as_bytes();
         let token = jsonwebtoken::encode(
             &jsonwebtoken::Header::default(),
@@ -40,7 +40,7 @@ impl Claims {
         )?;
         Ok(token)
     }
-    pub fn decode(token: &[u8]) -> anyhow::Result<Self> {
+    pub fn decode(token: &[u8]) -> Result<Self, super::Error> {
         let secret = SETTINGS.jwt.secret.as_bytes();
         let mut validation = jsonwebtoken::Validation::default();
         validation.set_audience(&["dtbox.com"]);

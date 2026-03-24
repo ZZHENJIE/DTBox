@@ -1,5 +1,6 @@
 use crate::{
-    api::{API, Response},
+    ErrorCode,
+    api::API,
     database::entity::users::{self, Column},
 };
 use chrono::{DateTime, FixedOffset};
@@ -24,36 +25,29 @@ impl API for Output {
         &self,
         claims: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> Response<Self::Output> {
-        if let Some(claims) = claims {
-            let user_id = claims.sub_data();
-            // 根据ID查询用户
-            let user = match users::Entity::find()
-                .filter(Column::Id.eq(user_id))
-                .one(state.db_conn())
-                .await
-            {
-                Ok(value) => {
-                    if let Some(value) = value {
-                        value
-                    } else {
-                        return Response::error_with_code(
-                            -301,
-                            format!("User ID {} not found.", user_id),
-                        );
-                    }
-                }
-                Err(err) => return Response::error_with_code(-2, err.to_string()),
-            };
+    ) -> Result<Self::Output, crate::utils::error::Error> {
+        match claims {
+            Some(claims) => {
+                let user_id = claims.sub_data();
+                // 根据ID查询用户
+                let user = match users::Entity::find()
+                    .filter(Column::Id.eq(user_id))
+                    .one(state.db_conn())
+                    .await?
+                {
+                    Some(value) => value,
+                    None => return Err(ErrorCode::UserNotFound.into()),
+                };
 
-            return Response::success_with_data(OutputData {
-                id: user.id,
-                name: user.name,
-                config: user.config,
-                permissions: user.permissions,
-                create_time: user.create_time,
-            });
+                Ok(OutputData {
+                    id: user.id,
+                    name: user.name,
+                    config: user.config,
+                    permissions: user.permissions,
+                    create_time: user.create_time,
+                })
+            }
+            None => Err(ErrorCode::ClaimsNone.into()),
         }
-        Response::error_with_code(-104, "Claims is None.")
     }
 }

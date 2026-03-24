@@ -6,7 +6,7 @@ pub mod logout; // 用户登出
 pub mod refresh; // 刷新JWT
 pub mod register; // 用户注册
 
-use crate::{api, app, utils::jwt::Claims};
+use crate::{ErrorCode, api, app, utils::jwt::Claims};
 use axum::{
     extract::Request,
     middleware::{self, Next},
@@ -57,19 +57,19 @@ async fn jwt_auth(mut req: Request, next: Next) -> Response {
         let token = match auth_str.as_bytes().strip_prefix(b"Bearer ") {
             Some(value) => value,
             None => {
-                return api::Response::<()>::error_with_code(-101, "Invalid Token Format!")
-                    .into_response();
+                return crate::Error::from(ErrorCode::RefreshTokenFormatInvalid).into_response();
             }
         };
-        return match Claims::decode(token) {
+        match Claims::decode(token) {
             Ok(claims) => {
                 req.extensions_mut().insert(claims);
                 next.run(req).await
             }
-            Err(err) => api::Response::<()>::error_with_code(-103, err.to_string()).into_response(),
-        };
+            Err(e) => e.into_response(),
+        }
+    } else {
+        crate::Error::from(ErrorCode::RefreshTokenNotFound).into_response()
     }
-    api::Response::<()>::error_with_code(-102, "Not Found Token!").into_response()
 }
 
 async fn refresh_auth(mut req: Request, next: Next) -> Response {

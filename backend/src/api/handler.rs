@@ -18,7 +18,7 @@ pub async fn post_auth<T>(
 where
     T: API + DeserializeOwned + Sized,
 {
-    payload.request(Some(claims), state).await
+    payload.request(Some(claims), state).await.into()
 }
 
 pub async fn post<T>(
@@ -28,7 +28,7 @@ pub async fn post<T>(
 where
     T: API + DeserializeOwned + Sized,
 {
-    payload.request(None, state).await
+    payload.request(None, state).await.into()
 }
 
 pub async fn get_auth<T>(
@@ -39,7 +39,7 @@ pub async fn get_auth<T>(
 where
     T: API + DeserializeOwned + Sized,
 {
-    input.request(Some(claims), state).await
+    input.request(Some(claims), state).await.into()
 }
 
 pub async fn get<T>(
@@ -49,5 +49,5 @@ pub async fn get<T>(
 where
     T: API + DeserializeOwned + Sized,
 {
-    input.request(None, state).await
+    input.request(None, state).await.into()
 }
