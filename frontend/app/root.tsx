@@ -17,6 +17,7 @@ import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { getUserField } from "./lib/UserInfo";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import JWTToken from "./lib/JWTToken";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -47,9 +48,10 @@ export default function App() {
 
     const checkAuth = async () => {
       const permissions = getUserField("permissions");
-      if (permissions != 1 && permissions != 2) {
+      setTimeout(() => {
+        if (JWTToken.Get() != "" && permissions != 0) return;
         navigate("no-permission", { replace: true });
-      }
+      }, 500);
     };
 
     checkAuth();

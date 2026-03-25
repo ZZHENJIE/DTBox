@@ -7,19 +7,19 @@ import Auth from "~/components/app/auth";
 import { ModeToggle } from "../theme/mode-toggle";
 import { useEffect, useState } from "react";
 import { Refresh } from "~/lib/API/User";
-import { toast } from "sonner";
 import JWTToken from "~/lib/JWTToken";
 import User from "./user";
+import { useNavigate } from "react-router";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     Refresh().then((response) => {
-      if (response.value.code !== 0) {
-        toast.error("Please login to continue.");
-      } else {
-        JWTToken.Set(response.value.data!);
+      if (response.ok()) {
+        JWTToken.Set(response.data!);
         setIsLoggedIn(true);
+      } else {
+        JWTToken.Set("");
       }
     });
   }, []);

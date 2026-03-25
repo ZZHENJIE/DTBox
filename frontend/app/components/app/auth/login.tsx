@@ -3,7 +3,6 @@ import { Button } from "~/components/ui/button";
 import { Field, FieldGroup } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { ResponseToast } from "~/lib/API/Core";
 import { Login as UserLogin } from "~/lib/API/User";
 
 const Login = () => {
@@ -27,10 +26,8 @@ const Login = () => {
         disabled={!(name.length > 0 && password.length > 0)}
         onClick={() =>
           UserLogin(name, password).then((response) => {
-            if (response.value.code == 0) {
+            if (response.ok()) {
               location.reload();
-            } else {
-              ResponseToast(response);
             }
           })
         }

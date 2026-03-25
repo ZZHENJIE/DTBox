@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Input } from "~/components/ui/input";
-import { ResponseToast } from "~/lib/API/Core";
 import { Exists } from "~/lib/API/User";
 
 const is_reasonable = async (value: string) => {
@@ -19,11 +18,10 @@ const is_reasonable = async (value: string) => {
   }
   // 请求查询用户名是否已经存在
   const response = await Exists(value);
-  if (response.value.code != 0) {
-    ResponseToast(response);
+  if (!response.ok()) {
     return false;
   }
-  if (response.value.data == true) {
+  if (response.data == true) {
     toast.error(`The name "${value}" already exists`);
     return false;
   }

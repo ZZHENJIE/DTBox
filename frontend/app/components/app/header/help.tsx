@@ -13,11 +13,7 @@ const Help = () => {
   const navigate = useNavigate();
   const [version, setVersion] = useState<string>();
   useEffect(() => {
-    Version().then((response) => {
-      if (response.value.code == 0) {
-        setVersion(response.value.data!);
-      }
-    });
+    Version().then((value) => setVersion(value));
   }, []);
   return (
     <DropdownMenu>

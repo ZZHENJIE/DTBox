@@ -52,7 +52,7 @@ impl Into<i32> for ErrorCode {
 
 #[derive(Serialize)]
 pub struct Error {
-    pub code: ErrorCode,
+    pub code: i32,
     pub message: String,
 }
 
@@ -65,7 +65,7 @@ impl IntoResponse for Error {
 impl From<sea_orm::DbErr> for Error {
     fn from(value: sea_orm::DbErr) -> Self {
         Error {
-            code: ErrorCode::DataBase,
+            code: ErrorCode::DataBase.into(),
             message: value.to_string(),
         }
     }
@@ -74,7 +74,7 @@ impl From<sea_orm::DbErr> for Error {
 impl From<argon2::Error> for Error {
     fn from(value: argon2::Error) -> Self {
         Error {
-            code: ErrorCode::Argon2,
+            code: ErrorCode::Argon2.into(),
             message: value.to_string(),
         }
     }
@@ -83,7 +83,7 @@ impl From<argon2::Error> for Error {
 impl From<ErrorCode> for Error {
     fn from(value: ErrorCode) -> Self {
         Error {
-            code: value,
+            code: value.into(),
             message: "Please check the error according to the error code.".into(),
         }
     }
@@ -92,7 +92,7 @@ impl From<ErrorCode> for Error {
 impl From<std::string::ParseError> for Error {
     fn from(value: std::string::ParseError) -> Self {
         Error {
-            code: ErrorCode::StringParse,
+            code: ErrorCode::StringParse.into(),
             message: value.to_string(),
         }
     }
@@ -101,7 +101,7 @@ impl From<std::string::ParseError> for Error {
 impl From<argon2::password_hash::Error> for Error {
     fn from(value: argon2::password_hash::Error) -> Self {
         Error {
-            code: ErrorCode::PasswordHashParse,
+            code: ErrorCode::PasswordHashParse.into(),
             message: value.to_string(),
         }
     }
@@ -110,7 +110,7 @@ impl From<argon2::password_hash::Error> for Error {
 impl From<jsonwebtoken::errors::Error> for Error {
     fn from(value: jsonwebtoken::errors::Error) -> Self {
         Error {
-            code: ErrorCode::JsonWebToken,
+            code: ErrorCode::JsonWebToken.into(),
             message: value.to_string(),
         }
     }
@@ -119,7 +119,7 @@ impl From<jsonwebtoken::errors::Error> for Error {
 impl From<std::num::ParseIntError> for Error {
     fn from(value: std::num::ParseIntError) -> Self {
         Error {
-            code: ErrorCode::NumberParse,
+            code: ErrorCode::NumberParse.into(),
             message: value.to_string(),
         }
     }
@@ -128,7 +128,7 @@ impl From<std::num::ParseIntError> for Error {
 impl From<reqwest::Error> for Error {
     fn from(value: reqwest::Error) -> Self {
         Error {
-            code: ErrorCode::Reqwest,
+            code: ErrorCode::Reqwest.into(),
             message: value.to_string(),
         }
     }
@@ -137,7 +137,7 @@ impl From<reqwest::Error> for Error {
 impl From<csv::Error> for Error {
     fn from(value: csv::Error) -> Self {
         Error {
-            code: ErrorCode::CSVParse,
+            code: ErrorCode::CSVParse.into(),
             message: value.to_string(),
         }
     }
@@ -146,7 +146,7 @@ impl From<csv::Error> for Error {
 impl From<scraper::error::SelectorErrorKind<'_>> for Error {
     fn from(value: scraper::error::SelectorErrorKind<'_>) -> Self {
         Error {
-            code: ErrorCode::CSVParse,
+            code: ErrorCode::CSVParse.into(),
             message: value.to_string(),
         }
     }

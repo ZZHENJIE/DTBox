@@ -25,12 +25,8 @@ export interface EconomyFinvizItem {
 }
 
 export const EconomyFinviz = async (begin: string, end: string) => {
-  const response = await Post<EconomyFinvizItem[]>(
-    "/api/calendar/economy/finviz",
-    {
-      begin,
-      end,
-    },
-  );
-  return response;
+  return await Post<EconomyFinvizItem[]>("/api/calendar/economy/finviz", {
+    begin,
+    end,
+  });
 };

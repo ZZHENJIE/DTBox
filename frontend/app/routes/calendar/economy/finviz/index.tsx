@@ -12,7 +12,7 @@ const EconomyFinviz = () => {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     EconomyFinvizAPI("2026-03-23", "2026-03-27").then((response) => {
-      setData(response.value.data);
+      setData(response.data);
       setIsLoading(false);
     });
   }, []);

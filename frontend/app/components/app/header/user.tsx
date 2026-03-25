@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { ResponseToast } from "~/lib/API/Core";
 import { Info, Logout } from "~/lib/API/User";
 import { setUserInfo } from "~/lib/UserInfo";
 
@@ -19,12 +18,10 @@ const User = () => {
   const [name, setName] = useState("DTBox");
   useEffect(() => {
     Info().then((response) => {
-      if (response.value.code == 0) {
-        const data = response.value.data!;
+      if (response.ok()) {
+        const data = response.data!;
         setUserInfo(data);
         setName(data.name.slice(0, 2));
-      } else {
-        ResponseToast(response);
       }
     });
   }, []);
@@ -48,10 +45,8 @@ const User = () => {
           <DropdownMenuItem
             onClick={() => {
               Logout().then((response) => {
-                if (response.value.code == 0) {
+                if (response.ok()) {
                   location.reload();
-                } else {
-                  ResponseToast(response);
                 }
               });
             }}

@@ -5,7 +5,7 @@ import NameInput from "./name_input";
 import PasswordInput from "./password_input";
 import { useState } from "react";
 import { Register as UserRegister } from "~/lib/API/User";
-import { ResponseToast } from "~/lib/API/Core";
+import { toast } from "sonner";
 
 const Register = () => {
   const [name, setName] = useState({
@@ -55,9 +55,11 @@ const Register = () => {
       <Button
         disabled={name.isError || password.isError}
         onClick={() =>
-          UserRegister(name.value, password.value).then((response) =>
-            ResponseToast(response),
-          )
+          UserRegister(name.value, password.value).then((response) => {
+            if (response.ok()) {
+              toast.success("Successfully registered!");
+            }
+          })
         }
       >
         Register
