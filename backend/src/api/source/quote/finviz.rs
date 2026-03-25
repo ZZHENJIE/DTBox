@@ -1,9 +1,7 @@
-use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
-use std::{
-    sync::Arc,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use crate::api::API;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,11 +37,14 @@ pub struct QuoteFinviz {
     pub date_from: Option<u64>,
 }
 
-impl Api for QuoteFinviz {
+impl API for QuoteFinviz {
     type Output = Quote;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let date_from = self.date_from.unwrap_or_else(|| {
             let now = SystemTime::now();
             let duration = now

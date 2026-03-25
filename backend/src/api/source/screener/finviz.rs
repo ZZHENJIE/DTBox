@@ -1,6 +1,6 @@
-use crate::{Api, AppState, Error};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+
+use crate::{api::API, utils};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScreenerItem {
@@ -33,15 +33,18 @@ pub struct ScreenerFinviz {
     pub query: String,
 }
 
-impl Api for ScreenerFinviz {
+impl API for ScreenerFinviz {
     type Output = Vec<ScreenerItem>;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let url = format!(
             "https://elite.finviz.com/export.ashx?v=111&f={}&auth={}",
             self.query,
-            state.settings().finviz.api_token
+            utils::SETTINGS.finviz.api_key
         );
         let response = state.http_client().get(&url).send().await?;
         let csv = response.text().await?;

@@ -1,6 +1,5 @@
-use crate::{Api, AppState, Error};
+use crate::{api::API, utils};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -34,12 +33,15 @@ impl CandlestickFinviz {
     }
 }
 
-impl Api for CandlestickFinviz {
+impl API for CandlestickFinviz {
     type Output = Vec<Item>;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
-        let url = self.url(&state.settings().finviz.api_token);
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
+        let url = self.url(&utils::SETTINGS.finviz.api_key);
         let response = state.http_client().get(url).send().await?;
         let csv = response.text().await?;
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());

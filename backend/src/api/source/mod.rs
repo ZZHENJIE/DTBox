@@ -7,11 +7,11 @@ pub mod book_view {
 }
 
 pub mod calendar {
-    pub mod ipo {
-        pub mod scoop;
-    }
     pub mod economy {
         pub mod finviz;
+    }
+    pub mod ipo {
+        pub mod scoop;
     }
     pub mod spac {
         pub mod research;

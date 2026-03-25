@@ -1,4 +1,4 @@
-use crate::api::{API, Response};
+use crate::api::API;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -52,27 +52,20 @@ impl API for BookViewCboe {
 
     async fn request(
         &self,
-        claims: Option<crate::utils::jwt::Claims>,
+        _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> crate::api::Response<Self::Output> {
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let url = format!(
             "https://www.cboe.com/us/equities/market_statistics/symbol_data/csv/?mkt={}",
             self.market.to_string()
         );
         let response = state.http_client().get(&url).send().await?;
-        let csv = match response.text().await {
-            Ok(text) => text,
-            Err(e) => return Response::error(e.to_string()),
-        };
+        let csv = response.text().await?;
         let mut rdr = csv::Reader::from_reader(csv.as_bytes());
         let mut items: Vec<Item> = Vec::new();
         for result in rdr.deserialize() {
-            let record: Item = match result {
-                Ok(record) => record,
-                Err(e) => return Response::error(e.to_string()),
-            };
-            items.push(record);
+            items.push(result?);
         }
-        Response::success_with_data(items)
+        Ok(items)
     }
 }

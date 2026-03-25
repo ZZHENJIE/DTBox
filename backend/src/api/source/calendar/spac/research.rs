@@ -1,8 +1,7 @@
-use crate::{Api, AppState, Error};
+use crate::api::API;
 use chrono::{Datelike, Local};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Event {
@@ -35,11 +34,14 @@ pub struct Item {
 #[derive(Default, Deserialize)]
 pub struct SpacResearchCalendar {}
 
-impl Api for SpacResearchCalendar {
+impl API for SpacResearchCalendar {
     type Output = Vec<Item>;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let response = state
             .http_client()
             .get("https://www.spacresearch.com/calendar")

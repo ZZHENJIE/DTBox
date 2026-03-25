@@ -1,4 +1,4 @@
-use crate::api::{API, Response};
+use crate::api::API;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,19 +36,13 @@ impl API for EconomyFinvizCalendar {
         &self,
         _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> crate::api::Response<Self::Output> {
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let url = format!(
             "https://finviz.com/api/calendar/economic?dateFrom={}&dateTo={}",
             self.begin, self.end
         );
-        let response = match state.http_client().get(url).send().await {
-            Ok(response) => response,
-            Err(e) => return Response::error(e.to_string()),
-        };
-        let items: Vec<Item> = match response.json().await {
-            Ok(items) => items,
-            Err(e) => return Response::error(e.to_string()),
-        };
-        Response::success_with_data(items)
+        let response = state.http_client().get(url).send().await?;
+        let items: Vec<Item> = response.json().await?;
+        Ok(items)
     }
 }

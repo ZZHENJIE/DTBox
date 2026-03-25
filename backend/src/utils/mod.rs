@@ -2,6 +2,7 @@ pub mod error;
 pub mod jwt;
 pub mod log;
 pub mod settings;
+pub mod translate;
 
 pub use settings::SETTINGS;
 
@@ -19,4 +20,8 @@ pub fn hash(value: &[u8]) -> Result<String, Error> {
         Ok(hash) => Ok(hash.to_string()),
         Err(e) => Err(e.into()),
     }
+}
+
+pub fn normalize_ws(s: String) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
 }

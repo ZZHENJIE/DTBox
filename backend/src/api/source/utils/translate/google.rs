@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 use crate::{
-    Api, AppState, Error,
+    api::API,
     utils::translate::{Language, Translate},
 };
 
@@ -20,11 +19,14 @@ fn format(language: Language) -> &'static str {
     }
 }
 
-impl Api for GoogleTranslate {
+impl API for GoogleTranslate {
     type Output = String;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let url = format!(
             "https://translate.google.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}",
             format(self.translate.from()),

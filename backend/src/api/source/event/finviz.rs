@@ -1,6 +1,5 @@
-use crate::{Api, AppState, Error};
+use crate::{api::API, utils};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -58,15 +57,18 @@ impl From<&EventFinviz> for String {
     }
 }
 
-impl Api for EventFinviz {
+impl API for EventFinviz {
     type Output = ItemsRecord;
-    type Error = Error;
 
-    async fn fetch(&self, state: Arc<AppState>) -> Result<Self::Output, Self::Error> {
+    async fn request(
+        &self,
+        _: Option<crate::utils::jwt::Claims>,
+        state: std::sync::Arc<crate::app::State>,
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let url: String = format!(
             "{}&auth={}",
             String::from(self),
-            state.settings().finviz.api_token
+            utils::SETTINGS.finviz.api_key
         );
         let response = state.http_client().get(url).send().await?;
         let csv = response.text().await?;

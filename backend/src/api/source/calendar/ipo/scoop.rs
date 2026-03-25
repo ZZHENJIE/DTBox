@@ -1,4 +1,4 @@
-use crate::api::{API, Response};
+use crate::{api::API, utils};
 use scraper::Html;
 use serde::{Deserialize, Serialize};
 
@@ -21,9 +21,9 @@ impl API for IposcoopCalendar {
 
     async fn request(
         &self,
-        claims: Option<crate::utils::jwt::Claims>,
+        _: Option<crate::utils::jwt::Claims>,
         state: std::sync::Arc<crate::app::State>,
-    ) -> crate::api::Response<Self::Output> {
+    ) -> Result<Self::Output, crate::utils::error::Error> {
         let response = state
             .http_client()
             .get("https://www.iposcoop.com/ipo-calendar/")
@@ -44,9 +44,9 @@ impl API for IposcoopCalendar {
             }
             let text = |i: usize| tds[i].text().collect::<String>().trim().to_owned();
             let item = Item {
-                company: tool::normalize_ws(text(0)),
+                company: utils::normalize_ws(text(0)),
                 symbol: text(1),
-                managers: tool::normalize_ws(text(2)),
+                managers: utils::normalize_ws(text(2)),
                 shares_millions: text(3),
                 price_low: text(4),
                 price_high: text(5),
@@ -55,6 +55,6 @@ impl API for IposcoopCalendar {
             items.push(item);
         }
 
-        Response::success_with_data(items)
+        Ok(items)
     }
 }
