@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { Refresh } from "~/lib/API/User";
 import JWTToken from "~/lib/JWTToken";
 import User from "./user";
-import { useNavigate } from "react-router";
+import { Menubar } from "~/components/ui/menubar";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -24,11 +24,13 @@ const Header = () => {
     });
   }, []);
   return (
-    <div className="flex fixed inset-x-0 left-1 right-1 items-center gap-2 rounded-lg border bg-card px-2 py-2 shadow-sm">
+    <div className="flex fixed left-1 right-1 items-center gap-2 rounded-lg border bg-card px-2 py-2 shadow-sm">
       <Logo />
       <Search />
-      <CalendarMenu />
-      <ScreenerMenu />
+      <Menubar>
+        <CalendarMenu />
+        <ScreenerMenu />
+      </Menubar>
       <div className="flex ml-auto gap-2">
         {isLoggedIn ? <User /> : <Auth />}
         <ModeToggle />

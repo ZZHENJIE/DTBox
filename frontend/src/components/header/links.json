@@ -1,0 +1,24 @@
+[
+  {
+    "link": "/calendar",
+    "label": "Calendar",
+    "links": [
+      {
+        "link": "/calendar/economy_finviz",
+        "label": "Economy Finviz"
+      },
+      {
+        "link": "/calendar/ipo_scoop",
+        "label": "IPO Scoop"
+      },
+      {
+        "link": "/calendar/spac_research",
+        "label": "SPAC Research"
+      }
+    ]
+  },
+  {
+    "link": "/about",
+    "label": "About"
+  }
+]
