@@ -1,9 +1,13 @@
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, Center, Loader } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { NotFound } from "./not_found";
+import NotFound from "#/view/not_found";
 import { theme } from "#/theme";
-import Header from "#/components/header";
+import Header from "#/components/Header/index.tsx";
+import { useInitUser } from "#/hooks/useInitUser";
 
 export const Route = createRootRoute({
   notFoundComponent: NotFound,
@@ -25,13 +29,35 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { isLoading } = useInitUser();
+
+  if (isLoading) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          <MantineProvider theme={theme} defaultColorScheme="dark">
+            <Notifications position="top-right" />
+            <Center h="100vh">
+              <Loader size="lg" />
+            </Center>
+          </MantineProvider>
+          <Scripts />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <MantineProvider theme={theme}>
+        <MantineProvider theme={theme} defaultColorScheme="dark">
+          <Notifications position="top-right" />
           <Header />
           {children}
         </MantineProvider>

@@ -106,7 +106,7 @@
     "name": "string",
     "config": {},
     "permissions": 0,
-    "createTime": "2024-01-01T00:00:00+00:00"
+    "create_time": "2024-01-01T00:00:00+00:00"
   }
 }
 ```

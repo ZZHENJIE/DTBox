@@ -1,147 +1,104 @@
-import { IconChevronDown } from "@tabler/icons-react";
 import {
-  Burger,
-  Center,
-  Collapse,
-  Container,
-  Divider,
-  Drawer,
   Group,
+  Container,
+  Title,
+  Anchor,
+  Image,
+  Avatar,
   Menu,
-  ScrollArea,
   UnstyledButton,
+  ActionIcon,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import classes from "#/style/header.module.css";
-import links from "./links.json";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ChevronUp } from "lucide-react";
+import HeaderNav from "./HeaderNav";
+import HeaderSearch from "./HeaderSearch";
+import HeaderCollapsed from "./HeaderCollapsed";
+import { useUserStore } from "#/stores/useUserStore";
+import { authApi } from "#/services/api";
 
-const Header = () => {
-  const [opened, { toggle, close }] = useDisclosure(false);
+function Header() {
+  const { user, isAuthenticated, logout } = useUserStore();
+  const [collapsed, setCollapsed] = useState(false);
 
-  const items = links.map((link) => {
-    const menuItems = link.links?.map((item) => (
-      <Menu.Item key={item.link}>{item.label}</Menu.Item>
-    ));
-
-    if (menuItems) {
-      return (
-        <Menu
-          key={link.label}
-          trigger="hover"
-          transitionProps={{ exitDuration: 0 }}
-          withinPortal
-        >
-          <Menu.Target>
-            <a
-              href={link.link}
-              className={classes.link}
-              onClick={(event) => event.preventDefault()}
-            >
-              <Center>
-                <span className={classes.linkLabel}>{link.label}</span>
-                <IconChevronDown size={14} stroke={1.5} />
-              </Center>
-            </a>
-          </Menu.Target>
-          <Menu.Dropdown>{menuItems}</Menu.Dropdown>
-        </Menu>
-      );
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      logout();
+      window.location.href = "/user/login";
     }
-
-    return (
-      <a
-        key={link.label}
-        href={link.link}
-        className={classes.link}
-        onClick={(event) => event.preventDefault()}
-      >
-        {link.label}
-      </a>
-    );
-  });
-
-  return (
-    <header className={classes.header}>
-      <Container size="md">
-        <div className={classes.inner}>
-          <Group gap={5} visibleFrom="sm">
-            {items}
-          </Group>
-          <Burger
-            opened={opened}
-            onClick={toggle}
-            size="sm"
-            hiddenFrom="sm"
-            aria-label="Toggle navigation"
-          />
-        </div>
-      </Container>
-
-      <Drawer
-        opened={opened}
-        onClose={close}
-        size="90%"
-        padding="md"
-        title="Navigation"
-        hiddenFrom="sm"
-        zIndex={1000000}
-      >
-        <ScrollArea h="calc(100vh - 80px" mx="-md">
-          <Divider my="sm" />
-          {links.map((link) => {
-            if (link.links) {
-              return <DrawerLinksGroup key={link.label} link={link} />;
-            }
-
-            return (
-              <a
-                key={link.label}
-                href={link.link}
-                className={classes.link}
-                onClick={(event) => event.preventDefault()}
-              >
-                {link.label}
-              </a>
-            );
-          })}
-        </ScrollArea>
-      </Drawer>
-    </header>
-  );
-};
-
-function DrawerLinksGroup({
-  link,
-}: {
-  link: {
-    link: string;
-    label: string;
-    links?: { link: string; label: string }[];
   };
-}) {
-  const [opened, { toggle }] = useDisclosure(false);
 
   return (
-    <>
-      <UnstyledButton className={classes.link} onClick={toggle}>
-        <Center inline>
-          <span className={classes.linkLabel}>{link.label}</span>
-          <IconChevronDown size={14} stroke={1.5} />
-        </Center>
-      </UnstyledButton>
-      <Collapse expanded={opened}>
-        {link.links?.map((subLink) => (
-          <a
-            key={subLink.link}
-            href={subLink.link}
-            className={classes.subLink}
-            onClick={(event) => event.preventDefault()}
-          >
-            {subLink.label}
-          </a>
-        ))}
-      </Collapse>
-    </>
+    <Container
+      size="xl"
+      px="md"
+      py="sm"
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        backgroundColor: "#2e2a1a",
+        borderLeft: "2px solid rgba(255,255,255,0.1)",
+        borderRight: "2px solid rgba(255,255,255,0.1)",
+        borderBottom: "2px solid rgba(255,255,255,0.1)",
+        borderRadius: "0 0 12px 12px",
+      }}
+    >
+      {collapsed ? (
+        <HeaderCollapsed onExpand={() => setCollapsed(false)} />
+      ) : (
+        <Group h={56} justify="space-between">
+          <Group gap="md">
+            <Anchor component={Link} to="/" underline="never" c="gray.0">
+              <Group gap="sm">
+                <Image src="/favicon.ico" w={36} h={36} />
+                <Title order={2} fw={700} c="gray.0">
+                  DTBox
+                </Title>
+              </Group>
+            </Anchor>
+            <HeaderSearch />
+          </Group>
+          <Group gap="md">
+            <HeaderNav />
+            {isAuthenticated && user && (
+              <Menu trigger="hover">
+                <Menu.Target>
+                  <UnstyledButton>
+                    <Avatar color="blue" size="md">
+                      {user.username.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </UnstyledButton>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>{user.username}</Menu.Label>
+                  <Menu.Item component={Link} to="/user/profile">
+                    Profile
+                  </Menu.Item>
+                  <Menu.Item component={Link} to="/user/settings">
+                    Settings
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item color="red" onClick={handleLogout}>
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
+            <ActionIcon
+              variant="subtle"
+              onClick={() => setCollapsed(true)}
+              title="Collapse"
+            >
+              <ChevronUp size={20} />
+            </ActionIcon>
+          </Group>
+        </Group>
+      )}
+    </Container>
   );
 }
 

@@ -1,17 +1,35 @@
 import { Button } from "@mantine/core";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { withAuthGuard } from "#/hooks/withAuthGuard";
 
-export const Route = createFileRoute("/")({ component: App });
+function Home() {
+  const navigate = useNavigate();
 
-function App() {
-  const items = [];
-  for (let index = 0; index < 100; index++) {
-    items.push(<p key={index}>{index}</p>);
+  const item = [];
+
+  for (let i = 0; i < 30; i++) {
+    item.push(<p key={i}>{i}</p>);
   }
+
   return (
     <div>
-      <Button variant="filled">Button</Button>
-      {items}
+      <Button
+        variant="filled"
+        onClick={() =>
+          navigate({
+            to: "/about",
+          })
+        }
+      >
+        Button
+      </Button>
+      {item}
     </div>
   );
 }
+
+const ProtectedHome = withAuthGuard(Home);
+
+export const Route = createFileRoute("/")({
+  component: ProtectedHome,
+});

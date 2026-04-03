@@ -9,11 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as No_permissionRouteImport } from './routes/no_permission'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CalendarIndexRouteImport } from './routes/calendar/index'
-import { Route as CalendarFinvizRouteImport } from './routes/calendar/finviz'
+import { Route as UserRegisterRouteImport } from './routes/user/register'
+import { Route as UserLoginRouteImport } from './routes/user/login'
+import { Route as UserSettingsIndexRouteImport } from './routes/user/settings/index'
+import { Route as UserProfileIndexRouteImport } from './routes/user/profile/index'
+import { Route as ToolScreener_finvizIndexRouteImport } from './routes/tool/screener_finviz/index'
+import { Route as ToolChartIndexRouteImport } from './routes/tool/chart/index'
+import { Route as CalendarSpac_researchIndexRouteImport } from './routes/calendar/spac_research/index'
+import { Route as CalendarIpo_scoopIndexRouteImport } from './routes/calendar/ipo_scoop/index'
+import { Route as CalendarEconomy_finvizIndexRouteImport } from './routes/calendar/economy_finviz/index'
 
+const No_permissionRoute = No_permissionRouteImport.update({
+  id: '/no_permission',
+  path: '/no_permission',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -24,53 +37,167 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CalendarIndexRoute = CalendarIndexRouteImport.update({
-  id: '/calendar/',
-  path: '/calendar/',
+const UserRegisterRoute = UserRegisterRouteImport.update({
+  id: '/user/register',
+  path: '/user/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CalendarFinvizRoute = CalendarFinvizRouteImport.update({
-  id: '/calendar/finviz',
-  path: '/calendar/finviz',
+const UserLoginRoute = UserLoginRouteImport.update({
+  id: '/user/login',
+  path: '/user/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UserSettingsIndexRoute = UserSettingsIndexRouteImport.update({
+  id: '/user/settings/',
+  path: '/user/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserProfileIndexRoute = UserProfileIndexRouteImport.update({
+  id: '/user/profile/',
+  path: '/user/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolScreener_finvizIndexRoute =
+  ToolScreener_finvizIndexRouteImport.update({
+    id: '/tool/screener_finviz/',
+    path: '/tool/screener_finviz/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ToolChartIndexRoute = ToolChartIndexRouteImport.update({
+  id: '/tool/chart/',
+  path: '/tool/chart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarSpac_researchIndexRoute =
+  CalendarSpac_researchIndexRouteImport.update({
+    id: '/calendar/spac_research/',
+    path: '/calendar/spac_research/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CalendarIpo_scoopIndexRoute = CalendarIpo_scoopIndexRouteImport.update({
+  id: '/calendar/ipo_scoop/',
+  path: '/calendar/ipo_scoop/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarEconomy_finvizIndexRoute =
+  CalendarEconomy_finvizIndexRouteImport.update({
+    id: '/calendar/economy_finviz/',
+    path: '/calendar/economy_finviz/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/calendar/finviz': typeof CalendarFinvizRoute
-  '/calendar/': typeof CalendarIndexRoute
+  '/no_permission': typeof No_permissionRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/register': typeof UserRegisterRoute
+  '/calendar/economy_finviz/': typeof CalendarEconomy_finvizIndexRoute
+  '/calendar/ipo_scoop/': typeof CalendarIpo_scoopIndexRoute
+  '/calendar/spac_research/': typeof CalendarSpac_researchIndexRoute
+  '/tool/chart/': typeof ToolChartIndexRoute
+  '/tool/screener_finviz/': typeof ToolScreener_finvizIndexRoute
+  '/user/profile/': typeof UserProfileIndexRoute
+  '/user/settings/': typeof UserSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/calendar/finviz': typeof CalendarFinvizRoute
-  '/calendar': typeof CalendarIndexRoute
+  '/no_permission': typeof No_permissionRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/register': typeof UserRegisterRoute
+  '/calendar/economy_finviz': typeof CalendarEconomy_finvizIndexRoute
+  '/calendar/ipo_scoop': typeof CalendarIpo_scoopIndexRoute
+  '/calendar/spac_research': typeof CalendarSpac_researchIndexRoute
+  '/tool/chart': typeof ToolChartIndexRoute
+  '/tool/screener_finviz': typeof ToolScreener_finvizIndexRoute
+  '/user/profile': typeof UserProfileIndexRoute
+  '/user/settings': typeof UserSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/calendar/finviz': typeof CalendarFinvizRoute
-  '/calendar/': typeof CalendarIndexRoute
+  '/no_permission': typeof No_permissionRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/register': typeof UserRegisterRoute
+  '/calendar/economy_finviz/': typeof CalendarEconomy_finvizIndexRoute
+  '/calendar/ipo_scoop/': typeof CalendarIpo_scoopIndexRoute
+  '/calendar/spac_research/': typeof CalendarSpac_researchIndexRoute
+  '/tool/chart/': typeof ToolChartIndexRoute
+  '/tool/screener_finviz/': typeof ToolScreener_finvizIndexRoute
+  '/user/profile/': typeof UserProfileIndexRoute
+  '/user/settings/': typeof UserSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/calendar/finviz' | '/calendar/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/no_permission'
+    | '/user/login'
+    | '/user/register'
+    | '/calendar/economy_finviz/'
+    | '/calendar/ipo_scoop/'
+    | '/calendar/spac_research/'
+    | '/tool/chart/'
+    | '/tool/screener_finviz/'
+    | '/user/profile/'
+    | '/user/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/calendar/finviz' | '/calendar'
-  id: '__root__' | '/' | '/about' | '/calendar/finviz' | '/calendar/'
+  to:
+    | '/'
+    | '/about'
+    | '/no_permission'
+    | '/user/login'
+    | '/user/register'
+    | '/calendar/economy_finviz'
+    | '/calendar/ipo_scoop'
+    | '/calendar/spac_research'
+    | '/tool/chart'
+    | '/tool/screener_finviz'
+    | '/user/profile'
+    | '/user/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/no_permission'
+    | '/user/login'
+    | '/user/register'
+    | '/calendar/economy_finviz/'
+    | '/calendar/ipo_scoop/'
+    | '/calendar/spac_research/'
+    | '/tool/chart/'
+    | '/tool/screener_finviz/'
+    | '/user/profile/'
+    | '/user/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  CalendarFinvizRoute: typeof CalendarFinvizRoute
-  CalendarIndexRoute: typeof CalendarIndexRoute
+  No_permissionRoute: typeof No_permissionRoute
+  UserLoginRoute: typeof UserLoginRoute
+  UserRegisterRoute: typeof UserRegisterRoute
+  CalendarEconomy_finvizIndexRoute: typeof CalendarEconomy_finvizIndexRoute
+  CalendarIpo_scoopIndexRoute: typeof CalendarIpo_scoopIndexRoute
+  CalendarSpac_researchIndexRoute: typeof CalendarSpac_researchIndexRoute
+  ToolChartIndexRoute: typeof ToolChartIndexRoute
+  ToolScreener_finvizIndexRoute: typeof ToolScreener_finvizIndexRoute
+  UserProfileIndexRoute: typeof UserProfileIndexRoute
+  UserSettingsIndexRoute: typeof UserSettingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/no_permission': {
+      id: '/no_permission'
+      path: '/no_permission'
+      fullPath: '/no_permission'
+      preLoaderRoute: typeof No_permissionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -85,18 +212,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/calendar/': {
-      id: '/calendar/'
-      path: '/calendar'
-      fullPath: '/calendar/'
-      preLoaderRoute: typeof CalendarIndexRouteImport
+    '/user/register': {
+      id: '/user/register'
+      path: '/user/register'
+      fullPath: '/user/register'
+      preLoaderRoute: typeof UserRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/calendar/finviz': {
-      id: '/calendar/finviz'
-      path: '/calendar/finviz'
-      fullPath: '/calendar/finviz'
-      preLoaderRoute: typeof CalendarFinvizRouteImport
+    '/user/login': {
+      id: '/user/login'
+      path: '/user/login'
+      fullPath: '/user/login'
+      preLoaderRoute: typeof UserLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/settings/': {
+      id: '/user/settings/'
+      path: '/user/settings'
+      fullPath: '/user/settings/'
+      preLoaderRoute: typeof UserSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/profile/': {
+      id: '/user/profile/'
+      path: '/user/profile'
+      fullPath: '/user/profile/'
+      preLoaderRoute: typeof UserProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tool/screener_finviz/': {
+      id: '/tool/screener_finviz/'
+      path: '/tool/screener_finviz'
+      fullPath: '/tool/screener_finviz/'
+      preLoaderRoute: typeof ToolScreener_finvizIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tool/chart/': {
+      id: '/tool/chart/'
+      path: '/tool/chart'
+      fullPath: '/tool/chart/'
+      preLoaderRoute: typeof ToolChartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar/spac_research/': {
+      id: '/calendar/spac_research/'
+      path: '/calendar/spac_research'
+      fullPath: '/calendar/spac_research/'
+      preLoaderRoute: typeof CalendarSpac_researchIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar/ipo_scoop/': {
+      id: '/calendar/ipo_scoop/'
+      path: '/calendar/ipo_scoop'
+      fullPath: '/calendar/ipo_scoop/'
+      preLoaderRoute: typeof CalendarIpo_scoopIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar/economy_finviz/': {
+      id: '/calendar/economy_finviz/'
+      path: '/calendar/economy_finviz'
+      fullPath: '/calendar/economy_finviz/'
+      preLoaderRoute: typeof CalendarEconomy_finvizIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -105,8 +281,16 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  CalendarFinvizRoute: CalendarFinvizRoute,
-  CalendarIndexRoute: CalendarIndexRoute,
+  No_permissionRoute: No_permissionRoute,
+  UserLoginRoute: UserLoginRoute,
+  UserRegisterRoute: UserRegisterRoute,
+  CalendarEconomy_finvizIndexRoute: CalendarEconomy_finvizIndexRoute,
+  CalendarIpo_scoopIndexRoute: CalendarIpo_scoopIndexRoute,
+  CalendarSpac_researchIndexRoute: CalendarSpac_researchIndexRoute,
+  ToolChartIndexRoute: ToolChartIndexRoute,
+  ToolScreener_finvizIndexRoute: ToolScreener_finvizIndexRoute,
+  UserProfileIndexRoute: UserProfileIndexRoute,
+  UserSettingsIndexRoute: UserSettingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
