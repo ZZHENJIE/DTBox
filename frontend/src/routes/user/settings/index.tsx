@@ -1,79 +1,89 @@
+import { useState } from "react";
 import {
   Container,
   Stack,
   Title,
   Text,
+  Loader,
+  Center,
   Button,
-  NumberInput,
-  Switch,
-  Group,
 } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { withAuthGuard } from "#/hooks/withAuthGuard";
 import { useUserStore } from "#/stores/useUserStore";
 import { authApi } from "#/services/api";
-import { useState } from "react";
-
-interface UserConfig {
-  notifications?: boolean;
-  compactMode?: boolean;
-  itemsPerPage?: number;
-}
+import { ScreenerFinvizSettings } from "./ScreenerFinvizSettings";
+import { FinvizThumbnailSettings } from "./FinvizThumbnailSettings";
 
 function Settings() {
   const { user, setUser } = useUserStore();
-  const initialConfig = user?.config as UserConfig | undefined;
-  const [config, setConfig] = useState<UserConfig>(initialConfig ?? {});
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
-  const handleChange = (key: keyof UserConfig, value: unknown) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
-  };
+  const [saving, setSaving] = useState(false);
+  const [screenerData, setScreenerData] = useState({
+    params: [] as { query: string; label: string }[],
+    pageSize: 20,
+    autoRefresh: false,
+    autoRefreshInterval: 60,
+  });
+  const [thumbnailData, setThumbnailData] = useState({
+    period: "1d",
+    preMarket: false,
+    postMarket: false,
+  });
 
   const handleSave = async () => {
-    setLoading(true);
+    setSaving(true);
     setMessage("");
     try {
-      await authApi.changeConfig(config as unknown as Record<string, unknown>);
+      const config = {
+        finviz: {
+          screener: screenerData,
+          thumbnail: thumbnailData,
+        },
+      };
+      await authApi.changeConfig(config);
       if (user) {
-        setUser({ ...user, config: config as Record<string, unknown> });
+        setUser({ ...user, config: { ...user.config, ...config } });
       }
       setMessage("Settings saved successfully");
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Failed to save settings");
+      setMessage(e instanceof Error ? e.message : "Failed to save");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  const updateScreenerData = (data: Partial<typeof screenerData>) => {
+    setScreenerData((prev) => ({ ...prev, ...data }));
+  };
+
+  const updateThumbnailData = (data: Partial<typeof thumbnailData>) => {
+    setThumbnailData((prev) => ({ ...prev, ...data }));
+  };
+
+  if (!user) {
+    return (
+      <Center mt="xl">
+        <Loader size="sm" />
+      </Center>
+    );
+  }
 
   return (
     <Container size="sm" py="xl">
       <Stack>
         <Title order={2}>Settings</Title>
 
-        <Group justify="space-between">
-          <Text fw={500}>Notifications</Text>
-          <Switch
-            checked={config.notifications || false}
-            onChange={(e) => handleChange("notifications", e.target.checked)}
-          />
-        </Group>
+        <Title order={3}>Finviz</Title>
 
-        <Group justify="space-between">
-          <Text fw={500}>Compact Mode</Text>
-          <Switch
-            checked={config.compactMode || false}
-            onChange={(e) => handleChange("compactMode", e.target.checked)}
-          />
-        </Group>
+        <ScreenerFinvizSettings
+          data={screenerData}
+          onChange={updateScreenerData}
+        />
 
-        <NumberInput
-          label="Items Per Page"
-          value={config.itemsPerPage || 10}
-          onChange={(value) => handleChange("itemsPerPage", value)}
-          min={5}
-          max={100}
+        <FinvizThumbnailSettings
+          data={thumbnailData}
+          onChange={updateThumbnailData}
         />
 
         {message && (
@@ -82,12 +92,8 @@ function Settings() {
           </Text>
         )}
 
-        <Button
-          onClick={handleSave}
-          loading={loading}
-          style={{ alignSelf: "flex-end" }}
-        >
-          Apply Changes
+        <Button onClick={handleSave} loading={saving}>
+          Save Settings
         </Button>
       </Stack>
     </Container>

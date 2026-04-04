@@ -1,4 +1,4 @@
-import { MantineProvider, Center, Loader } from "@mantine/core";
+import { MantineProvider, Center, Loader, Box } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -59,7 +59,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <Notifications position="top-right" />
           <Header />
-          {children}
+          <Box pt="5px">{children}</Box>
         </MantineProvider>
         <Scripts />
       </body>

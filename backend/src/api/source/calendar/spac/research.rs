@@ -56,7 +56,10 @@ impl API for SpacResearchCalendar {
         let link_sel = scraper::Selector::parse("a")?;
 
         let today = Local::now();
-        let mut items = Vec::new();
+        let mut prev_day: u32 = 0;
+        let mut in_current_month = false;
+        let mut current_month_items: Vec<Item> = Vec::new();
+        let mut next_month_started = false;
 
         for day in doc.select(&day_li_sel) {
             let Some(date_node) = day.select(&date_sel).next() else {
@@ -66,6 +69,23 @@ impl API for SpacResearchCalendar {
             else {
                 continue;
             };
+
+            if !in_current_month {
+                if day_of_month == 1 || (prev_day > 20 && day_of_month < 10) {
+                    in_current_month = true;
+                } else if prev_day != 0 && day_of_month < prev_day && day_of_month > 20 {
+                    prev_day = day_of_month;
+                    continue;
+                }
+            } else {
+                if prev_day > 20 && day_of_month < 10 {
+                    next_month_started = true;
+                }
+            }
+
+            if next_month_started {
+                break;
+            }
 
             for event in day.select(&event_sel) {
                 let event_type = event
@@ -81,13 +101,16 @@ impl API for SpacResearchCalendar {
                     .and_then(|href| href.split('/').filter(|s| !s.is_empty()).last())
                     .unwrap_or_default();
 
-                items.push(Item {
-                    date: format!("{}-{:02}-{:02}", today.year(), today.month(), day_of_month),
-                    event: event_type.into(),
-                    symbol: symbol.to_string(),
-                });
+                if in_current_month {
+                    current_month_items.push(Item {
+                        date: format!("{}-{:02}-{:02}", today.year(), today.month(), day_of_month),
+                        event: event_type.into(),
+                        symbol: symbol.to_string(),
+                    });
+                }
             }
+            prev_day = day_of_month;
         }
-        Ok(items)
+        Ok(current_month_items)
     }
 }

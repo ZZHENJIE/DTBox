@@ -117,6 +117,11 @@ export interface EconomyFinvizItem {
   ticker: string;
 }
 
+export const economyApi = {
+  Finviz: (begin: string, end: string) =>
+    api.post<EconomyFinvizItem[]>("/calendar/economy/finviz", { begin, end }),
+};
+
 export interface IposcoopItem {
   company: string;
   symbol: string;
@@ -127,11 +132,35 @@ export interface IposcoopItem {
   expected_date: string;
 }
 
-export const economyApi = {
-  Finviz: (begin: string, end: string) =>
-    api.post<EconomyFinvizItem[]>("/calendar/economy/finviz", { begin, end }),
-};
-
 export const ipoApi = {
   Scoop: () => api.get<IposcoopItem[]>("/calendar/ipo/scoop"),
+};
+
+export interface SPACResearchItem {
+  date: string;
+  event: string;
+  symbol: string;
+}
+
+export const spacApi = {
+  Research: () => api.get<SPACResearchItem[]>("/calendar/spac/research"),
+};
+
+export interface ScreenerFinvizItem {
+  "No.": number;
+  Ticker: string;
+  Company: string;
+  Sector: string;
+  Industry: string;
+  Country: string;
+  "Market Cap": number | null;
+  "P/E": number | null;
+  Price: number | null;
+  Change: string;
+  Volume: number | null;
+}
+
+export const screenerApi = {
+  Finviz: (query: string) =>
+    api.post<ScreenerFinvizItem[]>("/screener/finviz", { query }),
 };

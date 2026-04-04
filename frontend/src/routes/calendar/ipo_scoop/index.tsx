@@ -51,7 +51,7 @@ function RouteComponent() {
                 <Table.Th>Symbol</Table.Th>
                 <Table.Th>Company</Table.Th>
                 <Table.Th>Managers</Table.Th>
-                <Table.Th>Shares (M)</Table.Th>
+                <Table.Th>Shares (Millions)</Table.Th>
                 <Table.Th>Price Range</Table.Th>
                 <Table.Th>Date</Table.Th>
               </Table.Tr>
