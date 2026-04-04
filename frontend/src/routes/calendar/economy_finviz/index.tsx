@@ -8,6 +8,7 @@ import {
   Container,
   SimpleGrid,
   UnstyledButton,
+  Box,
   ActionIcon,
   Group,
   Table,
@@ -129,64 +130,67 @@ function RouteComponent() {
             }
 
             return (
-              <Table mt="xl" striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Time</Table.Th>
-                    <Table.Th>Importance</Table.Th>
-                    <Table.Th>Event</Table.Th>
-                    <Table.Th>Actual</Table.Th>
-                    <Table.Th>Previous</Table.Th>
-                    <Table.Th>Forecast</Table.Th>
-                    <Table.Th>Ticker</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {dayData.map((item, index) => (
-                    <Table.Tr key={index}>
-                      <Table.Td>{dayjs(item.date).format("HH:mm")}</Table.Td>
-                      <Table.Td>
-                        <Badge
-                          color={
-                            item.importance === 3
-                              ? "red"
-                              : item.importance === 2
-                                ? "orange"
-                                : "gray"
-                          }
-                        >
-                          {"★".repeat(item.importance)}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td>{item.event}</Table.Td>
-                      <Table.Td>
-                        {item.actual ? (
+              <Box mt="xl" style={{ height: 500, overflowY: "auto" }}>
+                <Table striped highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Time</Table.Th>
+                      <Table.Th>Importance</Table.Th>
+                      <Table.Th>Event</Table.Th>
+                      <Table.Th>Actual</Table.Th>
+                      <Table.Th>Previous</Table.Th>
+                      <Table.Th>Forecast</Table.Th>
+                      <Table.Th>Ticker</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {dayData.map((item, index) => (
+                      <Table.Tr key={index}>
+                        <Table.Td>{dayjs(item.date).format("HH:mm")}</Table.Td>
+                        <Table.Td>
                           <Badge
                             color={
-                              item.isHigherPositive === 1
-                                ? item.previous &&
-                                  Number(item.actual) > Number(item.previous)
-                                  ? "green"
-                                  : "red"
-                                : item.previous &&
-                                    Number(item.actual) > Number(item.previous)
-                                  ? "red"
-                                  : "green"
+                              item.importance === 3
+                                ? "red"
+                                : item.importance === 2
+                                  ? "orange"
+                                  : "gray"
                             }
                           >
-                            {item.actual}
+                            {"★".repeat(item.importance)}
                           </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </Table.Td>
-                      <Table.Td>{item.previous ?? "-"}</Table.Td>
-                      <Table.Td>{item.forecast ?? "-"}</Table.Td>
-                      <Table.Td>{item.ticker ?? "-"}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
+                        </Table.Td>
+                        <Table.Td>{item.event}</Table.Td>
+                        <Table.Td>
+                          {item.actual ? (
+                            <Badge
+                              color={
+                                item.isHigherPositive === 1
+                                  ? item.previous &&
+                                    Number(item.actual) > Number(item.previous)
+                                    ? "green"
+                                    : "red"
+                                  : item.previous &&
+                                      Number(item.actual) >
+                                        Number(item.previous)
+                                    ? "red"
+                                    : "green"
+                              }
+                            >
+                              {item.actual}
+                            </Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </Table.Td>
+                        <Table.Td>{item.previous ?? "-"}</Table.Td>
+                        <Table.Td>{item.forecast ?? "-"}</Table.Td>
+                        <Table.Td>{item.ticker ?? "-"}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </Box>
             );
           })()
         )}

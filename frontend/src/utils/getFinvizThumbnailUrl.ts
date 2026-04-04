@@ -1,6 +1,17 @@
+export type Period =
+  | "i1" // 1 Minute
+  | "i3" // 3 Minutes
+  | "i5" // 5 Minutes
+  | "i15" // 15 Minutes
+  | "i30" // 30 Minutes
+  | "h" // 1 Hour
+  | "d" // 1 Day
+  | "w" // 1 Week
+  | "m"; // 1 Month
+
 /**
  * @param symbol
- * @param period (1m, 3m, 5m, 15m, 30m, 1h, 4h, 1d)
+ * @param period
  * @param options
  * @param options.showPreMarket
  * @param options.showPostMarket
@@ -8,12 +19,20 @@
  */
 export function getFinvizThumbnailUrl(
   symbol: string,
-  period: string = "1d",
+  period: Period,
   options: {
     showPreMarket?: boolean;
     showPostMarket?: boolean;
   } = {},
 ): string {
-  // TODO: 实现缩略图 URL 生成逻辑
-  return "";
+  const params = new URLSearchParams({
+    cs: "l",
+    t: symbol,
+    tf: period,
+    pm: options.showPreMarket ? "240" : "0",
+    am: options.showPostMarket ? "1200" : "0",
+    ct: "candle_stick",
+    tm: "d",
+  });
+  return `https://charts-node.finviz.com/chart.ashx?${params.toString()}`;
 }

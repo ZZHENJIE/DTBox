@@ -14,7 +14,6 @@ import {
   Group,
   Box,
   Pagination,
-  Title,
   Tabs,
 } from "@mantine/core";
 import type { ScreenerFinvizItem } from "#/services/api";
@@ -43,6 +42,9 @@ function RouteComponent() {
   const screenerConfig = finvizConfig?.screener as
     | Record<string, unknown>
     | undefined;
+  const thumbnailConfig = finvizConfig?.thumbnail as
+    | Record<string, unknown>
+    | undefined;
 
   const params: Parameter[] = (screenerConfig?.params as Parameter[]) || [];
   const pageSize: number = (screenerConfig?.pageSize as number) || 20;
@@ -50,6 +52,10 @@ function RouteComponent() {
     (screenerConfig?.autoRefresh as boolean) || false;
   const autoRefreshInterval: number =
     (screenerConfig?.autoRefreshInterval as number) || 60;
+
+  const period = (thumbnailConfig?.period as string) || "d";
+  const preMarket = (thumbnailConfig?.preMarket as boolean) || false;
+  const postMarket = (thumbnailConfig?.postMarket as boolean) || false;
 
   const totalPages = Math.ceil(data.length / pageSize);
 
@@ -97,11 +103,7 @@ function RouteComponent() {
 
   return (
     <RequireRole required={1}>
-      <Container>
-        <Title order={2} mb="md">
-          Screener Finviz
-        </Title>
-
+      <Container size="xl">
         <Group mt="md">
           <Tabs value={view} onChange={(v) => setView(v || "table")}>
             <Tabs.List>
@@ -150,7 +152,12 @@ function RouteComponent() {
                 onPageChange={setCurrentPage}
               />
             ) : (
-              <ScreenerFinvizCharts data={data} />
+              <ScreenerFinvizCharts
+                data={data}
+                period={period as any}
+                preMarket={preMarket}
+                postMarket={postMarket}
+              />
             )}
             {(autoRefresh || lastUpdate) && (
               <Group justify="space-between" mt="md">

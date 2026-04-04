@@ -10,6 +10,7 @@ import {
   Loader,
   Center,
   SegmentedControl,
+  Box,
 } from "@mantine/core";
 import type { SPACResearchItem } from "#/services/api";
 import { spacApi } from "#/services/api";
@@ -21,13 +22,6 @@ const EVENT_TYPES = [
   "AmendmentVote",
   "LiqDeadline",
 ];
-
-const eventColors: Record<string, string> = {
-  IpoDate: "blue",
-  ApprovalVote: "green",
-  AmendmentVote: "orange",
-  LiqDeadline: "red",
-};
 
 function RouteComponent() {
   const [data, setData] = useState<SPACResearchItem[]>([]);
@@ -71,30 +65,42 @@ function RouteComponent() {
             No data available
           </Text>
         ) : (
-          <Table mt="xl" striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Symbol</Table.Th>
-                <Table.Th>Event</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredData.map((item, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>{item.date}</Table.Td>
-                  <Table.Td>
-                    <Badge color="blue">{item.symbol}</Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color={eventColors[item.event] || "gray"}>
-                      {item.event}
-                    </Badge>
-                  </Table.Td>
+          <Box mt="xl" style={{ height: 500, overflowY: "auto" }}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Date</Table.Th>
+                  <Table.Th>Symbol</Table.Th>
+                  <Table.Th>Event</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {filteredData.map((item, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>{item.date}</Table.Td>
+                    <Table.Td>
+                      <Badge color="blue">{item.symbol}</Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={
+                          item.event === "IpoDate"
+                            ? "blue"
+                            : item.event === "ApprovalVote"
+                              ? "green"
+                              : item.event === "AmendmentVote"
+                                ? "orange"
+                                : "red"
+                        }
+                      >
+                        {item.event}
+                      </Badge>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Box>
         )}
       </Container>
     </RequireRole>

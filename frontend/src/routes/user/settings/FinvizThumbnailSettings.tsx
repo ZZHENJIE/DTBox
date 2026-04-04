@@ -1,20 +1,22 @@
 import { useEffect } from "react";
 import { Title, Switch, Text, Select, Group } from "@mantine/core";
 import { useUserStore } from "#/stores/useUserStore";
+import type { Period } from "#/utils/getFinvizThumbnailUrl";
 
 const TIME_OPTIONS = [
-  { value: "1m", label: "1 Minute" },
-  { value: "3m", label: "3 Minutes" },
-  { value: "5m", label: "5 Minutes" },
-  { value: "15m", label: "15 Minutes" },
-  { value: "30m", label: "30 Minutes" },
-  { value: "1h", label: "1 Hour" },
-  { value: "4h", label: "4 Hours" },
-  { value: "1d", label: "1 Day" },
+  { value: "i1", label: "1 Minute" },
+  { value: "i3", label: "3 Minutes" },
+  { value: "i5", label: "5 Minutes" },
+  { value: "i15", label: "15 Minutes" },
+  { value: "i30", label: "30 Minutes" },
+  { value: "h", label: "1 Hour" },
+  { value: "d", label: "1 Day" },
+  { value: "w", label: "1 Week" },
+  { value: "m", label: "1 Month" },
 ];
 
 interface ThumbnailData {
-  period: string;
+  period: Period;
   preMarket: boolean;
   postMarket: boolean;
 }
@@ -36,7 +38,7 @@ export function FinvizThumbnailSettings({
     const thumbnail = finviz?.thumbnail as Record<string, unknown> | undefined;
 
     if (thumbnail?.period) {
-      onChange({ period: thumbnail.period as string });
+      onChange({ period: thumbnail.period as Period });
     }
     if (thumbnail?.preMarket !== undefined) {
       onChange({ preMarket: thumbnail.preMarket as boolean });
@@ -46,7 +48,7 @@ export function FinvizThumbnailSettings({
     }
   }, []);
 
-  const showPrePostOption = data.period !== "1d";
+  const showPrePostOption = data.period !== "d";
 
   return (
     <>
@@ -56,7 +58,7 @@ export function FinvizThumbnailSettings({
         <Select
           label="Period"
           value={data.period}
-          onChange={(v) => onChange({ period: v || "1d" })}
+          onChange={(v) => onChange({ period: (v || "d") as Period })}
           data={TIME_OPTIONS}
           style={{ width: 150 }}
         />

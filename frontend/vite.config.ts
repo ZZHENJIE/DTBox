@@ -1,9 +1,7 @@
 import { defineConfig } from "vite";
 import { devtools } from "@tanstack/devtools-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -11,8 +9,8 @@ const config = defineConfig({
   plugins: [
     devtools(),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
+    tanstackRouter(),
     tailwindcss(),
-    tanstackStart(),
     viteReact(),
   ],
   server: {
@@ -22,6 +20,10 @@ const config = defineConfig({
         changeOrigin: true,
       },
     },
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
   },
 });
 
