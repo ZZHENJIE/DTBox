@@ -6,4 +6,3 @@
 *.db-wal
 /logs
 /config.toml
-Cargo.lock
