@@ -1,37 +1,32 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { MantineProvider } from "@mantine/core";
-import { Notifications } from "@mantine/notifications";
-import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
-import "@mantine/dates/styles.css";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
-import { theme } from "./theme";
-import Header from "./components/Header";
-import { useInitUser } from "./hooks/useInitUser";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import { BrowserRouter } from 'react-router-dom';
 
-const router = createRouter({ routeTree });
+import App from './App';
+import { theme } from './theme';
 
-function App() {
-  useInitUser();
+// Import Mantine styles
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import '@mantine/dates/styles.css';
 
-  return (
-    <MantineProvider theme={theme} defaultColorScheme="dark">
-      <Notifications position="top-right" />
-      <Header />
-      <div style={{ paddingTop: "5px" }}>
-        <RouterProvider router={router} />
-      </div>
-    </MantineProvider>
-  );
+// Import Tailwind
+import './index.css';
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found');
 }
 
-const rootElement = document.getElementById("app");
-if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  );
-}
+createRoot(rootElement).render(
+  <StrictMode>
+    <BrowserRouter>
+      <MantineProvider theme={theme} defaultColorScheme="dark">
+        <Notifications position="top-right" />
+        <App />
+      </MantineProvider>
+    </BrowserRouter>
+  </StrictMode>
+);

@@ -1,0 +1,26 @@
+[server]
+host = "0.0.0.0"
+port = 3000
+
+[database]
+url = "sqlite://./dtbox.db"
+max_connections = 10
+
+[jwt]
+secret = "your-super-secret-key-change-in-production-min-32-chars"
+access_token_expires_minutes = 30
+refresh_token_expires_days = 7
+
+[web]
+path = "../frontend/dist"
+
+[finviz]
+api_key = ""
+
+[log]
+level = "info"
+directory = "./logs"
+
+[rate_limit]
+requests_per_second = 10
+burst_size = 20

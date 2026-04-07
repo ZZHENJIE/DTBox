@@ -1,9 +1,5 @@
 # DTBox
 
-<div align="center">
-  <img src="./assets/logo.svg" alt="Logo" width="200" />
-</div>
-
 ## 简介(新手项目)
 是一款用于美股日内交易的工具软件，提供实时行情、数据分析等功能。
 ## 软件仅限个人交流学习/投资研究，请于下载后的 24 小时内卸载！

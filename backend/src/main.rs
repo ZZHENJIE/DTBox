@@ -1,39 +1,41 @@
-use dtbox::{
-    app, database,
-    utils::{SETTINGS, log},
-};
+use axum::Router;
+use dtbox::{api::create_api_routes, config::AppConfig, logger::init_logging, state::AppState};
 use std::sync::Arc;
-use tracing::info;
+use tower_http::services::{ServeDir, ServeFile};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize log system
-    let _guard = log::log_system_init()?;
-    info!("Log System Initialize Success.");
+    // Load configuration
+    let config = AppConfig::load()?;
 
-    // Connect to database
-    let db_conn = database::connect(&SETTINGS.database).await?;
-    info!("Database Connection Success.");
+    // Initialize logging
+    let _log_guard = init_logging(&config.log.directory, &config.log.level)?;
 
-    // Initialize database
-    let _ = database::setup_schema(&db_conn).await?;
-    info!("Database Initialize Success.");
+    tracing::info!("Starting DTBox server v{}", env!("CARGO_PKG_VERSION"));
 
-    // Create app state
-    let address = format!("{}:{}", &SETTINGS.server.host, &SETTINGS.server.port);
-    let app_state = Arc::new(app::State::new(db_conn));
+    // Create application state
+    let state = Arc::new(AppState::new(config.clone()).await?);
 
-    // Initialize app
-    let router = app::start_app_init(&app_state).await?;
-    info!("App Initialization Success.");
-    let app = router.with_state(app_state);
+    // Create API routes
+    let api_routes = create_api_routes(state.clone());
 
-    // Bind listener
-    let listener = tokio::net::TcpListener::bind(&address).await?;
-    info!("Listener Bind Success.");
+    // Static file service
+    let web_path = config.web.path.clone();
+    let static_service =
+        ServeDir::new(&web_path).fallback(ServeFile::new(web_path.join("index.html")));
+
+    // Merge routes
+    let app = Router::new()
+        .nest("/api", api_routes)
+        .fallback_service(static_service);
+
+    // Bind address
+    let addr = format!("{}:{}", config.server.host, config.server.port);
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+
+    tracing::info!("Server listening on http://{}", addr);
 
     // Start server
-    info!("Server Starting On {}.", address);
     axum::serve(listener, app).await?;
 
     Ok(())

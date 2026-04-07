@@ -1,30 +1,27 @@
-import { defineConfig } from "vite";
-import { devtools } from "@tanstack/devtools-vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
-const config = defineConfig({
-  plugins: [
-    devtools(),
-    tsconfigPaths({ projects: ["./tsconfig.json"] }),
-    tanstackRouter(),
-    tailwindcss(),
-    viteReact(),
-  ],
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
+    host: '0.0.0.0',
+    port: 5173,
     proxy: {
-      "/api": {
-        target: "http://127.0.0.1:56789",
+      '/api': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },
   },
   build: {
-    outDir: "dist",
-    emptyOutDir: true,
+    outDir: 'dist',
+    sourcemap: true,
   },
 });
-
-export default config;

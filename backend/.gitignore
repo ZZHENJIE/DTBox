@@ -1,6 +1,9 @@
+.DS_Store
 /target
-settings.json
+**/*.rs.bk
 *.db
-.env
+*.db-shm
+*.db-wal
 /logs
+/config.toml
 Cargo.lock

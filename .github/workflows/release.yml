@@ -34,27 +34,15 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build release
-        run: cargo build --release --locked
-
-      - name: Ensure binary name
-        shell: bash
-        run: |
-          cd target/release
-          if [ ! -f DTBox ] && [ ! -f DTBox.exe ]; then
-            cp dtbox DTBox 2>/dev/null || true
-          fi
+        run: cargo build --release --locked --bin dtbox-server
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DTBox-${{ matrix.os }}-${{ matrix.target }}
+          name: dtbox-server-${{ matrix.os }}-${{ matrix.target }}
           path: |
-            target/release/DTBox
-            target/release/DTBox.exe
-
-      - name: List artifacts
-        shell: bash
-        run: ls -la target/release/DTBox* target/release/dtbox* 2>/dev/null || true
+            target/release/dtbox-server
+            target/release/dtbox-server.exe
 
   create-release:
     needs: release
@@ -76,7 +64,7 @@ jobs:
         with:
           files: |
             artifacts/**/*.exe
-            artifacts/**/DTBox
+            artifacts/**/dtbox-server
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
