@@ -1,42 +1,14 @@
-import { Group, Button, Text, Menu, Avatar, rem } from "@mantine/core";
+import { Group, Button, Text, Menu, Avatar } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  IconUser,
-  IconSettings,
-  IconLogout,
-  IconChartBar,
-  IconChevronDown,
-  IconHelp,
-  IconTool,
-  IconCalendar,
-  IconBrandGithub,
-  IconInfoCircle,
-  IconTopologyRing2,
-} from "@tabler/icons-react";
 
 import { useAuthStore } from "../stores/authStore";
 import { authService } from "../services/auth";
-import menuConfig from "../config/menu.json";
-
-// 图标映射
-const iconMap: Record<string, React.ReactNode> = {
-  user: <IconUser style={{ width: rem(14), height: rem(14) }} />,
-  settings: <IconSettings style={{ width: rem(14), height: rem(14) }} />,
-  logout: <IconLogout style={{ width: rem(14), height: rem(14) }} />,
-  chartBar: <IconChartBar size={16} />,
-  chevronDown: <IconChevronDown size={14} />,
-  help: <IconHelp size={14} />,
-  tool: <IconTool size={14} />,
-  calendar: <IconCalendar size={14} />,
-  github: <IconBrandGithub size={14} />,
-  info: <IconInfoCircle size={14} />,
-  quote: <IconTopologyRing2 size={14} />,
-};
+import { guestMenuItems, logo, navItems, userMenuItems } from "@/config/Menu";
 
 interface MenuItem {
   label?: string;
   path?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   action?: string;
   color?: string;
   variant?: string;
@@ -74,10 +46,7 @@ export function Header() {
       return (
         <Menu shadow="md" key={index}>
           <Menu.Target>
-            <Button
-              variant="subtle"
-              rightSection={iconMap[item.icon || "chevronDown"]}
-            >
+            <Button variant="subtle" rightSection={item.icon}>
               {item.label}
             </Button>
           </Menu.Target>
@@ -87,7 +56,7 @@ export function Header() {
                 key={childIndex}
                 component={Link}
                 to={child.path || "#"}
-                leftSection={child.icon ? iconMap[child.icon] : undefined}
+                leftSection={child.icon}
               >
                 {child.label}
               </Menu.Item>
@@ -104,7 +73,7 @@ export function Header() {
         component={Link}
         to={item.path || "#"}
         variant="subtle"
-        leftSection={item.icon ? iconMap[item.icon] : undefined}
+        leftSection={item.icon}
       >
         {item.label}
       </Button>
@@ -116,18 +85,18 @@ export function Header() {
       {/* Logo */}
       <Text
         component={Link}
-        to={menuConfig.logo.link}
+        to={logo.link}
         size="xl"
         fw={700}
         style={{ textDecoration: "none", color: "inherit" }}
       >
-        {menuConfig.logo.text}
+        {logo.text}
       </Text>
 
       {/* Navigation */}
       {isAuthenticated && (
         <Group>
-          {menuConfig.navItems.map((item, index) => renderNavItem(item, index))}
+          {navItems.map((item, index) => renderNavItem(item, index))}
         </Group>
       )}
 
@@ -145,7 +114,7 @@ export function Header() {
             </Menu.Target>
 
             <Menu.Dropdown>
-              {menuConfig.userMenuItems.map((item, index) => {
+              {userMenuItems.map((item, index) => {
                 if (item.type === "divider") {
                   return <Menu.Divider key={index} />;
                 }
@@ -156,7 +125,7 @@ export function Header() {
                     to={item.path || "#"}
                     onClick={() => item.action && handleMenuAction(item.action)}
                     color={item.color}
-                    leftSection={item.icon ? iconMap[item.icon] : undefined}
+                    leftSection={item.icon}
                   >
                     {item.label}
                   </Menu.Item>
@@ -166,7 +135,7 @@ export function Header() {
           </Menu>
         ) : (
           <Group>
-            {menuConfig.guestMenuItems.map((item, index) => (
+            {guestMenuItems.map((item, index) => (
               <Button
                 key={index}
                 component={Link}

@@ -1,13 +1,12 @@
-import { AppShell, Container } from '@mantine/core';
-import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-
-import { Header } from './components/Header';
-import { useAuthStore } from './stores/authStore';
-import { authService } from './services/auth';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { PublicRoute } from './components/PublicRoute';
-import { routes, pageComponents } from './config/routes';
+import { AppShell, Container } from "@mantine/core";
+import { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Header } from "./components/Header";
+import { useAuthStore } from "./stores/authStore";
+import { authService } from "./services/auth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
+import { routes } from "./config/Routes";
 
 function App() {
   const { isLoading, setLoading, setUser, logout } = useAuthStore();
@@ -34,7 +33,7 @@ function App() {
   }
 
   // 分离普通路由和 404 路由
-  const normalRoutes = routes.filter(r => r.path !== '*');
+  const normalRoutes = routes.filter((r) => r.path !== "*");
 
   return (
     <AppShell header={{ height: 60 }} padding="md">
@@ -46,14 +45,10 @@ function App() {
         <Container size="xl">
           <Routes>
             {normalRoutes.map((route, index) => {
-              const Component = pageComponents[route.component];
-
-              if (!Component) {
-                return null;
-              }
+              const Component = route.component;
 
               // 登录/注册页面 - 已登录用户重定向到首页
-              if (route.path === '/login' || route.path === '/register') {
+              if (route.path === "/login" || route.path === "/register") {
                 return (
                   <Route
                     key={index}
@@ -68,7 +63,7 @@ function App() {
               }
 
               // 404、无权限页面 - 已登录用户也可以访问
-              if (route.path === '/404' || route.path === '/no-permission') {
+              if (route.path === "/404" || route.path === "/no-permission") {
                 return (
                   <Route
                     key={index}
@@ -95,12 +90,9 @@ function App() {
                 />
               );
             })}
-            
+
             {/* 404 - 放在最后 */}
-            <Route
-              path="*"
-              element={<Navigate to="/404" replace />}
-            />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </Container>
       </AppShell.Main>
