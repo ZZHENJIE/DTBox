@@ -34,15 +34,15 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build release
-        run: cargo build --release --locked --bin dtbox-server
+        run: cd backend && cargo build --release --locked --bin dtbox-server
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dtbox-server-${{ matrix.os }}-${{ matrix.target }}
           path: |
-            target/release/dtbox-server
-            target/release/dtbox-server.exe
+            backend/target/release/dtbox-server
+            backend/target/release/dtbox-server.exe
 
   create-release:
     needs: release
