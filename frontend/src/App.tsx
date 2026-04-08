@@ -3,6 +3,11 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Header } from "./components/Header";
 import { useAuthStore } from "./stores/authStore";
+import {
+  useSettingsStore,
+  DEFAULT_SETTINGS,
+  type UserSettings,
+} from "./stores/settingsStore";
 import { authService } from "./services/auth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
@@ -10,6 +15,7 @@ import { routes } from "./config/Routes";
 
 function App() {
   const { isLoading, setLoading, setUser, logout } = useAuthStore();
+  const { setSettings } = useSettingsStore();
 
   // Initialize auth on app start
   useEffect(() => {
@@ -18,6 +24,40 @@ function App() {
         await authService.refreshToken();
         const user = await authService.getCurrentUser();
         setUser(user);
+
+        // Initialize settings from user data
+        if (user?.settings && typeof user.settings === "object") {
+          const userSettings = user.settings as Partial<UserSettings>;
+          const mergedSettings: UserSettings = {
+            finviz: {
+              screener: {
+                page_count:
+                  userSettings.finviz?.screener?.page_count ??
+                  DEFAULT_SETTINGS.finviz.screener.page_count,
+                auto_refersh:
+                  userSettings.finviz?.screener?.auto_refersh ??
+                  DEFAULT_SETTINGS.finviz.screener.auto_refersh,
+                parameter:
+                  userSettings.finviz?.screener?.parameter ??
+                  DEFAULT_SETTINGS.finviz.screener.parameter,
+              },
+              thumbnail: {
+                interval:
+                  userSettings.finviz?.thumbnail?.interval ??
+                  DEFAULT_SETTINGS.finviz.thumbnail.interval,
+                pre_market:
+                  userSettings.finviz?.thumbnail?.pre_market ??
+                  DEFAULT_SETTINGS.finviz.thumbnail.pre_market,
+                after_hours:
+                  userSettings.finviz?.thumbnail?.after_hours ??
+                  DEFAULT_SETTINGS.finviz.thumbnail.after_hours,
+              },
+            },
+            subscription:
+              userSettings.subscription ?? DEFAULT_SETTINGS.subscription,
+          };
+          setSettings(mergedSettings);
+        }
       } catch {
         logout();
       } finally {
@@ -26,7 +66,7 @@ function App() {
     };
 
     initAuth();
-  }, [setUser, logout, setLoading]);
+  }, [setUser, logout, setLoading, setSettings]);
 
   if (isLoading) {
     return null;
@@ -42,7 +82,7 @@ function App() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <div style={{ padding: '0 6px' }}>
+        <div style={{ padding: "0 6px" }}>
           <Routes>
             {normalRoutes.map((route, index) => {
               const Component = route.component;
