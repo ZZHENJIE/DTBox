@@ -11,8 +11,23 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact-name: dtbox-linux-x86_64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact-name: dtbox-windows-x86_64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact-name: dtbox-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact-name: dtbox-macos-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +35,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-gnu
+          targets: ${{ matrix.target }}
 
       - name: Build release
         run: cd backend && cargo build --release --locked --bin dtbox-server
@@ -38,70 +53,20 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
-      - name: Install cross compile toolchain
-        run: |
-          rustup target add x86_64-pc-windows-msvc
-          rustup target add aarch64-apple-darwin
-          rustup target add x86_64-apple-darwin
-
-      - name: Build for Windows
-        run: cd backend && cargo build --release --locked --target x86_64-pc-windows-msvc --bin dtbox-server
-
-      - name: Build for macOS Intel
-        run: cd backend && cargo build --release --locked --target x86_64-apple-darwin --bin dtbox-server
-
-      - name: Build for macOS Apple Silicon
-        run: cd backend && cargo build --release --locked --target aarch64-apple-darwin --bin dtbox-server
-
       - name: Prepare release files
         run: |
-          mkdir -p release/linux-x86_64
-          cp backend/target/release/dtbox-server release/linux-x86_64/
-          cp -r frontend/dist release/linux-x86_64/web
-          cp backend/config.example.toml release/linux-x86_64/config.toml
-          cd release/linux-x86_64 && zip -r ../../dtbox-linux-x86_64.zip . && cd ../..
+          mkdir -p release
+          cp backend/target/release/dtbox-server release/
+          cp backend/target/release/dtbox-server.exe release/
+          cp -r frontend/dist release/web
+          cp backend/config.example.toml release/config.toml
+          cd release && zip -r ../${{ matrix.artifact-name }}.zip . && cd ..
 
-          mkdir -p release/windows-x86_64
-          cp backend/target/x86_64-pc-windows-msvc/release/dtbox-server.exe release/windows-x86_64/
-          cp -r frontend/dist release/windows-x86_64/web
-          cp backend/config.example.toml release/windows-x86_64/config.toml
-          cd release/windows-x86_64 && zip -r ../../dtbox-windows-x86_64.zip . && cd ../..
-
-          mkdir -p release/macos-x86_64
-          cp backend/target/x86_64-apple-darwin/release/dtbox-server release/macos-x86_64/
-          cp -r frontend/dist release/macos-x86_64/web
-          cp backend/config.example.toml release/macos-x86_64/config.toml
-          cd release/macos-x86_64 && zip -r ../../dtbox-macos-x86_64.zip . && cd ../..
-
-          mkdir -p release/macos-arm64
-          cp backend/target/aarch64-apple-darwin/release/dtbox-server release/macos-arm64/
-          cp -r frontend/dist release/macos-arm64/web
-          cp backend/config.example.toml release/macos-arm64/config.toml
-          cd release/macos-arm64 && zip -r ../../dtbox-macos-arm64.zip . && cd ../..
-
-      - name: Upload Linux artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dtbox-linux-x86_64
-          path: dtbox-linux-x86_64.zip
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dtbox-windows-x86_64
-          path: dtbox-windows-x86_64.zip
-
-      - name: Upload macOS Intel artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dtbox-macos-x86_64
-          path: dtbox-macos-x86_64.zip
-
-      - name: Upload macOS Apple Silicon artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dtbox-macos-arm64
-          path: dtbox-macos-arm64.zip
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-name }}.zip
 
   create-release:
     needs: release
@@ -123,10 +88,10 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: |
-            artifacts/DTBox-linux-x86_64.zip
-            artifacts/DTBox-windows-x86_64.zip
-            artifacts/DTBox-macos-x86_64.zip
-            artifacts/DTBox-macos-arm64.zip
+            artifacts/dtbox-linux-x86_64.zip
+            artifacts/dtbox-windows-x86_64.zip
+            artifacts/dtbox-macos-x86_64.zip
+            artifacts/dtbox-macos-arm64.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
