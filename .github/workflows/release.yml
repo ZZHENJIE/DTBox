@@ -56,8 +56,8 @@ jobs:
       - name: Prepare release files
         run: |
           mkdir -p release
-          cp backend/target/release/dtbox-server release/
-          cp backend/target/release/dtbox-server.exe release/
+          if [ -f backend/target/release/dtbox-server ]; then cp backend/target/release/dtbox-server release/; fi
+          if [ -f backend/target/release/dtbox-server.exe ]; then cp backend/target/release/dtbox-server.exe release/; fi
           cp -r frontend/dist release/web
           cp backend/config.example.toml release/config.toml
           cd release && zip -r ../${{ matrix.artifact-name }}.zip . && cd ..
