@@ -1,15 +1,106 @@
-import { Title, Paper, Stack, Text } from "@mantine/core";
+import { useState, useEffect } from "react";
+import {
+  Text,
+  Stack,
+  Table,
+  Badge,
+  Loader,
+  Center,
+  SegmentedControl,
+  Box,
+} from "@mantine/core";
+import { marketService } from "@/services/market";
+
+const EVENT_TYPES = [
+  "All",
+  "IpoDate",
+  "ApprovalVote",
+  "AmendmentVote",
+  "LiqDeadline",
+];
+
+function SPACResearchContent() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("All");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const result = await marketService.getSpacResearch();
+        setData(result);
+      } catch {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredData =
+    filter === "All" ? data : data.filter((item) => item.event === filter);
+
+  return (
+    <Stack>
+      <SegmentedControl
+        mb="md"
+        value={filter}
+        onChange={setFilter}
+        data={EVENT_TYPES}
+      />
+
+      {loading ? (
+        <Center mt="xl">
+          <Loader size="sm" />
+        </Center>
+      ) : filteredData.length === 0 ? (
+        <Text ta="center" mt="xl" c="dimmed">
+          No data available
+        </Text>
+      ) : (
+        <Box mt="xl" style={{ height: 500, overflowY: "auto" }}>
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Symbol</Table.Th>
+                <Table.Th>Event</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredData.map((item, index) => (
+                <Table.Tr key={index}>
+                  <Table.Td>{item.date}</Table.Td>
+                  <Table.Td>
+                    <Badge color="blue">{item.symbol}</Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge
+                      color={
+                        item.event === "IpoDate"
+                          ? "blue"
+                          : item.event === "ApprovalVote"
+                            ? "green"
+                            : item.event === "AmendmentVote"
+                              ? "orange"
+                              : "red"
+                      }
+                    >
+                      {item.event}
+                    </Badge>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Box>
+      )}
+    </Stack>
+  );
+}
 
 export function SPACResearchPage() {
-  return (
-    <Paper radius="md" p="xl" withBorder maw={500} w="100%">
-      <Title order={2} mb="lg">
-        SPAC Research
-      </Title>
-
-      <Stack gap="md">
-        <Text c="dimmed">开发中...</Text>
-      </Stack>
-    </Paper>
-  );
+  return <SPACResearchContent />;
 }

@@ -1,4 +1,4 @@
-import { AppShell, Container } from "@mantine/core";
+import { AppShell } from "@mantine/core";
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Header } from "./components/Header";
@@ -42,7 +42,7 @@ function App() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <Container size="xl">
+        <div style={{ padding: '0 6px' }}>
           <Routes>
             {normalRoutes.map((route, index) => {
               const Component = route.component;
@@ -94,7 +94,7 @@ function App() {
             {/* 404 - 放在最后 */}
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
-        </Container>
+        </div>
       </AppShell.Main>
     </AppShell>
   );

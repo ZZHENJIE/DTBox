@@ -7,22 +7,22 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    
+
     #[sea_orm(unique, indexed)]
     pub username: String,
-    
+
     #[sea_orm(column_name = "pass_hash")]
     pub password_hash: String,
-    
+
     #[sea_orm(column_type = "Json")]
-    pub config: Json,
-    
+    pub settings: Json,
+
     #[sea_orm(default_value = "0")]
     pub permissions: i32,
-    
+
     #[sea_orm(default_value = "CURRENT_TIMESTAMP")]
     pub created_at: DateTimeWithTimeZone,
-    
+
     #[sea_orm(default_value = "CURRENT_TIMESTAMP")]
     pub updated_at: DateTimeWithTimeZone,
 }

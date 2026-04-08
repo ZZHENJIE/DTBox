@@ -1,7 +1,6 @@
 import {
   IconBrandGithub,
   IconCalendar,
-  IconChartBar,
   IconHelp,
   IconInfoCircle,
   IconLogout,
@@ -10,6 +9,7 @@ import {
   IconTopologyRing2,
   IconUser,
 } from "@tabler/icons-react";
+import { Icon } from "@/components/Icon";
 
 export const logo = {
   text: "DTBox",
@@ -29,7 +29,7 @@ export const navItems = [
       {
         label: "Finviz股票筛选器",
         path: "/screener/finviz",
-        icon: <IconChartBar width={20} />,
+        icon: <Icon src="/Icon/Finviz.png" />,
       },
     ],
   },
@@ -40,17 +40,17 @@ export const navItems = [
       {
         label: "Finviz财经",
         path: "/economy/finviz",
-        icon: <IconChartBar width={20} />,
+        icon: <Icon src="/Icon/Finviz.png" />,
       },
       {
         label: "IPO Scoop",
         path: "/ipo/scoop",
-        icon: <IconChartBar width={20} />,
+        icon: <Icon src="/Icon/IPOScoop.ico" />,
       },
       {
         label: "SPAC Research",
         path: "/spac/research",
-        icon: <IconChartBar width={20} />,
+        icon: <Icon src="/Icon/SPACResearch.jpeg" />,
       },
     ],
   },

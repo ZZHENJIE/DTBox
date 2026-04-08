@@ -12,7 +12,7 @@ import { AboutPage } from "../pages/About";
 import { FinvizScreenerPage } from "../pages/Tool/Screener/Finviz";
 import { QuotePage } from "../pages/Tool/Quote";
 // 日历
-import { FinvizEconomyPage } from "../pages/Calendar/Economy/Finviz";
+import { EconomyFinvizPage } from "../pages/Calendar/Economy/Finviz";
 import { IPOScoopPage } from "../pages/Calendar/IPO/Scoop";
 import { SPACResearchPage } from "../pages/Calendar/SPAC/Research";
 
@@ -44,7 +44,7 @@ export const routes: RouteConfig[] = [
   { path: "/quote", component: QuotePage, auth: 1 },
 
   // 日历
-  { path: "/economy/finviz", component: FinvizEconomyPage, auth: 1 },
+  { path: "/economy/finviz", component: EconomyFinvizPage, auth: 1 },
   { path: "/ipo/scoop", component: IPOScoopPage, auth: 1 },
   { path: "/spac/research", component: SPACResearchPage, auth: 1 },
 

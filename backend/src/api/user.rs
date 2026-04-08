@@ -24,14 +24,14 @@ pub struct UserInfoResponse {
     pub id: i32,
     pub username: String,
     pub permissions: i32,
-    pub config: serde_json::Value,
+    pub settings: serde_json::Value,
     pub created_at: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct UpdateUserRequest {
     username: Option<String>,
-    config: Option<serde_json::Value>,
+    settings: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -45,7 +45,7 @@ pub struct UpdateUserResponse {
     pub id: i32,
     pub username: String,
     pub permissions: i32,
-    pub config: serde_json::Value,
+    pub settings: serde_json::Value,
     pub created_at: String,
 }
 
@@ -66,7 +66,7 @@ pub async fn get_current_user(
         id: user_info.id,
         username: user_info.username,
         permissions: user_info.permissions,
-        config: user_info.config,
+        settings: user_info.settings,
         created_at: user_info.created_at,
     }))
 }
@@ -79,7 +79,7 @@ pub async fn update_current_user(
 ) -> Result<JsonResponse<UpdateUserResponse>, AppError> {
     let updates = UserUpdate {
         username: req.username,
-        config: req.config,
+        settings: req.settings,
     };
 
     let user_info = state
@@ -92,7 +92,7 @@ pub async fn update_current_user(
         id: user_info.id,
         username: user_info.username,
         permissions: user_info.permissions,
-        config: user_info.config,
+        settings: user_info.settings,
         created_at: user_info.created_at,
     }))
 }
@@ -109,7 +109,9 @@ pub async fn update_password(
         .update_password(claims.user_id(), &req.old_password, &req.new_password)
         .await?;
 
-    Ok(JsonResponse::<()>::ok_with_message("Password changed successfully"))
+    Ok(JsonResponse::<()>::ok_with_message(
+        "Password changed successfully",
+    ))
 }
 
 /// Logout from all devices
@@ -122,5 +124,7 @@ pub async fn logout_all_devices(
         .auth()
         .logout_all_devices(claims.user_id())
         .await?;
-    Ok(JsonResponse::<()>::ok_with_message("Logged out from all devices"))
+    Ok(JsonResponse::<()>::ok_with_message(
+        "Logged out from all devices",
+    ))
 }

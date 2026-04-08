@@ -16,7 +16,10 @@ pub struct UserService {
 impl UserService {
     /// Create service
     pub fn new(repos: Repositories, config: Arc<AppConfig>) -> Self {
-        Self { repos, _config: config }
+        Self {
+            repos,
+            _config: config,
+        }
     }
 
     /// Get user info
@@ -32,11 +35,7 @@ impl UserService {
     }
 
     /// Update user info
-    pub async fn update_user(
-        &self,
-        user_id: i32,
-        updates: UserUpdate,
-    ) -> Result<UserInfo> {
+    pub async fn update_user(&self, user_id: i32, updates: UserUpdate) -> Result<UserInfo> {
         // If updating username, check if it already exists
         if let Some(ref username) = updates.username {
             if self.repos.user().exists_by_username(username).await? {
@@ -47,7 +46,7 @@ impl UserService {
         let user = self
             .repos
             .user()
-            .update(user_id, updates.username.as_deref(), updates.config)
+            .update(user_id, updates.username.as_deref(), updates.settings)
             .await?;
 
         Ok(UserInfo::from(user))
@@ -86,7 +85,9 @@ impl UserService {
 
         // Validate new password length
         if new_password.len() < 6 {
-            return Err(AppError::Validation("Password must be at least 6 characters".to_string()));
+            return Err(AppError::Validation(
+                "Password must be at least 6 characters".to_string(),
+            ));
         }
 
         // Hash new password
@@ -103,7 +104,7 @@ pub struct UserInfo {
     pub id: i32,
     pub username: String,
     pub permissions: i32,
-    pub config: serde_json::Value,
+    pub settings: serde_json::Value,
     pub created_at: String,
 }
 
@@ -113,7 +114,7 @@ impl From<user::Model> for UserInfo {
             id: user.id,
             username: user.username,
             permissions: user.permissions,
-            config: user.config,
+            settings: user.settings,
             created_at: user.created_at.to_string(),
         }
     }
@@ -123,5 +124,5 @@ impl From<user::Model> for UserInfo {
 #[derive(Debug, Clone, Default)]
 pub struct UserUpdate {
     pub username: Option<String>,
-    pub config: Option<serde_json::Value>,
+    pub settings: Option<serde_json::Value>,
 }

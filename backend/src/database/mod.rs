@@ -84,7 +84,7 @@ impl Database {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 pass_hash TEXT NOT NULL,
-                config TEXT NOT NULL DEFAULT '{}',
+                settings TEXT NOT NULL DEFAULT '{}',
                 permissions INTEGER NOT NULL DEFAULT 0,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

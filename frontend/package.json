@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "DTBox 前端 - 美股日内交易工具",
   "scripts": {
     "dev": "vite dev",
     "build": "tsc && vite build",
