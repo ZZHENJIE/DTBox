@@ -12,7 +12,7 @@ access_token_expires_minutes = 30
 refresh_token_expires_days = 7
 
 [web]
-path = "../frontend/dist"
+path = "./web"
 
 [finviz]
 api_key = ""
