@@ -56,7 +56,8 @@ jobs:
         run: cd frontend && npm run build
         shell: bash
 
-      - name: Prepare release files
+      - name: Prepare release files (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         run: |
           mkdir -p release
           if test -f "backend/target/release/dtbox-server"; then cp backend/target/release/dtbox-server release/; else cp backend/target/release/dtbox-server.exe release/; fi
@@ -64,6 +65,16 @@ jobs:
           cp backend/config.example.toml release/config.toml
           cd release && zip -r ../${{ matrix.artifact-name }}.zip . && cd ..
         shell: bash
+
+      - name: Prepare release files (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir release
+          cp backend/target/release/dtbox-server.exe release/
+          cp -r frontend/dist release/web
+          cp backend/config.example.toml release/config.toml
+          cd release; Compress-Archive -Path * -DestinationPath ../${{ matrix.artifact-name }}.zip
+        shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
