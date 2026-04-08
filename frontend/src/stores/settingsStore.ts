@@ -5,27 +5,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
     screener: {
       page_count: 20,
       auto_refersh: 10,
-      parameter: [
-        {
-          label: "超0.7$交易量",
-          value: "&f=sh_price_0.7to20,sh_curvol_o200&o=-volume",
-        },
-        {
-          label: "异常交易量",
-          value:
-            "&s=ta_unusualvolume&f=sh_price_0.5to30,sh_curvol_o200&o=-volume",
-        },
-        {
-          label: "10$手续费",
-          value:
-            "&f=ind_shellcompanies,sh_curvol_o200,sh_price_5to20&o=-volume",
-        },
-        {
-          label: "稳票",
-          value:
-            "&f=sh_curvol_o200,sh_price_1to20,ta_change_-3to3&ft=4&o=-volume",
-        },
-      ],
+      parameter: [],
     },
     thumbnail: {
       interval: "Minutes",

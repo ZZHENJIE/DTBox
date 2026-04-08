@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import {
   Stack,
   Select,
-  Button,
   Text,
   Loader,
   Center,
   Group,
-  Box,
-  Pagination,
   Tabs,
+  Box,
+  ActionIcon,
 } from "@mantine/core";
 import {
   marketService,
@@ -18,6 +17,8 @@ import {
 import { useSettingsStore } from "../../../../stores/settingsStore";
 import { ScreenerFinvizTable } from "./ScreenerFinvizTable";
 import { ScreenerFinvizCharts } from "./ScreenerFinvizCharts";
+import { ScreenerPagination } from "./ScreenerPagination";
+import { IconPlayerPlay, IconPlayerPause } from "@tabler/icons-react";
 
 interface Parameter {
   query: string;
@@ -91,37 +92,58 @@ function ScreenerFinvizContent() {
     return () => clearInterval(interval);
   }, [autoRefresh, autoRefreshInterval, selectedParam, data.length, paused]);
 
+  const progress = autoRefresh && !paused && countdown > 0
+    ? (1 - countdown / autoRefreshInterval) * 100
+    : 0;
+
   return (
     <Stack>
-      <Group mt="md">
-        <Tabs value={view} onChange={(v) => setView(v || "table")}>
-          <Tabs.List>
-            <Tabs.Tab value="table">Table</Tabs.Tab>
-            <Tabs.Tab value="chart">Charts</Tabs.Tab>
-          </Tabs.List>
-        </Tabs>
-        <Select
-          placeholder="Select parameter"
-          value={selectedParam}
-          onChange={setSelectedParam}
-          data={params.map((p) => ({ value: p.label, label: p.label }))}
-          style={{ width: 200 }}
-          disabled={autoRefresh && !paused && countdown > 0}
-        />
-        {autoRefresh && data.length > 0 ? (
-          <Button variant="outline" onClick={() => setPaused(!paused)}>
-            {paused ? "Start" : "Pause"}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleSearch()}
-            loading={loading}
-            disabled={!selectedParam}
-          >
-            Search
-          </Button>
-        )}
-      </Group>
+      <Box
+        p="md"
+        style={{
+          position: "sticky",
+          top: 76,
+          zIndex: 10,
+          backgroundColor: "var(--mantine-color-body)",
+          borderRadius: "var(--mantine-radius-md)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+          background: `linear-gradient(to right, var(--mantine-color-violet-9) ${progress}%, var(--mantine-color-body) ${progress}%)`,
+        }}
+      >
+        <Group justify="center">
+          <Tabs value={view} onChange={(v) => setView(v || "table")}>
+            <Tabs.List>
+              <Tabs.Tab value="table">Table</Tabs.Tab>
+              <Tabs.Tab value="chart">Charts</Tabs.Tab>
+            </Tabs.List>
+          </Tabs>
+          <Select
+            placeholder="Select parameter"
+            value={selectedParam}
+            onChange={setSelectedParam}
+            data={params.map((p) => ({ value: p.label, label: p.label }))}
+            style={{ width: 130 }}
+            disabled={autoRefresh && !paused && countdown > 0}
+          />
+          {data.length > 0 ? (
+            <ActionIcon variant="outline" onClick={() => setPaused(!paused)}>
+              {paused ? (
+                <IconPlayerPlay size={18} />
+              ) : (
+                <IconPlayerPause size={18} />
+              )}
+            </ActionIcon>
+          ) : (
+            <ActionIcon
+              onClick={() => handleSearch()}
+              loading={loading}
+              disabled={!selectedParam}
+            >
+              <IconPlayerPlay size={18} />
+            </ActionIcon>
+          )}
+        </Group>
+      </Box>
 
       {loading ? (
         <Center mt="xl">
@@ -138,7 +160,6 @@ function ScreenerFinvizContent() {
               data={data}
               pageSize={pageSize}
               currentPage={currentPage}
-              onPageChange={setCurrentPage}
             />
           ) : (
             <ScreenerFinvizCharts
@@ -146,33 +167,19 @@ function ScreenerFinvizContent() {
               interval={interval}
               preMarket={preMarket}
               afterHours={afterHours}
+              pageSize={pageSize}
+              currentPage={currentPage}
             />
           )}
-          {(autoRefresh || lastUpdate) && (
-            <Group justify="space-between" mt="md">
-              <Group>
-                {autoRefresh && !paused && countdown > 0 && (
-                  <Text c="dimmed">Refresh in {countdown}s</Text>
-                )}
-              </Group>
-              {view === "table" && totalPages > 1 ? (
-                <Pagination
-                  value={currentPage}
-                  onChange={setCurrentPage}
-                  total={totalPages}
-                />
-              ) : (
-                <Box />
-              )}
-              <Group>
-                {lastUpdate && (
-                  <Text c="dimmed" size="sm">
-                    Last update: {lastUpdate.toLocaleTimeString()}
-                  </Text>
-                )}
-              </Group>
-            </Group>
-          )}
+          <ScreenerPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            autoRefresh={autoRefresh}
+            paused={paused}
+            countdown={countdown}
+            lastUpdate={lastUpdate}
+          />
         </>
       )}
     </Stack>

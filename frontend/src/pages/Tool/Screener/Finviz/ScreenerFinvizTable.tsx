@@ -5,7 +5,6 @@ interface ScreenerFinvizTableProps {
   data: FinvizScreenerResult[];
   pageSize: number;
   currentPage: number;
-  onPageChange: (page: number) => void;
 }
 
 export function ScreenerFinvizTable({
@@ -19,17 +18,17 @@ export function ScreenerFinvizTable({
   );
 
   return (
-    <Box style={{ height: 500, overflowY: "auto" }}>
+    <Box style={{ overflowX: "auto" }}>
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>No.</Table.Th>
-            <Table.Th>Ticker</Table.Th>
+            <Table.Th style={{ width: 50 }}>No.</Table.Th>
+            <Table.Th style={{ width: 80 }}>Symbol</Table.Th>
             <Table.Th>Company</Table.Th>
             <Table.Th>Sector</Table.Th>
             <Table.Th>Industry</Table.Th>
-            <Table.Th>Country</Table.Th>
-            <Table.Th>Market Cap</Table.Th>
+              <Table.Th style={{ width: 80 }}>Country</Table.Th>
+              <Table.Th style={{ width: 100 }}>Market Cap</Table.Th>
             <Table.Th>P/E</Table.Th>
             <Table.Th>Price</Table.Th>
             <Table.Th>Change</Table.Th>
@@ -42,11 +41,30 @@ export function ScreenerFinvizTable({
               <Table.Td>
                 {(currentPage - 1) * pageSize + (item["No."] as number)}
               </Table.Td>
-              <Table.Td style={{ width: 100 }}>
-                <Badge color="blue">{item.Ticker}</Badge>
+              <Table.Td style={{ width: 80 }}>
+                <Tooltip
+                  label={item.Ticker}
+                  events={{ hover: true, focus: true, touch: true }}
+                >
+                  <Badge
+                    color="blue"
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: 80,
+                      display: "block",
+                    }}
+                  >
+                    {item.Ticker}
+                  </Badge>
+                </Tooltip>
               </Table.Td>
-              <Table.Td>
-                <Tooltip label={item.Company}>
+              <Table.Td style={{ maxWidth: 150 }}>
+                <Tooltip
+                  label={item.Company}
+                  events={{ hover: true, focus: true, touch: true }}
+                >
                   <Text
                     style={{
                       maxWidth: 150,
@@ -59,8 +77,11 @@ export function ScreenerFinvizTable({
                   </Text>
                 </Tooltip>
               </Table.Td>
-              <Table.Td>
-                <Tooltip label={item.Sector}>
+              <Table.Td style={{ maxWidth: 100 }}>
+                <Tooltip
+                  label={item.Sector}
+                  events={{ hover: true, focus: true, touch: true }}
+                >
                   <Text
                     style={{
                       maxWidth: 100,
@@ -73,8 +94,11 @@ export function ScreenerFinvizTable({
                   </Text>
                 </Tooltip>
               </Table.Td>
-              <Table.Td>
-                <Tooltip label={item.Industry}>
+              <Table.Td style={{ maxWidth: 120 }}>
+                <Tooltip
+                  label={item.Industry}
+                  events={{ hover: true, focus: true, touch: true }}
+                >
                   <Text
                     style={{
                       maxWidth: 120,
@@ -87,11 +111,22 @@ export function ScreenerFinvizTable({
                   </Text>
                 </Tooltip>
               </Table.Td>
-              <Table.Td>{item.Country}</Table.Td>
+              <Table.Td style={{ maxWidth: 80 }}>
+                <Tooltip label={item.Country} events={{ hover: true, focus: true, touch: true }}>
+                  <Text
+                    style={{
+                      maxWidth: 80,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {item.Country}
+                  </Text>
+                </Tooltip>
+              </Table.Td>
               <Table.Td>
-                {item[" Market Cap"]
-                  ? item[" Market Cap"].toLocaleString()
-                  : "-"}
+                {item["Market Cap"] ? item["Market Cap"].toLocaleString() : "-"}
               </Table.Td>
               <Table.Td>{item["P/E"] ?? "-"}</Table.Td>
               <Table.Td>{item.Price ?? "-"}</Table.Td>

@@ -6,17 +6,17 @@ import {
   Badge,
   Loader,
   Center,
-  SegmentedControl,
   Box,
+  Select,
 } from "@mantine/core";
 import { marketService } from "@/services/market";
 
 const EVENT_TYPES = [
-  "All",
-  "IpoDate",
-  "ApprovalVote",
-  "AmendmentVote",
-  "LiqDeadline",
+  { value: "All", label: "All" },
+  { value: "IpoDate", label: "IPO Date" },
+  { value: "ApprovalVote", label: "Approval Vote" },
+  { value: "AmendmentVote", label: "Amendment Vote" },
+  { value: "LiqDeadline", label: "Liquidation Deadline" },
 ];
 
 function SPACResearchContent() {
@@ -42,57 +42,78 @@ function SPACResearchContent() {
   const filteredData =
     filter === "All" ? data : data.filter((item) => item.event === filter);
 
+  const getEventColor = (event: string) => {
+    switch (event) {
+      case "IpoDate":
+        return "blue";
+      case "ApprovalVote":
+        return "green";
+      case "AmendmentVote":
+        return "orange";
+      case "LiqDeadline":
+        return "red";
+      default:
+        return "gray";
+    }
+  };
+
   return (
     <Stack>
-      <SegmentedControl
-        mb="md"
-        value={filter}
-        onChange={setFilter}
-        data={EVENT_TYPES}
-      />
-
       {loading ? (
         <Center mt="xl">
           <Loader size="sm" />
         </Center>
-      ) : filteredData.length === 0 ? (
-        <Text ta="center" mt="xl" c="dimmed">
-          No data available
-        </Text>
       ) : (
-        <Box mt="xl" style={{ height: 500, overflowY: "auto" }}>
-          <Table striped highlightOnHover>
+        <Box style={{ overflowX: "auto" }}>
+          <Table striped highlightOnHover maw={500} mx="auto">
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Symbol</Table.Th>
-                <Table.Th>Event</Table.Th>
+                <Table.Th style={{ width: 100 }}>Date</Table.Th>
+                <Table.Th style={{ width: 100 }}>Symbol</Table.Th>
+                <Table.Th>
+                  <Select
+                    label="Event"
+                    size="xs"
+                    value={filter}
+                    onChange={(value) => setFilter(value || "All")}
+                    data={EVENT_TYPES}
+                  />
+                </Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {filteredData.map((item, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>{item.date}</Table.Td>
-                  <Table.Td>
-                    <Badge color="blue">{item.symbol}</Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge
-                      color={
-                        item.event === "IpoDate"
-                          ? "blue"
-                          : item.event === "ApprovalVote"
-                            ? "green"
-                            : item.event === "AmendmentVote"
-                              ? "orange"
-                              : "red"
-                      }
-                    >
-                      {item.event}
-                    </Badge>
+              {filteredData.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={3}>
+                    <Text ta="center" c="dimmed">
+                      No data available
+                    </Text>
                   </Table.Td>
                 </Table.Tr>
-              ))}
+              ) : (
+                filteredData.map((item, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>{item.date}</Table.Td>
+                    <Table.Td style={{ maxWidth: 100 }}>
+                      <Badge
+                        color="blue"
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.symbol}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge color={getEventColor(item.event)}>
+                        {item.event}
+                      </Badge>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
             </Table.Tbody>
           </Table>
         </Box>

@@ -36,7 +36,7 @@ export function AboutPage() {
           </Table>
 
           <Text size="sm" c="dimmed">
-            © 2024 DTBox. All rights reserved.
+            © 2026 DTBox. All rights reserved.
           </Text>
         </Stack>
       </Paper>

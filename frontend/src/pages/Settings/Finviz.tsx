@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
 import {
   Text,
   TextInput,
   Select,
   Switch,
   Group,
+  Stack,
   Divider,
   Table,
   ActionIcon,
@@ -12,13 +14,17 @@ import {
   SimpleGrid,
   Paper,
   Title,
+  Tooltip,
+  Button,
+  Modal,
 } from "@mantine/core";
-import { IconPlus, IconTrash, IconEdit, IconCheck } from "@tabler/icons-react";
+import { IconPlus, IconTrash, IconEdit } from "@tabler/icons-react";
+
+import { ParameterValueInput } from "@/components/ParameterValueInput";
 
 import type {
   UserSettings,
   FinvizInterval,
-  FinvizScreenerParameter,
 } from "../../stores/settingsStore";
 
 const INTERVAL_OPTIONS: { value: FinvizInterval; label: string }[] = [
@@ -61,30 +67,27 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editValue, setEditValue] = useState("");
+  const [editModalOpened, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
+  const [addModalOpened, { open: openAddModal, close: closeAddModal }] = useDisclosure(false);
 
   const handleAddParameter = () => {
-    if (!newParamLabel.trim() || !newParamValue.trim()) {
-      return;
-    }
-
-    const newParam: FinvizScreenerParameter = {
-      label: newParamLabel.trim(),
-      value: newParamValue.trim(),
-    };
-
+    if (!newParamLabel.trim() || !newParamValue.trim()) return;
     onChange({
       ...settings,
       finviz: {
         ...settings.finviz,
         screener: {
           ...settings.finviz.screener,
-          parameter: [...settings.finviz.screener.parameter, newParam],
+          parameter: [
+            ...settings.finviz.screener.parameter,
+            { label: newParamLabel.trim(), value: newParamValue.trim() },
+          ],
         },
       },
     });
-
     setNewParamLabel("");
     setNewParamValue("");
+    closeAddModal();
   };
 
   const handleRemoveParameter = (index: number) => {
@@ -107,6 +110,7 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
     setEditingIndex(index);
     setEditLabel(param.label);
     setEditValue(param.value);
+    openEditModal();
   };
 
   const handleSaveEdit = () => {
@@ -128,12 +132,14 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
     setEditingIndex(null);
     setEditLabel("");
     setEditValue("");
+    closeEditModal();
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
     setEditLabel("");
     setEditValue("");
+    closeEditModal();
   };
 
   return (
@@ -144,41 +150,37 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
           筛选器
         </Title>
 
-        <SimpleGrid cols={3} spacing="lg" verticalSpacing="md">
-          {/* 每页显示数量 */}
-          <Group gap="xs">
-            <Text fw={500} w={90}>
-              每页显示
-            </Text>
-            <Select
-              data={PAGE_COUNT_OPTIONS}
-              value={String(settings.finviz.screener.page_count)}
-              onChange={(value) => {
-                if (value) {
-                  onChange({
-                    ...settings,
-                    finviz: {
-                      ...settings.finviz,
-                      screener: {
-                        ...settings.finviz.screener,
-                        page_count: Number(value) as 20 | 30 | 60,
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" verticalSpacing="md">
+          <Stack gap="xs">
+            <Text fw={500}>每页显示</Text>
+            <Group gap="xs">
+              <Select
+                data={PAGE_COUNT_OPTIONS}
+                value={String(settings.finviz.screener.page_count)}
+                onChange={(value) => {
+                  if (value) {
+                    onChange({
+                      ...settings,
+                      finviz: {
+                        ...settings.finviz,
+                        screener: {
+                          ...settings.finviz.screener,
+                          page_count: Number(value) as 20 | 30 | 60,
+                        },
                       },
-                    },
-                  });
-                }
-              }}
-              w={80}
-            />
-            <Text c="dimmed" size="sm">
-              条
-            </Text>
-          </Group>
+                    });
+                  }
+                }}
+                w={100}
+              />
+              <Text c="dimmed" size="sm">
+                条
+              </Text>
+            </Group>
+          </Stack>
 
-          {/* 自动刷新 */}
-          <Group gap="xs">
-            <Text fw={500} w={90}>
-              自动刷新
-            </Text>
+          <Stack gap="xs">
+            <Text fw={500}>自动刷新</Text>
             <Select
               data={AUTO_REFRESH_OPTIONS}
               value={String(settings.finviz.screener.auto_refersh)}
@@ -196,9 +198,9 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
                   });
                 }
               }}
-              w={100}
+              w={120}
             />
-          </Group>
+          </Stack>
         </SimpleGrid>
 
         <Divider my="lg" />
@@ -219,76 +221,42 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>参数名称</Table.Th>
-                    <Table.Th>参数值</Table.Th>
                     <Table.Th w={100}>操作</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {settings.finviz.screener.parameter.map((param, index) => (
                     <Table.Tr key={index}>
-                      {editingIndex === index ? (
-                        <>
-                          <Table.Td>
-                            <TextInput
-                              value={editLabel}
-                              onChange={(e) => setEditLabel(e.target.value)}
-                              size="xs"
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <TextInput
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              size="xs"
-                            />
-                          </Table.Td>
-                          <Table.Td>
-                            <Group gap="xs">
-                              <ActionIcon
-                                size="sm"
-                                variant="filled"
-                                color="green"
-                                onClick={handleSaveEdit}
-                              >
-                                <IconCheck size={14} />
-                              </ActionIcon>
-                              <ActionIcon
-                                size="sm"
-                                variant="outline"
-                                color="gray"
-                                onClick={handleCancelEdit}
-                              >
-                                <IconTrash size={14} />
-                              </ActionIcon>
-                            </Group>
-                          </Table.Td>
-                        </>
-                      ) : (
-                        <>
-                          <Table.Td>{param.label}</Table.Td>
-                          <Table.Td>{param.value}</Table.Td>
-                          <Table.Td>
-                            <Group gap="xs">
-                              <ActionIcon
-                                size="sm"
-                                variant="subtle"
-                                color="blue"
-                                onClick={() => handleStartEdit(index)}
-                              >
-                                <IconEdit size={14} />
-                              </ActionIcon>
-                              <ActionIcon
-                                size="sm"
-                                variant="subtle"
-                                color="red"
-                                onClick={() => handleRemoveParameter(index)}
-                              >
-                                <IconTrash size={14} />
-                              </ActionIcon>
-                            </Group>
-                          </Table.Td>
-                        </>
-                      )}
+                      <Table.Td>
+                        <Tooltip label={param.value}>
+                          <Text
+                            style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                            size="sm"
+                          >
+                            {param.label}
+                          </Text>
+                        </Tooltip>
+                      </Table.Td>
+                      <Table.Td w={100}>
+                        <Group gap="xs" wrap="nowrap">
+                          <ActionIcon
+                            size="sm"
+                            variant="subtle"
+                            color="blue"
+                            onClick={() => handleStartEdit(index)}
+                          >
+                            <IconEdit size={14} />
+                          </ActionIcon>
+                          <ActionIcon
+                            size="sm"
+                            variant="subtle"
+                            color="red"
+                            onClick={() => handleRemoveParameter(index)}
+                          >
+                            <IconTrash size={14} />
+                          </ActionIcon>
+                        </Group>
+                      </Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
@@ -301,26 +269,10 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
           )}
 
           {/* 添加参数 */}
-          <Group mt="md">
-            <TextInput
-              placeholder="参数名称 (如 sector)"
-              value={newParamLabel}
-              onChange={(e) => setNewParamLabel(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <TextInput
-              placeholder="参数值 (如 Technology)"
-              value={newParamValue}
-              onChange={(e) => setNewParamValue(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <ActionIcon
-              variant="filled"
-              color="blue"
-              onClick={handleAddParameter}
-            >
-              <IconPlus size={16} />
-            </ActionIcon>
+          <Group mt="md" justify="flex-end">
+            <Button leftSection={<IconPlus size={16} />} onClick={openAddModal}>
+              添加参数
+            </Button>
           </Group>
         </div>
       </Paper>
@@ -332,12 +284,9 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
         <Title order={2} mb="lg">
           缩略图
         </Title>
-        <SimpleGrid cols={3} spacing="lg" verticalSpacing="md">
-          {/* 图表时间间隔 */}
-          <Group gap="xs">
-            <Text fw={500} w={90}>
-              时间间隔
-            </Text>
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" verticalSpacing="md">
+          <Stack gap="xs">
+            <Text fw={500}>时间间隔</Text>
             <Select
               data={INTERVAL_OPTIONS.map((o) => ({
                 value: o.value,
@@ -360,13 +309,10 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
               }}
               w={120}
             />
-          </Group>
+          </Stack>
 
-          {/* 盘前数据 */}
-          <Group gap="xs">
-            <Text fw={500} w={90}>
-              显示盘前
-            </Text>
+          <Stack gap="xs">
+            <Text fw={500}>显示盘前</Text>
             <Switch
               checked={settings.finviz.thumbnail.pre_market}
               onChange={() => {
@@ -382,13 +328,10 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
                 });
               }}
             />
-          </Group>
+          </Stack>
 
-          {/* 盘后数据 */}
-          <Group gap="xs">
-            <Text fw={500} w={90}>
-              显示盘后
-            </Text>
+          <Stack gap="xs">
+            <Text fw={500}>显示盘后</Text>
             <Switch
               checked={settings.finviz.thumbnail.after_hours}
               onChange={() => {
@@ -404,9 +347,55 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
                 });
               }}
             />
-          </Group>
+          </Stack>
         </SimpleGrid>
       </Paper>
+
+      {/* 编辑参数 Modal */}
+      <Modal opened={editModalOpened} onClose={handleCancelEdit} title="编辑参数" centered>
+        <Stack>
+          <TextInput
+            label="参数名称"
+            placeholder="参数名称 (如 sector)"
+            value={editLabel}
+            onChange={(e) => setEditLabel(e.target.value)}
+          />
+          <ParameterValueInput
+            label="参数值"
+            value={editValue}
+            onChange={setEditValue}
+          />
+          <Group justify="flex-end" mt="md">
+            <Button variant="outline" onClick={handleCancelEdit}>
+              取消
+            </Button>
+            <Button onClick={handleSaveEdit}>保存</Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      {/* 添加参数 Modal */}
+      <Modal opened={addModalOpened} onClose={closeAddModal} title="添加参数" centered>
+        <Stack>
+          <TextInput
+            label="参数名称"
+            placeholder="参数名称 (如 sector)"
+            value={newParamLabel}
+            onChange={(e) => setNewParamLabel(e.target.value)}
+          />
+          <ParameterValueInput
+            label="参数值"
+            value={newParamValue}
+            onChange={setNewParamValue}
+          />
+          <Group justify="flex-end" mt="md">
+            <Button variant="outline" onClick={closeAddModal}>
+              取消
+            </Button>
+            <Button onClick={handleAddParameter}>添加</Button>
+          </Group>
+        </Stack>
+      </Modal>
     </div>
   );
 }

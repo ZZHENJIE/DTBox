@@ -8,6 +8,8 @@ interface ScreenerFinvizChartsProps {
   interval: FinvizInterval;
   preMarket: boolean;
   afterHours: boolean;
+  pageSize: number;
+  currentPage: number;
 }
 
 export function ScreenerFinvizCharts({
@@ -15,11 +17,18 @@ export function ScreenerFinvizCharts({
   interval,
   preMarket,
   afterHours,
+  pageSize,
+  currentPage,
 }: ScreenerFinvizChartsProps) {
+  const paginatedData = data.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   return (
-    <Box style={{ height: 500, overflowY: "auto" }}>
+    <Box style={{ overflowX: "auto" }}>
       <Stack gap="md">
-        {data.map((item) => (
+        {paginatedData.map((item) => (
           <Image
             key={item["No."]}
             src={getThumbnailUrl(item.Ticker, {

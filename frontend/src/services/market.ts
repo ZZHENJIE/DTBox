@@ -14,7 +14,7 @@ export interface FinvizScreenerResult {
   Sector: string;
   Industry: string;
   Country: string;
-  " Market Cap": number;
+  "Market Cap": number;
   "P/E": number;
   Price: number;
   Change: string;

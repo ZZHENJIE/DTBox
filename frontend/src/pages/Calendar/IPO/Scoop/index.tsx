@@ -3,7 +3,6 @@ import {
   Text,
   Stack,
   Table,
-  Badge,
   Loader,
   Center,
   Tooltip,
@@ -41,55 +40,75 @@ function IPOScoopContent() {
           No data available
         </Text>
       ) : (
-        <Box mt="xl" style={{ height: 500, overflowY: "auto" }}>
+        <Box style={{ overflowX: "auto" }}>
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Symbol</Table.Th>
-                <Table.Th>Company</Table.Th>
-                <Table.Th>Managers</Table.Th>
-                <Table.Th>Shares (Millions)</Table.Th>
-                <Table.Th>Price Range</Table.Th>
+                <Table.Th style={{ width: 100 }}>Symbol</Table.Th>
+                <Table.Th style={{ minWidth: 200 }}>Company</Table.Th>
+                <Table.Th style={{ minWidth: 150 }}>Managers</Table.Th>
+                <Table.Th>Shares</Table.Th>
+                <Table.Th style={{ width: 120 }}>Price Range</Table.Th>
                 <Table.Th>Date</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {data.map((item, index) => (
                 <Table.Tr key={index}>
-                  <Table.Td>
-                    <Badge color="blue">{item.symbol}</Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Tooltip label={item.company}>
-                      <div
+                  <Table.Td style={{ maxWidth: 100 }}>
+                    <Tooltip label={item.symbol} events={{ hover: true, focus: true, touch: true }}>
+                      <Text
+                        component="span"
                         style={{
-                          maxWidth: 200,
-                          whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          display: "block",
+                        }}
+                      >
+                        {item.symbol}
+                      </Text>
+                    </Tooltip>
+                  </Table.Td>
+                  <Table.Td style={{ maxWidth: 200 }}>
+                    <Tooltip label={item.company} events={{ hover: true, focus: true, touch: true }}>
+                      <Text
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {item.company}
-                      </div>
+                      </Text>
                     </Tooltip>
                   </Table.Td>
-                  <Table.Td>
-                    <Tooltip label={item.managers}>
-                      <div
+                  <Table.Td style={{ maxWidth: 200 }}>
+                    <Tooltip label={item.managers} events={{ hover: true, focus: true, touch: true }}>
+                      <Text
                         style={{
-                          maxWidth: 200,
-                          whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {item.managers}
-                      </div>
+                      </Text>
                     </Tooltip>
                   </Table.Td>
                   <Table.Td>{item.shares_millions}</Table.Td>
-                  <Table.Td>
-                    {item.price_low} - {item.price_high}
+                  <Table.Td style={{ maxWidth: 120 }}>
+                    <Tooltip label={`${item.price_low} - ${item.price_high}`} events={{ hover: true, focus: true, touch: true }}>
+                      <Text
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.price_low} - {item.price_high}
+                      </Text>
+                    </Tooltip>
                   </Table.Td>
                   <Table.Td>{item.expected_date}</Table.Td>
                 </Table.Tr>
