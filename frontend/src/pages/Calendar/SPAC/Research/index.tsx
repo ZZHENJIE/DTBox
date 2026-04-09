@@ -65,7 +65,14 @@ function SPACResearchContent() {
         </Center>
       ) : (
         <Box style={{ overflowX: "auto" }}>
-          <Table striped highlightOnHover maw={500} mx="auto">
+          <Table
+            striped
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+            maw={500}
+            mx="auto"
+          >
             <Table.Thead>
               <Table.Tr>
                 <Table.Th style={{ width: 100 }}>Date</Table.Th>

@@ -1,4 +1,5 @@
-import { Box, Image, Stack } from "@mantine/core";
+import { Box, Image, Stack, Skeleton, Center } from "@mantine/core";
+import { useState } from "react";
 import type { FinvizScreenerResult } from "../../../../services/market";
 import { type FinvizInterval } from "../../../../stores/settingsStore";
 import { getThumbnailUrl } from "../../../../utils/getFinvizThumbnailUrl";
@@ -10,6 +11,40 @@ interface ScreenerFinvizChartsProps {
   afterHours: boolean;
   pageSize: number;
   currentPage: number;
+}
+
+function ChartImage({
+  ticker,
+  interval,
+  preMarket,
+  afterHours,
+}: {
+  ticker: string;
+  interval: FinvizInterval;
+  preMarket: boolean;
+  afterHours: boolean;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const src = getThumbnailUrl(ticker, {
+    interval,
+    pre_market: preMarket,
+    after_hours: afterHours,
+  });
+
+  return (
+    <Box pos="relative">
+      {!loaded && <Skeleton h={340} radius="md" />}
+      <Center>
+        <Image
+          src={src}
+          alt={ticker}
+          radius="md"
+          onLoad={() => setLoaded(true)}
+          style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.2s" }}
+        />
+      </Center>
+    </Box>
+  );
 }
 
 export function ScreenerFinvizCharts({
@@ -29,15 +64,12 @@ export function ScreenerFinvizCharts({
     <Box style={{ overflowX: "auto" }}>
       <Stack gap="md">
         {paginatedData.map((item) => (
-          <Image
+          <ChartImage
             key={item["No."]}
-            src={getThumbnailUrl(item.Ticker, {
-              interval,
-              pre_market: preMarket,
-              after_hours: afterHours,
-            })}
-            alt={item.Ticker}
-            radius="md"
+            ticker={item.Ticker}
+            interval={interval}
+            preMarket={preMarket}
+            afterHours={afterHours}
           />
         ))}
       </Stack>

@@ -109,9 +109,9 @@ impl AuthService {
         })
     }
 
-    /// Refresh token
+    /// Refresh token (只刷新 access_token，不刷新 refresh_token)
     pub async fn refresh_token(&self, refresh_token_plain: &str) -> Result<RefreshResult> {
-        // 1. Find token record from database (use plaintext token as ID)
+        // 1. Find token record from database
         let token_record: refresh_token::Model = self
             .repos
             .refresh_token()
@@ -142,29 +142,18 @@ impl AuthService {
         // 6. Mark token as used
         self.repos.refresh_token().mark_used(token_record.id).await?;
 
-        // 7. Generate new access token
+        // 7. Generate new access token (不刷新 refresh_token)
         let new_access_claims = Claims::new_access(user_id, &self.config);
         let new_access_token = new_access_claims.encode(&self.config)?;
 
-        // 8. Generate new refresh token (rotation strategy)
-        let new_refresh_token_plain = RefreshTokenGenerator::generate();
-        let new_refresh_token_hash = RefreshTokenGenerator::hash(&new_refresh_token_plain)?;
-
-        let new_expires_at = now + chrono::Duration::days(self.config.jwt.refresh_token_expires_days);
-        
-        // Revoke old, create new
-        self.repos.refresh_token().revoke(token_record.id).await?;
-        self.repos
-            .refresh_token()
-            .create(user_id, &new_refresh_token_hash, &new_refresh_token_plain, new_expires_at.into())
-            .await?;
+        let expires_at = now + chrono::Duration::minutes(self.config.jwt.access_token_expires_minutes);
 
         tracing::debug!("Token refreshed: user_id={}", user_id);
 
         Ok(RefreshResult {
             access_token: new_access_token,
-            refresh_token: new_refresh_token_plain,
-            expires_at: new_expires_at.into(),
+            refresh_token: refresh_token_plain.to_string(), // 返回原来的 refresh_token
+            expires_at: expires_at.into(),
         })
     }
 

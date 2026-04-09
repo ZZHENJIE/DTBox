@@ -6,7 +6,7 @@ import {
   Text,
   Badge,
   Loader,
-  Table,
+  Group,
   Center,
 } from "@mantine/core";
 import { healthService, type HealthStatus } from "../../services/market";
@@ -22,18 +22,19 @@ export function AboutPage() {
         <Stack gap="lg">
           <Text>DTBox 是一个功能强大的股票数据分析和投资工具平台。</Text>
 
-          <Table striped>
-            <Table.Tbody>
-              <Table.Tr>
-                <Table.Td fw={500}>版本</Table.Td>
-                <AboutVersion />
-              </Table.Tr>
-              <Table.Tr>
-                <Table.Td fw={500}>状态</Table.Td>
-                <AboutStatus />
-              </Table.Tr>
-            </Table.Tbody>
-          </Table>
+          <Group>
+            <Text fw={500} w={60}>
+              版本
+            </Text>
+            <AboutVersion />
+          </Group>
+
+          <Group>
+            <Text fw={500} w={60}>
+              状态
+            </Text>
+            <AboutStatus />
+          </Group>
 
           <Text size="sm" c="dimmed">
             © 2026 DTBox. All rights reserved.

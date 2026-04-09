@@ -19,7 +19,7 @@ export function ScreenerFinvizTable({
 
   return (
     <Box style={{ overflowX: "auto" }}>
-      <Table striped highlightOnHover>
+      <Table striped highlightOnHover withTableBorder withColumnBorders>
         <Table.Thead>
           <Table.Tr>
             <Table.Th style={{ width: 50 }}>No.</Table.Th>
@@ -27,8 +27,8 @@ export function ScreenerFinvizTable({
             <Table.Th>Company</Table.Th>
             <Table.Th>Sector</Table.Th>
             <Table.Th>Industry</Table.Th>
-              <Table.Th style={{ width: 80 }}>Country</Table.Th>
-              <Table.Th style={{ width: 100 }}>Market Cap</Table.Th>
+            <Table.Th style={{ width: 80 }}>Country</Table.Th>
+            <Table.Th style={{ width: 100 }}>Market Cap(Million)</Table.Th>
             <Table.Th>P/E</Table.Th>
             <Table.Th>Price</Table.Th>
             <Table.Th>Change</Table.Th>
@@ -112,7 +112,10 @@ export function ScreenerFinvizTable({
                 </Tooltip>
               </Table.Td>
               <Table.Td style={{ maxWidth: 80 }}>
-                <Tooltip label={item.Country} events={{ hover: true, focus: true, touch: true }}>
+                <Tooltip
+                  label={item.Country}
+                  events={{ hover: true, focus: true, touch: true }}
+                >
                   <Text
                     style={{
                       maxWidth: 80,

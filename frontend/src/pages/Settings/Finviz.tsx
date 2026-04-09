@@ -22,10 +22,7 @@ import { IconPlus, IconTrash, IconEdit } from "@tabler/icons-react";
 
 import { ParameterValueInput } from "@/components/ParameterValueInput";
 
-import type {
-  UserSettings,
-  FinvizInterval,
-} from "../../stores/settingsStore";
+import type { UserSettings, FinvizInterval } from "../../stores/settingsStore";
 
 const INTERVAL_OPTIONS: { value: FinvizInterval; label: string }[] = [
   { value: "Minutes", label: "1分钟" },
@@ -67,8 +64,10 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editValue, setEditValue] = useState("");
-  const [editModalOpened, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
-  const [addModalOpened, { open: openAddModal, close: closeAddModal }] = useDisclosure(false);
+  const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
+    useDisclosure(false);
+  const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
+    useDisclosure(false);
 
   const handleAddParameter = () => {
     if (!newParamLabel.trim() || !newParamValue.trim()) return;
@@ -217,7 +216,7 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
           {/* 参数列表 - 使用 Table 显示 */}
           {settings.finviz.screener.parameter.length > 0 ? (
             <ScrollArea h={200}>
-              <Table striped highlightOnHover>
+              <Table striped highlightOnHover withTableBorder withColumnBorders>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>参数名称</Table.Th>
@@ -230,7 +229,11 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
                       <Table.Td>
                         <Tooltip label={param.value}>
                           <Text
-                            style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
                             size="sm"
                           >
                             {param.label}
@@ -352,7 +355,12 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
       </Paper>
 
       {/* 编辑参数 Modal */}
-      <Modal opened={editModalOpened} onClose={handleCancelEdit} title="编辑参数" centered>
+      <Modal
+        opened={editModalOpened}
+        onClose={handleCancelEdit}
+        title="编辑参数"
+        centered
+      >
         <Stack>
           <TextInput
             label="参数名称"
@@ -375,7 +383,12 @@ export function FinvizSettings({ settings, onChange }: FinvizSettingsProps) {
       </Modal>
 
       {/* 添加参数 Modal */}
-      <Modal opened={addModalOpened} onClose={closeAddModal} title="添加参数" centered>
+      <Modal
+        opened={addModalOpened}
+        onClose={closeAddModal}
+        title="添加参数"
+        centered
+      >
         <Stack>
           <TextInput
             label="参数名称"

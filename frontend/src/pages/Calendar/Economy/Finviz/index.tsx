@@ -66,9 +66,7 @@ function EconomyFinvizContent() {
   };
 
   const goToNextWeek = () => {
-    setCurrentDate((prev) =>
-      dayjs(prev).add(7, "day").format("YYYY-MM-DD"),
-    );
+    setCurrentDate((prev) => dayjs(prev).add(7, "day").format("YYYY-MM-DD"));
   };
 
   const weekDays: string[] = [];
@@ -95,7 +93,7 @@ function EconomyFinvizContent() {
             <ActionIcon variant="subtle" onClick={goToPrevWeek}>
               <IconChevronLeft size={20} />
             </ActionIcon>
-            <Text fw={700}>
+            <Text fw={600}>
               {weekRange.start} ~ {weekRange.end}
             </Text>
             <ActionIcon variant="subtle" onClick={goToNextWeek}>
@@ -150,7 +148,12 @@ function EconomyFinvizContent() {
 
             return (
               <Box style={{ overflowX: "auto" }}>
-                <Table striped highlightOnHover>
+                <Table
+                  striped
+                  highlightOnHover
+                  withTableBorder
+                  withColumnBorders
+                >
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>Time</Table.Th>

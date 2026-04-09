@@ -41,13 +41,13 @@ function IPOScoopContent() {
         </Text>
       ) : (
         <Box style={{ overflowX: "auto" }}>
-          <Table striped highlightOnHover>
+          <Table striped highlightOnHover withTableBorder withColumnBorders>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th style={{ width: 100 }}>Symbol</Table.Th>
                 <Table.Th style={{ minWidth: 200 }}>Company</Table.Th>
                 <Table.Th style={{ minWidth: 150 }}>Managers</Table.Th>
-                <Table.Th>Shares</Table.Th>
+                <Table.Th>Shares(Million)</Table.Th>
                 <Table.Th style={{ width: 120 }}>Price Range</Table.Th>
                 <Table.Th>Date</Table.Th>
               </Table.Tr>
@@ -56,7 +56,10 @@ function IPOScoopContent() {
               {data.map((item, index) => (
                 <Table.Tr key={index}>
                   <Table.Td style={{ maxWidth: 100 }}>
-                    <Tooltip label={item.symbol} events={{ hover: true, focus: true, touch: true }}>
+                    <Tooltip
+                      label={item.symbol}
+                      events={{ hover: true, focus: true, touch: true }}
+                    >
                       <Text
                         component="span"
                         style={{
@@ -71,7 +74,10 @@ function IPOScoopContent() {
                     </Tooltip>
                   </Table.Td>
                   <Table.Td style={{ maxWidth: 200 }}>
-                    <Tooltip label={item.company} events={{ hover: true, focus: true, touch: true }}>
+                    <Tooltip
+                      label={item.company}
+                      events={{ hover: true, focus: true, touch: true }}
+                    >
                       <Text
                         style={{
                           overflow: "hidden",
@@ -84,7 +90,10 @@ function IPOScoopContent() {
                     </Tooltip>
                   </Table.Td>
                   <Table.Td style={{ maxWidth: 200 }}>
-                    <Tooltip label={item.managers} events={{ hover: true, focus: true, touch: true }}>
+                    <Tooltip
+                      label={item.managers}
+                      events={{ hover: true, focus: true, touch: true }}
+                    >
                       <Text
                         style={{
                           overflow: "hidden",
@@ -98,7 +107,10 @@ function IPOScoopContent() {
                   </Table.Td>
                   <Table.Td>{item.shares_millions}</Table.Td>
                   <Table.Td style={{ maxWidth: 120 }}>
-                    <Tooltip label={`${item.price_low} - ${item.price_high}`} events={{ hover: true, focus: true, touch: true }}>
+                    <Tooltip
+                      label={`${item.price_low} - ${item.price_high}`}
+                      events={{ hover: true, focus: true, touch: true }}
+                    >
                       <Text
                         style={{
                           overflow: "hidden",

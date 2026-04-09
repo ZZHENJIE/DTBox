@@ -1,4 +1,14 @@
-import { Group, Button, Text, Menu, Avatar, Burger, Drawer, Stack, Divider } from "@mantine/core";
+import {
+  Group,
+  Button,
+  Text,
+  Menu,
+  Avatar,
+  Burger,
+  Drawer,
+  Stack,
+  Divider,
+} from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -18,7 +28,8 @@ interface MenuItem {
 }
 
 export function Header() {
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
+    useDisclosure(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -87,7 +98,12 @@ export function Header() {
       return (
         <Menu shadow="md" key={index} width={200}>
           <Menu.Target>
-            <Button variant="subtle" fullWidth justify="flex-start" rightSection={item.icon}>
+            <Button
+              variant="subtle"
+              fullWidth
+              justify="flex-start"
+              rightSection={item.icon}
+            >
               {item.label}
             </Button>
           </Menu.Target>
@@ -126,13 +142,14 @@ export function Header() {
 
   return (
     <>
-      <Group h="100%" px="md" justify="space-between">
+      <Group h="100%" px="md" justify={isDesktop ? "space-between" : "center"}>
         {!isDesktop && isAuthenticated && (
           <Burger
             opened={drawerOpened}
             onClick={toggleDrawer}
             hiddenFrom="md"
             size="sm"
+            style={{ position: "absolute", left: 0 }}
           />
         )}
 
@@ -152,7 +169,10 @@ export function Header() {
           </Group>
         )}
 
-        <Group gap="xs">
+        <Group
+          gap="xs"
+          style={!isDesktop ? { position: "absolute", right: 0 } : undefined}
+        >
           {isAuthenticated ? (
             isDesktop ? (
               <Menu shadow="md" width={200}>
@@ -174,7 +194,9 @@ export function Header() {
                         key={index}
                         component={Link}
                         to={item.path || "#"}
-                        onClick={() => item.action && handleMenuAction(item.action)}
+                        onClick={() =>
+                          item.action && handleMenuAction(item.action)
+                        }
                         color={item.color}
                         leftSection={item.icon}
                       >
@@ -203,7 +225,9 @@ export function Header() {
                         key={index}
                         component={Link}
                         to={item.path || "#"}
-                        onClick={() => item.action && handleMenuAction(item.action)}
+                        onClick={() =>
+                          item.action && handleMenuAction(item.action)
+                        }
                         color={item.color}
                         leftSection={item.icon}
                       >
@@ -214,22 +238,20 @@ export function Header() {
                 </Menu.Dropdown>
               </Menu>
             )
-          ) : (
-            isDesktop ? (
-              <Group gap="xs">
-                {guestMenuItems.map((item, index) => (
-                  <Button
-                    key={index}
-                    component={Link}
-                    to={item.path}
-                    variant={item.variant || "filled"}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </Group>
-            ) : null
-          )}
+          ) : isDesktop ? (
+            <Group gap="xs">
+              {guestMenuItems.map((item, index) => (
+                <Button
+                  key={index}
+                  component={Link}
+                  to={item.path}
+                  variant={item.variant || "filled"}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Group>
+          ) : null}
         </Group>
       </Group>
 
