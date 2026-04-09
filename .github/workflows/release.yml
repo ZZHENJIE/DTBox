@@ -38,7 +38,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build release
-        run: cd backend && cargo build --release --locked --bin dtbox-server
+        run: cd backend && cargo build --release --bin dtbox-server
         shell: bash
 
       - name: Setup Node.js
