@@ -15,10 +15,12 @@ import { notifications } from "@mantine/notifications";
 
 import { authService } from "../services/auth";
 import { useAuthStore } from "../stores/authStore";
+import { useSettingsStore } from "../stores/settingsStore";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+  const { setSettings } = useSettingsStore();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,14 +39,13 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      // 登录
       await authService.login({ username, password });
-
-      // 获取用户信息
       const user = await authService.getCurrentUser();
 
-      // 更新状态
       setUser(user);
+      if (user.settings) {
+        setSettings(user.settings as any);
+      }
 
       notifications.show({
         title: "登录成功",
@@ -52,7 +53,6 @@ export function LoginPage() {
         color: "green",
       });
 
-      // 跳转到首页
       navigate("/", { replace: true });
     } catch (error) {
       notifications.show({

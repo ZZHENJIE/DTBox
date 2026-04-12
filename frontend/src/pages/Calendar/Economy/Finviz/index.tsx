@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { WeekView } from "@mantine/schedule";
+import type { ScheduleEventData } from "@mantine/schedule";
 import {
-  Text,
-  SimpleGrid,
-  UnstyledButton,
-  Table,
-  Badge,
+  Box,
   Loader,
   Center,
+  Modal,
+  Text,
   Stack,
-  Box,
-  Tooltip,
   Group,
+  Badge,
+  Divider,
   ActionIcon,
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -20,32 +22,33 @@ import {
   type FinvizCalendarEconomyItem,
 } from "@/services/market";
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const IMPORTANCE_COLORS: Record<number, string> = {
+  1: "green",
+  2: "blue",
+  3: "red",
+};
+
 function EconomyFinvizContent() {
-  const [currentDate, setCurrentDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD"),
-  );
-  const [weekRange, setWeekRange] = useState<{ start: string; end: string }>({
-    start: "",
-    end: "",
+  const [currentDate, setCurrentDate] = useState<string>(() => {
+    const today = dayjs();
+    const monday = today.day(1).format("YYYY-MM-DD");
+    return monday;
   });
   const [data, setData] = useState<FinvizCalendarEconomyItem[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const current = dayjs(currentDate);
-    const monday = current.day(1).format("YYYY-MM-DD");
-    const friday = current.day(5).format("YYYY-MM-DD");
-    setWeekRange({ start: monday, end: friday });
-  }, [currentDate]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] =
+    useState<FinvizCalendarEconomyItem | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const result = await marketService.getCalendarEconomy(
-          weekRange.start,
-          weekRange.end,
-        );
+        const monday = dayjs(currentDate).day(1).format("YYYY-MM-DD");
+        const friday = dayjs(currentDate).day(5).format("YYYY-MM-DD");
+        const result = await marketService.getCalendarEconomy(monday, friday);
         setData(result);
       } catch {
         setData([]);
@@ -54,207 +57,159 @@ function EconomyFinvizContent() {
       }
     };
 
-    if (weekRange.start && weekRange.end) {
-      fetchData();
-    }
-  }, [weekRange.start, weekRange.end]);
+    fetchData();
+  }, [currentDate]);
 
-  const goToPrevWeek = () => {
+  const events: ScheduleEventData[] = useMemo(() => {
+    const nonAllDayData = data.filter((item) => !item.allDay);
+    return nonAllDayData.map((item) => {
+      const timeStr = item.date.replace("T", " ");
+      return {
+        id: item.calendarId,
+        start: dayjs(timeStr)
+          .subtract(15, "minute")
+          .format("YYYY-MM-DD HH:mm:ss"),
+        end: dayjs(timeStr).add(15, "minute").format("YYYY-MM-DD HH:mm:ss"),
+        title: item.event,
+        color: IMPORTANCE_COLORS[item.importance] ?? "gray",
+      };
+    });
+  }, [data]);
+
+  const dataMap = useMemo(() => {
+    const map = new Map<number, FinvizCalendarEconomyItem>();
+    data.forEach((item) => map.set(item.calendarId, item));
+    return map;
+  }, [data]);
+
+  const handleEventClick = (event: ScheduleEventData) => {
+    const item = dataMap.get(Number(event.id));
+    if (item) {
+      setSelectedEvent(item);
+    }
+  };
+
+  const handlePrevWeek = () => {
     setCurrentDate((prev) =>
       dayjs(prev).subtract(7, "day").format("YYYY-MM-DD"),
     );
   };
 
-  const goToNextWeek = () => {
+  const handleNextWeek = () => {
     setCurrentDate((prev) => dayjs(prev).add(7, "day").format("YYYY-MM-DD"));
   };
 
-  const weekDays: string[] = [];
-  const current = dayjs(currentDate).day(1);
-  for (let i = 0; i < 5; i++) {
-    weekDays.push(current.add(i, "day").format("YYYY-MM-DD"));
-  }
+  const weekLabel = useMemo(() => {
+    const monday = dayjs(currentDate).day(1).format("YYYY-MM-DD");
+    const friday = dayjs(currentDate).day(5).format("YYYY-MM-DD");
+    return `${monday} ~ ${friday}`;
+  }, [currentDate]);
 
   return (
-    <Stack>
-      <Box
-        p="md"
-        style={{
-          position: "sticky",
-          top: 76,
-          zIndex: 10,
-          backgroundColor: "var(--mantine-color-body)",
-          borderRadius: "var(--mantine-radius-md)",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-        }}
+    <Box>
+      <Group justify="center" mb="md" gap="lg">
+        <ActionIcon variant="subtle" onClick={handlePrevWeek}>
+          <IconChevronLeft size={20} />
+        </ActionIcon>
+        <Text fw={600}>{weekLabel}</Text>
+        <ActionIcon variant="subtle" onClick={handleNextWeek}>
+          <IconChevronRight size={20} />
+        </ActionIcon>
+      </Group>
+
+      {loading ? (
+        <Center h={400}>
+          <Loader size="sm" />
+        </Center>
+      ) : (
+        <WeekView
+          date={currentDate}
+          onDateChange={setCurrentDate}
+          events={events}
+          startTime="05:00:00"
+          endTime="21:00:00"
+          withWeekendDays={false}
+          firstDayOfWeek={1}
+          weekdayFormat="ddd"
+          onEventClick={handleEventClick}
+          withAllDaySlots={false}
+          withHeader={false}
+          withCurrentTimeIndicator={false}
+        />
+      )}
+
+      <Modal
+        opened={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        title={selectedEvent?.event}
+        size="md"
       >
-        <Stack align="center" gap="xs">
-          <Group gap="md">
-            <ActionIcon variant="subtle" onClick={goToPrevWeek}>
-              <IconChevronLeft size={20} />
-            </ActionIcon>
-            <Text fw={600}>
-              {weekRange.start} ~ {weekRange.end}
-            </Text>
-            <ActionIcon variant="subtle" onClick={goToNextWeek}>
-              <IconChevronRight size={20} />
-            </ActionIcon>
-          </Group>
-          <SimpleGrid cols={5} spacing={4} verticalSpacing={4}>
-            {weekDays.map((day) => (
-              <UnstyledButton
-                key={day}
-                onClick={() => setCurrentDate(day)}
-                style={{
-                  padding: "6px 2px",
-                  minWidth: "50px",
-                  backgroundColor: day === currentDate ? "#228be6" : "#2c2e33",
-                  color: day === currentDate ? "white" : "inherit",
-                  borderRadius: "4px",
-                  textAlign: "center",
-                }}
+        {selectedEvent && (
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                Time
+              </Text>
+              <Text size="sm">{selectedEvent.date}</Text>
+            </Group>
+            <Divider />
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                Importance
+              </Text>
+              <Badge
+                color={IMPORTANCE_COLORS[selectedEvent.importance] ?? "gray"}
               >
-                <Text size="xs" c="dimmed">
-                  {dayjs(day).format("ddd")}
-                </Text>
-                <Text size="lg" fw={900}>
-                  {dayjs(day).format("DD")}
-                </Text>
-              </UnstyledButton>
-            ))}
-          </SimpleGrid>
-        </Stack>
-      </Box>
-
-      <Box>
-        {loading ? (
-          <Center>
-            <Loader size="sm" />
-          </Center>
-        ) : (
-          (() => {
-            const dayData = data.filter((item) => {
-              const itemDate = dayjs(item.date).format("YYYY-MM-DD");
-              return itemDate === currentDate;
-            });
-
-            if (dayData.length === 0) {
-              return (
-                <Text ta="center" c="dimmed">
-                  No data for {currentDate}
-                </Text>
-              );
-            }
-
-            return (
-              <Box style={{ overflowX: "auto" }}>
-                <Table
-                  striped
-                  highlightOnHover
-                  withTableBorder
-                  withColumnBorders
-                >
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Time</Table.Th>
-                      <Table.Th>Importance</Table.Th>
-                      <Table.Th style={{ minWidth: 200 }}>Event</Table.Th>
-                      <Table.Th style={{ width: 80 }}>Actual</Table.Th>
-                      <Table.Th style={{ width: 80 }}>Previous</Table.Th>
-                      <Table.Th style={{ width: 80 }}>Forecast</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {dayData.map((item, index) => (
-                      <Table.Tr key={index}>
-                        <Table.Td>{dayjs(item.date).format("HH:mm")}</Table.Td>
-                        <Table.Td>
-                          <Badge
-                            color={
-                              item.importance === 3
-                                ? "red"
-                                : item.importance === 2
-                                  ? "orange"
-                                  : "gray"
-                            }
-                          >
-                            {"★".repeat(item.importance)}
-                          </Badge>
-                        </Table.Td>
-                        <Table.Td style={{ maxWidth: 200 }}>
-                          <Tooltip
-                            label={item.event}
-                            events={{ hover: true, focus: true, touch: true }}
-                          >
-                            <Text
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {item.event}
-                            </Text>
-                          </Tooltip>
-                        </Table.Td>
-                        <Table.Td style={{ maxWidth: 120 }}>
-                          <Tooltip
-                            label={item.actual ?? "-"}
-                            events={{ hover: true, focus: true, touch: true }}
-                          >
-                            <Text
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {item.actual ?? "-"}
-                            </Text>
-                          </Tooltip>
-                        </Table.Td>
-                        <Table.Td style={{ maxWidth: 80 }}>
-                          <Tooltip
-                            label={item.previous ?? "-"}
-                            events={{ hover: true, focus: true, touch: true }}
-                          >
-                            <Text
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {item.previous ?? "-"}
-                            </Text>
-                          </Tooltip>
-                        </Table.Td>
-                        <Table.Td style={{ maxWidth: 80 }}>
-                          <Tooltip
-                            label={item.forecast ?? "-"}
-                            events={{ hover: true, focus: true, touch: true }}
-                          >
-                            <Text
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {item.forecast ?? "-"}
-                            </Text>
-                          </Tooltip>
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </Box>
-            );
-          })()
+                {"★".repeat(selectedEvent.importance)}
+              </Badge>
+            </Group>
+            <Divider />
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                Actual
+              </Text>
+              <Text size="sm">{selectedEvent.actual ?? "-"}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                Previous
+              </Text>
+              <Text size="sm">{selectedEvent.previous ?? "-"}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                Forecast
+              </Text>
+              <Text size="sm">{selectedEvent.forecast ?? "-"}</Text>
+            </Group>
+            {selectedEvent.ticker && (
+              <>
+                <Divider />
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    Ticker
+                  </Text>
+                  <Text size="sm" fw={600}>
+                    {selectedEvent.ticker}
+                  </Text>
+                </Group>
+              </>
+            )}
+            {selectedEvent.category && (
+              <>
+                <Divider />
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    Category
+                  </Text>
+                  <Text size="sm">{selectedEvent.category}</Text>
+                </Group>
+              </>
+            )}
+          </Stack>
         )}
-      </Box>
-    </Stack>
+      </Modal>
+    </Box>
   );
 }
 

@@ -41,6 +41,7 @@ export const routes: RouteConfig[] = [
 
   // 工具
   { path: "/screener/finviz", component: FinvizScreenerPage, auth: 1 },
+  { path: "/quote/:symbol", component: QuotePage, auth: 1 },
   { path: "/quote", component: QuotePage, auth: 1 },
 
   // 日历

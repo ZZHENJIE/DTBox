@@ -26,7 +26,10 @@ interface Param {
 
 function ScreenerFinvizContent() {
   const { settings } = useSettingsStore();
-  const [selectedParam, setSelectedParam] = useState<string | null>(null);
+  const [selectedParam, setSelectedParam] = useState<string | null>(() => {
+    const params = settings.finviz.screener.parameter;
+    return params.length > 0 ? params[0].label : null;
+  });
   const [data, setData] = useState<FinvizScreenerResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);

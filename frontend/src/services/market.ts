@@ -67,12 +67,13 @@ export interface FinvizQuoteResponse {
 }
 
 // Finviz Event
-export type FinvizEventType = "News" | "Blogs" | "Stock" | "ETF";
+export type FinvizEventType = "News" | "Blogs";
 
-export interface FinvizEventRequest {
-  type: FinvizEventType;
-  symbol?: string;
-}
+export type FinvizEventRequest = 
+  | { type: "News" }
+  | { type: "Blogs" }
+  | { type: "Stock"; symbol: string }
+  | { type: "ETF"; symbol: string };
 
 export interface FinvizEventItem {
   Title: string;

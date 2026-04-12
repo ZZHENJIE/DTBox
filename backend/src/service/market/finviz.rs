@@ -40,11 +40,12 @@ impl Finviz {
                 .expect("clock went backwards");
             duration.as_secs()
         });
+        let interval = parameter.interval.unwrap_or(Interval::Minutes);
         let url = format!(
             "https://api.finviz.com/api/quote.ashx?dateFrom={}&instrument=stock&ticker={}&timeframe={}",
             date_from,
             parameter.symbol,
-            String::from(&parameter.interval)
+            String::from(&interval)
         );
         let response = self.http_client.get(url).send().await?;
         let quote: QuoteResult = response.json().await?;
@@ -237,6 +238,7 @@ pub enum EventResult {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "symbol")]
 pub enum EventParameter {
     News,
     Blogs,
@@ -260,7 +262,7 @@ impl From<&EventParameter> for String {
 pub struct QuoteParameter {
     pub symbol: String,
     pub date_from: Option<u64>,
-    pub interval: Interval,
+    pub interval: Option<Interval>,
 }
 
 #[derive(Serialize, Deserialize)]
