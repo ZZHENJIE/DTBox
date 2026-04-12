@@ -8,10 +8,12 @@ import { NotFoundPage } from "../pages/NotFound";
 import { NoPermissionPage } from "../pages/NoPermission";
 import { AboutPage } from "../pages/About";
 
+// 文档
+import { GatewayPage } from "../pages/Document/Gateway";
+
 // 工具
 import { FinvizScreenerPage } from "../pages/Tool/Screener/Finviz";
 import { QuotePage } from "../pages/Tool/Quote";
-// 日历
 import { EconomyFinvizPage } from "../pages/Calendar/Economy/Finviz";
 import { IPOScoopPage } from "../pages/Calendar/IPO/Scoop";
 import { SPACResearchPage } from "../pages/Calendar/SPAC/Research";
@@ -39,12 +41,13 @@ export const routes: RouteConfig[] = [
   { path: "/profile", component: ProfilePage, auth: true },
   { path: "/settings", component: SettingsPage, auth: true },
 
+  // 文档
+  { path: "/document/gateway", component: GatewayPage, auth: false },
+
   // 工具
   { path: "/screener/finviz", component: FinvizScreenerPage, auth: 1 },
   { path: "/quote/:symbol", component: QuotePage, auth: 1 },
   { path: "/quote", component: QuotePage, auth: 1 },
-
-  // 日历
   { path: "/economy/finviz", component: EconomyFinvizPage, auth: 1 },
   { path: "/ipo/scoop", component: IPOScoopPage, auth: 1 },
   { path: "/spac/research", component: SPACResearchPage, auth: 1 },

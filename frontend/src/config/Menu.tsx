@@ -1,6 +1,7 @@
 import {
   IconBrandGithub,
   IconCalendar,
+  IconFileDots,
   IconHelp,
   IconInfoCircle,
   IconLogout,
@@ -62,6 +63,11 @@ export const navItems = [
         label: "About",
         path: "/about",
         icon: <IconInfoCircle width={20} />,
+      },
+      {
+        label: "Gateway",
+        path: "/document/gateway",
+        icon: <IconFileDots width={20} />,
       },
       {
         label: "GitHub",
