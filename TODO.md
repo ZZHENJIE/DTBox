@@ -1,2 +1,4 @@
 - [ ] 完成`ParameterValueInput`组件,并使用
 - [ ] `Quote`页面添加订阅按钮
+- [ ] 添加多语言
+- [ ] 添加[ChartExchange](https://chartexchange.com/)的市场成交量占比
