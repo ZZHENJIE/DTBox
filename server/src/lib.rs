@@ -1,0 +1,27 @@
+pub mod config;
+pub mod db;
+pub mod entity;
+pub mod handler;
+pub mod middleware;
+pub mod service;
+pub mod util;
+
+use sea_orm::DatabaseConnection;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: DatabaseConnection,
+    pub config: config::Config,
+}
+
+impl axum::extract::FromRef<AppState> for DatabaseConnection {
+    fn from_ref(state: &AppState) -> Self {
+        state.db.clone()
+    }
+}
+
+impl axum::extract::FromRef<AppState> for config::Config {
+    fn from_ref(state: &AppState) -> Self {
+        state.config.clone()
+    }
+}
