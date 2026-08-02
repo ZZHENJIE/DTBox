@@ -1,6 +1,6 @@
 use sea_orm::{ConnectionTrait, DatabaseConnection, Schema};
 
-use crate::entity::{refresh_tokens, stocks, users};
+use crate::entity::{login_logs, refresh_tokens, stocks, users};
 
 pub async fn init_database(db: &DatabaseConnection) -> Result<(), sea_orm::DbErr> {
     let schema = Schema::new(db.get_database_backend());
@@ -14,6 +14,10 @@ pub async fn init_database(db: &DatabaseConnection) -> Result<(), sea_orm::DbErr
     db.execute(&stmt).await?;
 
     let mut stmt = schema.create_table_from_entity(stocks::Entity);
+    stmt.if_not_exists();
+    db.execute(&stmt).await?;
+
+    let mut stmt = schema.create_table_from_entity(login_logs::Entity);
     stmt.if_not_exists();
     db.execute(&stmt).await?;
 

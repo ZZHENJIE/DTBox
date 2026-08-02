@@ -46,6 +46,8 @@ pub struct Model {
     pub role: Role,
     pub settings: serde_json::Value,
     pub created_at: chrono::NaiveDateTime,
+    pub locked_until: Option<chrono::NaiveDateTime>,
+    pub failed_attempts: u8,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::net::SocketAddr;
 
 use axum::{
     middleware,
@@ -10,7 +10,6 @@ use server::config::Config;
 use server::handler::{admin, health, user};
 use server::middleware::rate_limit::{self, RateLimiter};
 use server::AppState;
-use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
@@ -31,23 +30,40 @@ async fn main() {
         .await
         .expect("Failed to initialize database schema");
 
+    let redis = match redis::Client::open(config.redis_url.as_str()) {
+        Ok(client) => match client.get_multiplexed_async_connection().await {
+            Ok(conn) => Some(conn),
+            Err(e) => {
+                tracing::warn!("Redis connection failed: {}, AccessToken blacklist disabled", e);
+                None
+            }
+        },
+        Err(e) => {
+            tracing::warn!("Redis client failed: {}, AccessToken blacklist disabled", e);
+            None
+        }
+    };
+
     let state = AppState {
         db,
+        redis,
         config: config.clone(),
     };
 
     let rate_limiter = RateLimiter::new(&config);
 
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any)
-        .max_age(Duration::from_secs(3600));
+    let login_rate_limiter = RateLimiter::new_login_limiter();
+
+    let login_route = Router::new()
+        .route("/login", post(user::login))
+        .layer(middleware::from_fn_with_state(
+            login_rate_limiter,
+            rate_limit::login_rate_limit,
+        ));
 
     let user_routes = Router::new()
         .route("/check", get(user::check_user))
         .route("/create", post(user::create_user))
-        .route("/login", post(user::login))
         .route("/logout", post(user::logout))
         .route("/password", post(user::change_password))
         .route("/profile", post(user::update_profile))
@@ -60,13 +76,12 @@ async fn main() {
 
     let app = Router::new()
         .route("/api/health", get(health::health_check))
-        .nest("/api/user", user_routes)
+        .nest("/api/user", user_routes.merge(login_route))
         .nest("/api/admin", admin_routes)
         .layer(TraceLayer::new_for_http())
-        .layer(cors)
         .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024))
         .layer(middleware::from_fn_with_state(
-            rate_limiter.clone(),
+            rate_limiter,
             rate_limit::rate_limit,
         ))
         .with_state(state);
@@ -78,7 +93,10 @@ async fn main() {
         .await
         .expect("Failed to bind address");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Server startup failed");
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .expect("Server startup failed");
 }

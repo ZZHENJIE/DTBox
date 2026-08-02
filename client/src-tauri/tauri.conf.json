@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "dtbox",
+        "title": "DTBox",
         "width": 800,
         "height": 600
       }

@@ -1,3 +1,18 @@
+# DTBox Server
+
+DTBox 后端 API 服务，基于 Axum 构建的纯 HTTP REST API。提供用户认证（JWT）、数据接口等服务。Client（Tauri 桌面端）通过 HTTP 调用本服务所有 API。
+
+## 与客户端交互
+
+- Client 通过本服务的 HTTP 接口完成**登录**（获得 AccessToken + RefreshToken）
+- Client 使用 RefreshToken 定期调用 `/api/user/refresh` **刷新 AccessToken**
+- Client 将 AccessToken 通过本地 WebSocket 推送给 Web 端
+- Web 端直接通过本服务的 HTTP 接口调用业务 API（携带 AccessToken Bearer Header）
+
+> **注意**：Server 本身不提供 WebSocket 服务。WebSocket 通信发生在 Client ↔ Web 之间，用于 Token 刷新推送。
+
+---
+
 # crate 选择
 ## 后端开发框架
 axum = { version = "0.8", features = ["macros"] }
@@ -24,6 +39,8 @@ sha2 = "0.11"
 hex = "0.4"
 ## Redis客户端
 redis = { version = "1", features = ["tokio-comp"] }
+## 正则表达式
+regex = "1"
 ## 配置文件解析
 toml = "0.9"
 ## 日志
@@ -31,7 +48,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 ## 中间件
 tower = { version = "0.5", features = ["limit"] }
-tower-http = { version = "0.6", features = ["cors", "limit", "trace"] }
+tower-http = { version = "0.6", features = ["limit", "trace"] }
 
 ## shared crate 依赖
 // shared/Cargo.toml
@@ -41,15 +58,14 @@ chrono = { version = "0.4", features = ["serde"] }
 
 ## 请求头约定
 AccessToken 校验:  Authorization: Bearer <access_token>
-RefreshToken 校验: X-Refresh-Token: <refresh_token>
+RefreshToken 校验: Refresh-Token: <refresh_token>
 
 ## 认证机制
-AccessToken 通过 AuthUser extractor 注入 handler, 无需手动校验。
-RefreshToken 通过 RefreshUser extractor 注入 handler。
+AccessToken 为 JWT, 签发后无需服务端存储, 通过 AuthUser extractor 注入 handler。登出时将 AccessToken 加入 Redis/内存黑名单(TTL 为剩余有效期), AuthUser 校验时先查黑名单。
+RefreshToken 通过 RefreshUser extractor 注入 handler, 存储在 refresh_tokens 表中(SHA-256 哈希)。
 公开接口(login/create/check/health)不使用 extractor, 直接访问。
 
-长Token(RefreshToken) 单独建表 refresh_tokens, 每个用户唯一记录。
-AccessToken 存储到 Redis, 每个用户一个 key。
+Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启后丢失)。
 
 ## API 路由
 ### 公开接口
@@ -63,7 +79,7 @@ AccessToken 存储到 Redis, 每个用户一个 key。
 ### 需要 AccessToken
 | 路由 | 方法 | 说明 |
 |------|------|------|
-| /api/user/logout | POST | 登出, 撤销 RefreshToken |
+| /api/user/logout | POST | 登出, 撤销 RefreshToken 并加入 AccessToken 黑名单 |
 | /api/user/password | POST | 修改密码, 需校验旧密码 |
 | /api/user/profile | POST | 修改基本信息(name/avatar/settings) |
 | /api/user/me | GET | 获取当前用户信息 |
@@ -85,6 +101,38 @@ AccessToken 存储到 Redis, 每个用户一个 key。
 | /api/finviz/screener | GET | Finviz 筛选 |
 | /api/finviz/quote | GET | Finviz 报价 |
 | /api/alpaca/snapshot | GET | Alpaca 快照 |
+
+## 部署文档（HTTPS 反向代理）
+
+### Nginx 配置示例
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    ssl_certificate     /etc/ssl/certs/example.com.pem;
+    ssl_certificate_key /etc/ssl/private/example.com.key;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Caddy 配置示例
+
+```
+example.com {
+    reverse_proxy /api/* 127.0.0.1:8080
+}
+```
+
+> **注意**：Nginx/Caddy 与 Server 之间为内网通信，Server 本身仅监听 HTTP。TLS 终止由反向代理处理。
 
 ## shared crate 类型定义
 客户端(Tauri)复用这些结构体
@@ -245,6 +293,8 @@ pub struct Model {
     pub role: Role,
     pub settings: serde_json::Value,
     pub created_at: chrono::NaiveDateTime,
+    pub locked_until: Option<chrono::NaiveDateTime>,
+    pub failed_attempts: u8,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -320,6 +370,25 @@ pub struct Model {
     #[sea_orm(unique)]
     pub symbol: String,
     pub name: String,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}
+```
+
+### login_logs
+```rust
+#[derive(Clone, Debug, DeriveEntityModel, Serialize, Deserialize)]
+#[sea_orm(table_name = "login_logs")]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub user_id: i32,
+    pub ip: String,
+    pub success: bool,
+    pub created_at: chrono::NaiveDateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -424,6 +493,7 @@ server/
     │   ├── mod.rs
     │   ├── users.rs     # Role 枚举 + Model + Relation
     │   ├── refresh_tokens.rs
+    │   ├── login_logs.rs
     │   └── stocks.rs
     ├── handler/
     │   ├── mod.rs
@@ -445,7 +515,8 @@ server/
     └── util/
         ├── mod.rs
         ├── jwt.rs       # JWT 生成/校验
-        └── hash.rs      # argon2 密码哈希
+        ├── hash.rs      # argon2 密码哈希
+        └── redis.rs     # Redis 黑名单操作
 
 shared/
 ├── Cargo.toml
@@ -454,13 +525,15 @@ shared/
 ```
 
 ## 启动
+
+### server 目录
 ```bash
 cd server
 cp config.example.toml config.toml  # 编辑 config.toml 填入实际配置
 cargo run
 ```
 
-或在 workspace 根目录:
+### workspace 根目录
 ```bash
 cargo run --package Server
 ```

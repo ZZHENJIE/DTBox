@@ -6,17 +6,25 @@ pub mod middleware;
 pub mod service;
 pub mod util;
 
+use redis::aio::MultiplexedConnection;
 use sea_orm::DatabaseConnection;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
+    pub redis: Option<MultiplexedConnection>,
     pub config: config::Config,
 }
 
 impl axum::extract::FromRef<AppState> for DatabaseConnection {
     fn from_ref(state: &AppState) -> Self {
         state.db.clone()
+    }
+}
+
+impl axum::extract::FromRef<AppState> for Option<MultiplexedConnection> {
+    fn from_ref(state: &AppState) -> Self {
+        state.redis.clone()
     }
 }
 
