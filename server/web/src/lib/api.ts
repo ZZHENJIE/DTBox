@@ -1,22 +1,5 @@
-const STORAGE_KEY_ACCESS = 'dtbox_access_token'
-const STORAGE_KEY_REFRESH = 'dtbox_refresh_token'
-
-export function getTokens(): { accessToken: string | null; refreshToken: string | null } {
-  return {
-    accessToken: localStorage.getItem(STORAGE_KEY_ACCESS),
-    refreshToken: localStorage.getItem(STORAGE_KEY_REFRESH),
-  }
-}
-
-export function setTokens(accessToken: string, refreshToken: string): void {
-  localStorage.setItem(STORAGE_KEY_ACCESS, accessToken)
-  localStorage.setItem(STORAGE_KEY_REFRESH, refreshToken)
-}
-
-export function clearTokens(): void {
-  localStorage.removeItem(STORAGE_KEY_ACCESS)
-  localStorage.removeItem(STORAGE_KEY_REFRESH)
-}
+import { getAccessToken, subscribe } from './store'
+import { requestRefresh } from './websocket'
 
 export interface RequestConfig {
   method: string
@@ -33,34 +16,34 @@ export interface ResponseResult {
   timeMs: number
 }
 
-export async function sendRequest(config: RequestConfig): Promise<ResponseResult> {
-  const { accessToken, refreshToken } = getTokens()
-
+function buildHeaders(extraHeaders?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...config.headers,
+    ...extraHeaders,
   }
 
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`
-  }
-  if (refreshToken) {
-    headers['X-Refresh-Token'] = refreshToken
+  const token = getAccessToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
-  const start = performance.now()
-  const response = await fetch(config.path, {
+  return headers
+}
+
+async function doFetch(config: RequestConfig): Promise<Response> {
+  return fetch(config.path, {
     method: config.method,
-    headers,
+    headers: buildHeaders(config.headers),
     body: config.body !== undefined ? JSON.stringify(config.body) : undefined,
   })
-  const end = performance.now()
+}
 
+async function readResponse(response: Response, start: number): Promise<ResponseResult> {
+  const end = performance.now()
   const resHeaders: Record<string, string> = {}
   response.headers.forEach((value, key) => {
     resHeaders[key] = value
   })
-
   const body = await response.text()
 
   return {
@@ -70,4 +53,45 @@ export async function sendRequest(config: RequestConfig): Promise<ResponseResult
     body,
     timeMs: Math.round((end - start) * 100) / 100,
   }
+}
+
+function waitForToken(): Promise<string> {
+  return new Promise((resolve) => {
+    const token = getAccessToken()
+    if (token) {
+      resolve(token)
+      return
+    }
+
+    const unsubscribe = subscribe(() => {
+      const newToken = getAccessToken()
+      if (newToken) {
+        unsubscribe()
+        resolve(newToken)
+      }
+    })
+
+    setTimeout(() => {
+      unsubscribe()
+      resolve('')
+    }, 15000)
+  })
+}
+
+export async function sendRequest(config: RequestConfig): Promise<ResponseResult> {
+  const start = performance.now()
+  const response = await doFetch(config)
+
+  if (response.status === 401 && getAccessToken()) {
+    requestRefresh()
+
+    const newToken = await waitForToken()
+    if (newToken) {
+      const retryStart = performance.now()
+      const retryResponse = await doFetch(config)
+      return readResponse(retryResponse, retryStart)
+    }
+  }
+
+  return readResponse(response, start)
 }

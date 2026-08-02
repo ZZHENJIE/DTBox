@@ -1,54 +1,30 @@
-import { useState, useCallback } from 'react'
-import { Header } from './components/Header'
-import { Sidebar } from './components/Sidebar'
-import { RequestBuilder } from './components/RequestBuilder'
-import { ResponseViewer } from './components/ResponseViewer'
-import { setTokens } from './lib/api'
-import { endpoints } from './lib/endpoints'
-import type { EndpointDef } from './lib/endpoints'
-import type { ResponseResult } from './lib/api'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { OpenPage } from './components/auth/OpenPage'
+import { AuthGuard } from './components/auth/AuthGuard'
+import { UnauthorizedPage } from './components/auth/UnauthorizedPage'
+import { AppLayout } from './components/layout/AppLayout'
+import { Dashboard } from './components/dashboard/Dashboard'
+import { ProfilePage } from './components/profile/ProfilePage'
+import { PasswordChange } from './components/profile/PasswordChange'
+import { AdminUsers } from './components/admin/AdminUsers'
+import { ChartPage } from './components/chart/ChartPage'
 
 export default function App() {
-  const [selected, setSelected] = useState<EndpointDef>(endpoints[0])
-  const [response, setResponse] = useState<ResponseResult | null>(null)
-  const [, setTick] = useState(0)
-
-  const forceUpdate = useCallback(() => setTick((t) => t + 1), [])
-
-  const handleResponse = useCallback((res: ResponseResult) => {
-    setResponse(res)
-
-    if (selected.id === 'user_login') {
-      try {
-        const data = JSON.parse(res.body)
-        if (data.success && data.data?.access_token && data.data?.refresh_token) {
-          setTokens(data.data.access_token, data.data.refresh_token)
-          forceUpdate()
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }, [selected.id, forceUpdate])
-
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <Header
-        selectedEndpoint={selected}
-        onSelectEndpoint={setSelected}
-        onTokensChange={forceUpdate}
-      />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar selectedId={selected.id} onSelect={setSelected} />
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <RequestBuilder
-            key={selected.id}
-            endpoint={selected}
-            onResponse={handleResponse}
-          />
-          <ResponseViewer response={response} />
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/open" element={<OpenPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route element={<AuthGuard />}>
+          <Route element={<AppLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="password" element={<PasswordChange />} />
+            <Route path="chart" element={<ChartPage />} />
+            <Route path="admin/users" element={<AdminUsers />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }

@@ -11,6 +11,7 @@ use server::handler::{admin, health, user};
 use server::middleware::rate_limit::{self, RateLimiter};
 use server::AppState;
 use tower_http::limit::RequestBodyLimitLayer;
+use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
@@ -74,10 +75,20 @@ async fn main() {
         .route("/info/{page}", get(admin::get_user_list))
         .route("/change", post(admin::change_user));
 
-    let app = Router::new()
+    let mut app = Router::new()
         .route("/api/health", get(health::health_check))
         .nest("/api/user", user_routes.merge(login_route))
-        .nest("/api/admin", admin_routes)
+        .nest("/api/admin", admin_routes);
+
+    if !config.server.web_dir.is_empty() {
+        let web_dir = config.server.web_dir.clone();
+        app = app.fallback_service(
+            ServeDir::new(&web_dir)
+                .not_found_service(ServeFile::new(format!("{}/index.html", web_dir))),
+        );
+    }
+
+    let app = app
         .layer(TraceLayer::new_for_http())
         .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024))
         .layer(middleware::from_fn_with_state(

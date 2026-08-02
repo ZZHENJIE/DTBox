@@ -52,26 +52,26 @@ pub struct UserCheckResult {
 
 // ---------- /api/user/create ----------
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserCreateRequest {
     pub name: String,
     pub password: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserCreateResult {
     pub user_id: i32,
 }
 
 // ---------- /api/user/login ----------
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserLoginRequest {
     pub name: String,
     pub password: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserLoginResult {
     pub access_token: String,
     pub refresh_token: String,
@@ -97,7 +97,7 @@ pub struct UserProfileRequest {
 
 // ---------- /api/user/refresh ----------
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserRefreshResult {
     pub access_token: String,
 }

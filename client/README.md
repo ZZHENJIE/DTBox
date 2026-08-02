@@ -63,7 +63,108 @@ Client（Tauri 窗口）和 Web 端共享统一的设计体系：
 - **交互模式统一**：表单校验、按钮状态、错误提示等行为保持一致
 - **类型定义共享**：Rust 端通过 `shared` crate 定义类型，Web 端有对应的 TypeScript 类型定义，保证数据结构一致性
 
-## 技术栈
+## WebSocket 文档
+
+Client 启动后会在本地 `127.0.0.1` 的**随机端口**上开启 WebSocket 服务。Web 端通过 `ws_port` 参数连接。
+
+### 连接地址
+
+```
+ws://127.0.0.1:<port>
+```
+
+其中 `<port>` 由 Client 通过 URL 参数传递给 Web 端：
+
+```
+https://web.app/open?ws_port=<port>
+```
+
+### 消息协议
+
+所有消息均为 JSON 文本帧，顶层包含 `type` 字段区分消息类型。
+
+#### Client → Web（推送）
+
+**1. 连接成功后立即推送 AccessToken**
+
+```json
+{
+  "type": "access_token",
+  "token": "eyJhbGciOi..."
+}
+```
+
+**2. Token 刷新成功后推送新 AccessToken**
+
+```json
+{
+  "type": "access_token",
+  "token": "eyJhbGciOi...（新 token）"
+}
+```
+
+**3. Token 刷新失败**
+
+```json
+{
+  "type": "error",
+  "message": "token refresh failed"
+}
+```
+
+#### Web → Client（请求）
+
+**请求刷新 AccessToken**
+
+```json
+{
+  "type": "refresh"
+}
+```
+
+Client 收到后会用 keyring 中的 RefreshToken 调用 Server `/api/user/refresh`，成功后推送新的 `access_token`。
+
+### Web 端交互流程
+
+```
+1. 解析 URL 中的 ?ws_port=<port>
+2. new WebSocket("ws://127.0.0.1:<port>")
+3. 监听 onmessage：
+   - type === "access_token" → 存入内存，后续 API 调用时带 Authorization: Bearer <token>
+   - type === "error"      → 处理错误（如跳回登录页）
+4. AccessToken 即将过期时（或收到 401 后）：
+   ws.send(JSON.stringify({ type: "refresh" }))
+5. 收到刷新后的新 access_token，更新本地存储
+```
+
+### 示例代码
+
+```ts
+const port = new URLSearchParams(location.search).get("ws_port");
+if (!port) throw new Error("Missing ws_port");
+
+const ws = new WebSocket(`ws://127.0.0.1:${port}`);
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === "access_token") {
+    storeAccessToken(msg.token);
+  } else if (msg.type === "error") {
+    console.error("WS error:", msg.message);
+  }
+};
+
+ws.onclose = () => {
+  // 连接断开，可能需要提示用户重新登录
+};
+```
+
+### 注意事项
+
+- WebSocket 仅监听 `127.0.0.1`，不对外暴露
+- 每次启动 Client 端口随机，Web 端不可硬编码端口
+- AccessToken 仅通过 WebSocket 推送，**不出现在 URL 中**
+- WebSocket 断开后需重新连接（Client 重启后端口会变）
 
 | 层 | 技术 |
 |----|------|

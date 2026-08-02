@@ -30,6 +30,8 @@ pub async fn create_user(
         settings: Set(serde_json::Value::Object(serde_json::Map::new())),
         avatar: Set(String::new()),
         created_at: Set(chrono::Utc::now().naive_utc()),
+        failed_attempts: Set(0),
+        locked_until: Set(None),
         ..Default::default()
     };
 

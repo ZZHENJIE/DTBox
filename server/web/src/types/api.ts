@@ -70,3 +70,31 @@ export interface AdminChangeRequest {
   role?: number
   settings?: Record<string, unknown>
 }
+
+export type Role = 1 | 2 | 5
+
+export const ROLE_LABELS: Record<Role, string> = {
+  1: '用户',
+  2: '订阅者',
+  5: '管理员',
+}
+
+export const ROLE_ADMIN: Role = 5
+
+// WebSocket message types (Web ↔ Client)
+export interface WsAccessTokenMessage {
+  type: 'access_token'
+  token: string
+}
+
+export interface WsErrorMessage {
+  type: 'error'
+  message: string
+}
+
+export interface WsRefreshRequest {
+  type: 'refresh'
+}
+
+export type WsClientMessage = WsAccessTokenMessage | WsErrorMessage
+export type WsWebMessage = WsRefreshRequest
