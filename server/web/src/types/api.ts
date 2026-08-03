@@ -81,6 +81,22 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export const ROLE_ADMIN: Role = 5
 
+// Finviz
+export interface QuoteQuery {
+  symbol: string
+  interval: string
+  valid_ranges: string
+}
+
+export interface QuoteItem {
+  Date: string
+  Open: number
+  High: number
+  Low: number
+  Close: number
+  Volume: number
+}
+
 // WebSocket message types (Web ↔ Client)
 export interface WsAccessTokenMessage {
   type: 'access_token'

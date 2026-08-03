@@ -1,15 +1,15 @@
 use std::net::SocketAddr;
 
 use axum::{
-    middleware,
+    Router, middleware,
     routing::{get, post},
-    Router,
 };
+
 use sea_orm::Database;
-use server::config::Config;
-use server::handler::{admin, health, user};
-use server::middleware::rate_limit::{self, RateLimiter};
 use server::AppState;
+use server::handler::{admin, finviz, health, user};
+use server::middleware::rate_limit::{self, RateLimiter};
+use server::{Source, config::Config};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
@@ -35,7 +35,10 @@ async fn main() {
         Ok(client) => match client.get_multiplexed_async_connection().await {
             Ok(conn) => Some(conn),
             Err(e) => {
-                tracing::warn!("Redis connection failed: {}, AccessToken blacklist disabled", e);
+                tracing::warn!(
+                    "Redis connection failed: {}, AccessToken blacklist disabled",
+                    e
+                );
                 None
             }
         },
@@ -45,22 +48,32 @@ async fn main() {
         }
     };
 
+    let source = Source {
+        finviz: finviz_sdk::Client::new(&config.data_source.finviz_api_key),
+        alpaca: alpaca_sdk::Client::new(
+            &config.data_source.alpaca.api_key,
+            &config.data_source.alpaca.api_secret,
+        ),
+    };
+
     let state = AppState {
         db,
         redis,
         config: config.clone(),
+        source,
     };
 
     let rate_limiter = RateLimiter::new(&config);
 
     let login_rate_limiter = RateLimiter::new_login_limiter();
 
-    let login_route = Router::new()
-        .route("/login", post(user::login))
-        .layer(middleware::from_fn_with_state(
-            login_rate_limiter,
-            rate_limit::login_rate_limit,
-        ));
+    let login_route =
+        Router::new()
+            .route("/login", post(user::login))
+            .layer(middleware::from_fn_with_state(
+                login_rate_limiter,
+                rate_limit::login_rate_limit,
+            ));
 
     let user_routes = Router::new()
         .route("/check", get(user::check_user))
@@ -75,10 +88,13 @@ async fn main() {
         .route("/info/{page}", get(admin::get_user_list))
         .route("/change", post(admin::change_user));
 
+    let finviz_routes = Router::new().route("/quote", post(finviz::quote));
+
     let mut app = Router::new()
         .route("/api/health", get(health::health_check))
         .nest("/api/user", user_routes.merge(login_route))
-        .nest("/api/admin", admin_routes);
+        .nest("/api/admin", admin_routes)
+        .nest("/api/finviz", finviz_routes);
 
     if !config.server.web_dir.is_empty() {
         let web_dir = config.server.web_dir.clone();

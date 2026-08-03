@@ -95,11 +95,15 @@ Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启�
 | /api/admin/info/{page} | GET | 分页获取用户列表 |
 | /api/admin/change | POST | 修改任意用户信息 |
 
+### 需要 AccessToken + Subscriber 权限
+| 路由 | 方法 | 说明 |
+|------|------|------|
+| /api/finviz/quote | POST | Finviz 报价 |
+
 ### 待实现
 | 路由 | 方法 | 说明 |
 |------|------|------|
 | /api/finviz/screener | GET | Finviz 筛选 |
-| /api/finviz/quote | GET | Finviz 报价 |
 | /api/alpaca/snapshot | GET | Alpaca 快照 |
 
 ## 部署文档（HTTPS 反向代理）
@@ -227,6 +231,24 @@ pub struct AdminChangeRequest {
     pub settings: Option<serde_json::Value>,
 }
 // 响应: ApiResponse<InfoResult>
+```
+
+### /api/finviz/quote
+```rust
+#[derive(Debug, Deserialize)]
+pub struct QuoteQuery { pub symbol: String }
+
+// 响应: ApiResponse<FinvizQuote>
+#[derive(Debug, Serialize)]
+pub struct FinvizQuote {
+    pub symbol: String,
+    pub name: String,
+    pub price: f64,
+    pub change: f64,
+    pub change_percent: f64,
+    pub volume: u64,
+    pub market_cap: String,
+}
 ```
 
 ### 共享类型
@@ -500,7 +522,7 @@ server/
     │   ├── health.rs    # GET /api/health
     │   ├── user.rs      # /api/user/*
     │   ├── admin.rs     # /api/admin/*
-    │   ├── finviz.rs    # /api/finviz/* (待实现)
+    │   ├── finviz.rs    # GET /api/finviz/quote (Subscriber+)
     │   └── alpaca.rs    # /api/alpaca/* (待实现)
     ├── middleware/
     │   ├── mod.rs
@@ -510,7 +532,7 @@ server/
     │   ├── mod.rs
     │   ├── auth.rs      # Token 存储/校验/撤销
     │   ├── user.rs      # 用户 CRUD + 分页
-    │   ├── finviz.rs    # Finviz 数据 (待实现)
+    │   ├── finviz.rs    # Finviz quote (示例实现)
     │   └── alpaca.rs    # Alpaca 数据 (待实现)
     └── util/
         ├── mod.rs

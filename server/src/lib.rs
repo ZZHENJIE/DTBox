@@ -10,10 +10,17 @@ use redis::aio::MultiplexedConnection;
 use sea_orm::DatabaseConnection;
 
 #[derive(Clone)]
+pub struct Source {
+    pub finviz: finviz_sdk::Client,
+    pub alpaca: alpaca_sdk::Client,
+}
+
+#[derive(Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
     pub redis: Option<MultiplexedConnection>,
     pub config: config::Config,
+    pub source: Source,
 }
 
 impl axum::extract::FromRef<AppState> for DatabaseConnection {

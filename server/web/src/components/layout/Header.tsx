@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Shield, CircleUser, User, Key, ChevronDown, LineChart } from 'lucide-react'
+import { Shield, CircleUser, User, Key, ChevronDown, LineChart, TrendingUp } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { useAuth } from '~/hooks/use-auth'
 import { ROLE_LABELS, type Role } from '~/types/api'
@@ -44,6 +44,20 @@ export function Header() {
         >
           <LineChart className="size-4" />
           <span>Chart</span>
+        </NavLink>
+        <NavLink
+          to="/finviz/quote"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-1.5 h-full px-3 text-sm transition-colors border-b-2 border-transparent',
+              isActive
+                ? 'text-primary border-primary'
+                : 'text-muted-foreground hover:text-foreground hover:border-border',
+            )
+          }
+        >
+          <TrendingUp className="size-4" />
+          <span>Finviz Quote</span>
         </NavLink>
         {isAdmin && (
           <NavLink
