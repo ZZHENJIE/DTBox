@@ -134,3 +134,77 @@ pub struct InfoResult {
     pub settings: serde_json::Value,
     pub created_at: NaiveDateTime,
 }
+
+// ---------- /api/tools/calendar/tradingview_economic ----------
+#[derive(Debug, Deserialize)]
+pub struct CalendarEconomicQuery {
+    pub from: chrono::DateTime<chrono::Utc>,
+    pub to: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TradingviewEconomicCalendarItem {
+    pub actual: Option<f64>,
+    pub actual_raw: Option<f64>,
+    #[serde(default)]
+    pub category: Option<String>,
+    #[serde(default)]
+    pub comment: Option<String>,
+    pub country: String,
+    pub currency: String,
+    pub date: chrono::DateTime<chrono::Utc>,
+    pub forecast: Option<f64>,
+    pub forecast_raw: Option<f64>,
+    pub id: String,
+    pub importance: i8,
+    pub indicator: String,
+    pub period: String,
+    pub previous: Option<f64>,
+    pub previous_raw: Option<f64>,
+    #[serde(default)]
+    pub reference_date: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(default)]
+    pub scale: Option<String>,
+    pub source: String,
+    #[serde(rename = "source_url")]
+    pub source_url: String,
+    #[serde(default)]
+    pub ticker: Option<String>,
+    pub title: String,
+    #[serde(default)]
+    pub unit: Option<String>,
+}
+
+// ---------- /api/stock/search ----------
+
+#[derive(Debug, Deserialize)]
+pub struct StockSearchQuery {
+    pub symbol: String,
+    #[serde(default = "default_stock_limit")]
+    pub limit: u64,
+    #[serde(default = "default_stock_page")]
+    pub page: u64,
+}
+
+fn default_stock_limit() -> u64 {
+    20
+}
+fn default_stock_page() -> u64 {
+    1
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StockItem {
+    pub id: i32,
+    pub symbol: String,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct StockSearchResult {
+    pub stocks: Vec<StockItem>,
+    pub total: u64,
+    pub page: u64,
+    pub limit: u64,
+}

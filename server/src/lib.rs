@@ -20,6 +20,7 @@ pub struct AppState {
     pub db: DatabaseConnection,
     pub redis: Option<MultiplexedConnection>,
     pub config: config::Config,
+    pub reqwest_client: reqwest::Client,
     pub source: Source,
 }
 

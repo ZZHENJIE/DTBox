@@ -7,7 +7,7 @@ use axum::{
 
 use sea_orm::Database;
 use server::AppState;
-use server::handler::{admin, finviz, health, user};
+use server::handler::{admin, alpaca, finviz, health, stock, tool, user};
 use server::middleware::rate_limit::{self, RateLimiter};
 use server::{Source, config::Config};
 use tower_http::limit::RequestBodyLimitLayer;
@@ -61,6 +61,10 @@ async fn main() {
         redis,
         config: config.clone(),
         source,
+        reqwest_client: reqwest::ClientBuilder::new()
+            .no_proxy()
+            .build()
+            .expect("Builder Reqwest Client Failed."),
     };
 
     let rate_limiter = RateLimiter::new(&config);
@@ -88,13 +92,30 @@ async fn main() {
         .route("/info/{page}", get(admin::get_user_list))
         .route("/change", post(admin::change_user));
 
-    let finviz_routes = Router::new().route("/quote", post(finviz::quote));
+    let finviz_routes = Router::new()
+        .route("/quote", post(finviz::quote))
+        .route("/screener", post(finviz::screener))
+        .route("/news", post(finviz::news));
+
+    let alpaca_routes = Router::new().route("/snapshot", post(alpaca::snapshot));
+
+    let stock_routes = Router::new().route("/search", get(stock::search));
+
+    let tool_routes = Router::new()
+        .route(
+            "/calendar/tradingview_economic",
+            get(tool::calendar_tradingview_economic),
+        )
+        .route("/timestamp/akamai", get(tool::timestamp_akamai));
 
     let mut app = Router::new()
         .route("/api/health", get(health::health_check))
         .nest("/api/user", user_routes.merge(login_route))
         .nest("/api/admin", admin_routes)
-        .nest("/api/finviz", finviz_routes);
+        .nest("/api/finviz", finviz_routes)
+        .nest("/api/alpaca", alpaca_routes)
+        .nest("/api/stock", stock_routes)
+        .nest("/api/tool", tool_routes);
 
     if !config.server.web_dir.is_empty() {
         let web_dir = config.server.web_dir.clone();

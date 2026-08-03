@@ -1,16 +1,21 @@
-use alpaca_sdk::SnapshotQuery;
-use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
-use shared::ApiResponse;
+use axum::{
+    Json,
+    extract::{Query, State},
+    http::StatusCode,
+    response::IntoResponse,
+};
+use shared::{ApiResponse, StockSearchQuery};
 
 use crate::AppState;
 use crate::middleware::auth::SubscriberUser;
+use crate::service;
 
-pub async fn snapshot(
+pub async fn search(
     State(state): State<AppState>,
     _user: SubscriberUser,
-    Json(req): Json<SnapshotQuery>,
+    Query(query): Query<StockSearchQuery>,
 ) -> impl IntoResponse {
-    match state.source.alpaca.snapshot(&req).await {
+    match service::stock::search_stocks(&state.db, &query.symbol, query.page, query.limit).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,

@@ -35,6 +35,7 @@ dependencies = [
  "jsonwebtoken",
  "redis",
  "regex",
+ "reqwest 0.13.4",
  "sea-orm",
  "serde",
  "serde_json",

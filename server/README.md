@@ -99,12 +99,12 @@ Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启�
 | 路由 | 方法 | 说明 |
 |------|------|------|
 | /api/finviz/quote | POST | Finviz 报价 |
-
-### 待实现
-| 路由 | 方法 | 说明 |
-|------|------|------|
-| /api/finviz/screener | GET | Finviz 筛选 |
-| /api/alpaca/snapshot | GET | Alpaca 快照 |
+| /api/finviz/screener | POST | Finviz 筛选 |
+| /api/finviz/news | POST | Finviz 新闻 |
+| /api/alpaca/snapshot | POST | Alpaca 快照 |
+| /api/stock/search?symbol={keyword}&limit={n}&page={n} | GET | 搜索股票 (symbol 必填) |
+| /api/tool/calendar/tradingview_economic?from={iso}&to={iso} | GET | TradingView 经济日历 |
+| /api/tool/timestamp/akamai | GET | Akamai 时间戳 |
 
 ## 部署文档（HTTPS 反向代理）
 
@@ -233,23 +233,59 @@ pub struct AdminChangeRequest {
 // 响应: ApiResponse<InfoResult>
 ```
 
-### /api/finviz/quote
+### /api/finviz/*
+> 请求/响应类型来自 `finviz_sdk` crate，客户端需依赖该 SDK 复用类型。
+
+```
+POST /quote     请求: QuoteQuery      响应: ApiResponse<FinvizQuote>
+POST /screener   请求: ScreenerQuery    响应: ApiResponse<Vec<Ticker>>  
+POST /news       请求: NewsQuery        响应: ApiResponse<Vec<NewsItem>>
+```
+
+### /api/alpaca/*
+> 请求/响应类型来自 `alpaca_sdk` crate，客户端需依赖该 SDK 复用类型。
+
+```
+POST /snapshot   请求: SnapshotQuery    响应: ApiResponse<Snapshot>
+```
+
+### /api/stock/search
 ```rust
 #[derive(Debug, Deserialize)]
-pub struct QuoteQuery { pub symbol: String }
+pub struct StockSearchQuery {
+    pub symbol: String,
+    pub limit: Option<u64>,
+    pub page: Option<u64>,
+}
 
-// 响应: ApiResponse<FinvizQuote>
+// 响应: ApiResponse<StockSearchResult>
 #[derive(Debug, Serialize)]
-pub struct FinvizQuote {
+pub struct StockSearchResult {
+    pub stocks: Vec<StockItem>,
+    pub total: u64,
+    pub page: u64,
+    pub limit: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockItem {
+    pub id: i32,
     pub symbol: String,
     pub name: String,
-    pub price: f64,
-    pub change: f64,
-    pub change_percent: f64,
-    pub volume: u64,
-    pub market_cap: String,
 }
 ```
+
+### /api/tool/calendar/tradingview_economic
+```rust
+#[derive(Debug, Deserialize)]
+pub struct CalendarEconomicQuery {
+    pub from: chrono::DateTime<chrono::Utc>,
+    pub to: chrono::DateTime<chrono::Utc>,
+}
+
+// 响应: ApiResponse<Vec<TradingviewEconomicCalendarItem>>
+```
+见 shared 中的 `TradingviewEconomicCalendarItem` 定义。
 
 ### 共享类型
 ```rust
@@ -520,9 +556,12 @@ server/
     ├── handler/
     │   ├── mod.rs
     │   ├── health.rs    # GET /api/health
+    │   ├── stock.rs     # GET /api/stock/search
+    │   ├── tool.rs      # GET /api/tool/*
     │   ├── user.rs      # /api/user/*
     │   ├── admin.rs     # /api/admin/*
-    │   ├── finviz.rs    # GET /api/finviz/quote (Subscriber+)
+    │   ├── finviz.rs    # /api/finviz/* (Subscriber+)
+    │   ├── alpaca.rs    # /api/alpaca/* (Subscriber+)
     │   └── alpaca.rs    # /api/alpaca/* (待实现)
     ├── middleware/
     │   ├── mod.rs
@@ -531,7 +570,11 @@ server/
     ├── service/
     │   ├── mod.rs
     │   ├── auth.rs      # Token 存储/校验/撤销
+    │   ├── stock.rs     # 股票搜索
     │   ├── user.rs      # 用户 CRUD + 分页
+    │   └── tool/
+    │       ├── calendar.rs   # TradingView 经济日历
+    │       └── timestamp.rs  # Akamai 时间戳
     │   ├── finviz.rs    # Finviz quote (示例实现)
     │   └── alpaca.rs    # Alpaca 数据 (待实现)
     └── util/
