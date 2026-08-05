@@ -98,12 +98,15 @@ Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启�
 ### 需要 AccessToken + Subscriber 权限
 | 路由 | 方法 | 说明 |
 |------|------|------|
-| /api/finviz/quote | POST | Finviz 报价 |
+| /api/finviz/stock | POST | Finviz 股票报价 |
 | /api/finviz/screener | POST | Finviz 筛选 |
 | /api/finviz/news | POST | Finviz 新闻 |
 | /api/alpaca/snapshot | POST | Alpaca 快照 |
 | /api/stock/search?symbol={keyword}&limit={n}&page={n} | GET | 搜索股票 (symbol 必填) |
-| /api/tool/calendar/tradingview_economic?from={iso}&to={iso} | GET | TradingView 经济日历 |
+| /api/stock/kline_chart | POST | K线图 + 成交量 (返回 PNG 图片) |
+| /api/benzinga/calendar/ipo | POST | Benzinga IPO 日历 |
+| /api/benzinga/calendar/economics | POST | Benzinga 经济日历 |
+| /api/benzinga/calendar/earnings | POST | Benzinga 财报日历 |
 | /api/tool/timestamp/akamai | GET | Akamai 时间戳 |
 
 ## 部署文档（HTTPS 反向代理）
@@ -237,9 +240,9 @@ pub struct AdminChangeRequest {
 > 请求/响应类型来自 `finviz_sdk` crate，客户端需依赖该 SDK 复用类型。
 
 ```
-POST /quote     请求: QuoteQuery      响应: ApiResponse<FinvizQuote>
-POST /screener   请求: ScreenerQuery    响应: ApiResponse<Vec<Ticker>>  
-POST /news       请求: NewsQuery        响应: ApiResponse<Vec<NewsItem>>
+POST /stock       请求: StockQuery       响应: ApiResponse<Stock>
+POST /screener    请求: ScreenerQuery     响应: ApiResponse<Vec<Ticker>>  
+POST /news        请求: NewsQuery         响应: ApiResponse<Vec<NewsItem>>
 ```
 
 ### /api/alpaca/*
@@ -275,17 +278,23 @@ pub struct StockItem {
 }
 ```
 
-### /api/tool/calendar/tradingview_economic
-```rust
-#[derive(Debug, Deserialize)]
-pub struct CalendarEconomicQuery {
-    pub from: chrono::DateTime<chrono::Utc>,
-    pub to: chrono::DateTime<chrono::Utc>,
-}
+### /api/stock/kline_chart
+> 请求类型来自 `finviz_sdk::StockQuery`，包含 `symbol: String`、`interval: stock::Interval`、`valid_ranges: stock::ValidRanges`。
 
-// 响应: ApiResponse<Vec<TradingviewEconomicCalendarItem>>
 ```
-见 shared 中的 `TradingviewEconomicCalendarItem` 定义。
+POST /kline_chart     请求: StockQuery      响应: image/png (成功) 或 application/json (错误)
+```
+
+图表：上方 K 线蜡烛图（绿涨红跌），下方成交量柱状图。
+
+### /api/benzinga/*
+> 请求/响应类型来自 `benzinga_sdk` crate，客户端需依赖该 SDK 复用类型。
+
+```
+POST /calendar/ipo         请求: calendar::IPOQuery       响应: ApiResponse<Vec<Ipo>>
+POST /calendar/economics   请求: calendar::EconomicsQuery  响应: ApiResponse<Vec<Economics>>
+POST /calendar/earnings    请求: calendar::EarningsQuery   响应: ApiResponse<Vec<Earnings>>
+```
 
 ### 共享类型
 ```rust
@@ -556,12 +565,13 @@ server/
     ├── handler/
     │   ├── mod.rs
     │   ├── health.rs    # GET /api/health
-    │   ├── stock.rs     # GET /api/stock/search
+    │   ├── stock.rs     # /api/stock/* (Subscriber+)
     │   ├── tool.rs      # GET /api/tool/*
     │   ├── user.rs      # /api/user/*
     │   ├── admin.rs     # /api/admin/*
     │   ├── finviz.rs    # /api/finviz/* (Subscriber+)
     │   ├── alpaca.rs    # /api/alpaca/* (Subscriber+)
+    │   ├── benzinga.rs  # /api/benzinga/* (Subscriber+)
     │   └── alpaca.rs    # /api/alpaca/* (待实现)
     ├── middleware/
     │   ├── mod.rs
@@ -570,10 +580,10 @@ server/
     ├── service/
     │   ├── mod.rs
     │   ├── auth.rs      # Token 存储/校验/撤销
+    │   ├── chart.rs     # K线+成交量渲染
     │   ├── stock.rs     # 股票搜索
     │   ├── user.rs      # 用户 CRUD + 分页
     │   └── tool/
-    │       ├── calendar.rs   # TradingView 经济日历
     │       └── timestamp.rs  # Akamai 时间戳
     │   ├── finviz.rs    # Finviz quote (示例实现)
     │   └── alpaca.rs    # Alpaca 数据 (待实现)

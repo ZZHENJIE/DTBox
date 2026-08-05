@@ -8,7 +8,7 @@ import { ProfilePage } from './components/profile/ProfilePage'
 import { PasswordChange } from './components/profile/PasswordChange'
 import { AdminUsers } from './components/admin/AdminUsers'
 import { ChartPage } from './components/chart/ChartPage'
-import { FinvizQuotePage } from './components/finviz/FinvizQuotePage'
+import { FinvizStockPage } from './components/finviz/FinvizStockPage'
 
 export default function App() {
   return (
@@ -22,7 +22,7 @@ export default function App() {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="password" element={<PasswordChange />} />
             <Route path="chart" element={<ChartPage />} />
-            <Route path="finviz/quote" element={<FinvizQuotePage />} />
+            <Route path="finviz/stock" element={<FinvizStockPage />} />
             <Route path="admin/users" element={<AdminUsers />} />
           </Route>
         </Route>

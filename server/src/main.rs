@@ -6,10 +6,9 @@ use axum::{
 };
 
 use sea_orm::Database;
-use server::AppState;
-use server::handler::{admin, alpaca, finviz, health, stock, tool, user};
+use server::handler::{admin, alpaca, benzinga, finviz, health, stock, tool, user};
 use server::middleware::rate_limit::{self, RateLimiter};
-use server::{Source, config::Config};
+use server::{AppState, Source, config::Config};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
@@ -49,6 +48,7 @@ async fn main() {
     };
 
     let source = Source {
+        benzinga: benzinga_sdk::Client::new(),
         finviz: finviz_sdk::Client::new(&config.data_source.finviz_api_key),
         alpaca: alpaca_sdk::Client::new(
             &config.data_source.alpaca.api_key,
@@ -93,20 +93,22 @@ async fn main() {
         .route("/change", post(admin::change_user));
 
     let finviz_routes = Router::new()
-        .route("/quote", post(finviz::quote))
+        .route("/stock", post(finviz::stock))
         .route("/screener", post(finviz::screener))
         .route("/news", post(finviz::news));
 
     let alpaca_routes = Router::new().route("/snapshot", post(alpaca::snapshot));
 
-    let stock_routes = Router::new().route("/search", get(stock::search));
+    let benzinga_routes = Router::new()
+        .route("/calendar/ipo", post(benzinga::calendar_ipo))
+        .route("/calendar/economics", post(benzinga::calendar_economics))
+        .route("/calendar/earnings", post(benzinga::calendar_earnings));
 
-    let tool_routes = Router::new()
-        .route(
-            "/calendar/tradingview_economic",
-            get(tool::calendar_tradingview_economic),
-        )
-        .route("/timestamp/akamai", get(tool::timestamp_akamai));
+    let stock_routes = Router::new()
+        .route("/search", get(stock::search))
+        .route("/kline_chart", post(stock::kline_chart));
+
+    let tool_routes = Router::new().route("/timestamp/akamai", get(tool::timestamp_akamai));
 
     let mut app = Router::new()
         .route("/api/health", get(health::health_check))
@@ -114,6 +116,7 @@ async fn main() {
         .nest("/api/admin", admin_routes)
         .nest("/api/finviz", finviz_routes)
         .nest("/api/alpaca", alpaca_routes)
+        .nest("/api/benzinga", benzinga_routes)
         .nest("/api/stock", stock_routes)
         .nest("/api/tool", tool_routes);
 

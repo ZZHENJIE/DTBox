@@ -1,16 +1,16 @@
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
-use finviz_sdk::{NewsQuery, ScreenerQuery, StockQuery};
+use benzinga_sdk::calendar;
 use shared::ApiResponse;
 
 use crate::AppState;
 use crate::middleware::auth::SubscriberUser;
 
-pub async fn stock(
+pub async fn calendar_ipo(
     State(state): State<AppState>,
     _user: SubscriberUser,
-    Json(req): Json<StockQuery>,
+    Json(req): Json<calendar::IPOQuery>,
 ) -> impl IntoResponse {
-    match state.source.finviz.stock(&req).await {
+    match state.source.benzinga.ipo(&req).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -20,12 +20,12 @@ pub async fn stock(
     }
 }
 
-pub async fn screener(
+pub async fn calendar_economics(
     State(state): State<AppState>,
     _user: SubscriberUser,
-    Json(req): Json<ScreenerQuery>,
+    Json(req): Json<calendar::EconomicsQuery>,
 ) -> impl IntoResponse {
-    match state.source.finviz.screener(&req).await {
+    match state.source.benzinga.economics(&req).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -35,12 +35,12 @@ pub async fn screener(
     }
 }
 
-pub async fn news(
+pub async fn calendar_earnings(
     State(state): State<AppState>,
     _user: SubscriberUser,
-    Json(req): Json<NewsQuery>,
+    Json(req): Json<calendar::EarningsQuery>,
 ) -> impl IntoResponse {
-    match state.source.finviz.news(&req).await {
+    match state.source.benzinga.earnings(&req).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,

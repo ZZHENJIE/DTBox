@@ -95,3 +95,26 @@ export async function sendRequest(config: RequestConfig): Promise<ResponseResult
 
   return readResponse(response, start)
 }
+
+export async function sendBlobRequest(config: RequestConfig): Promise<Blob> {
+  const response = await doFetch(config)
+
+  if (response.status === 401 && getAccessToken()) {
+    requestRefresh()
+
+    const newToken = await waitForToken()
+    if (newToken) {
+      const retryResponse = await doFetch(config)
+      if (!retryResponse.ok) {
+        throw new Error(`HTTP ${retryResponse.status}: ${retryResponse.statusText}`)
+      }
+      return retryResponse.blob()
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  return response.blob()
+}

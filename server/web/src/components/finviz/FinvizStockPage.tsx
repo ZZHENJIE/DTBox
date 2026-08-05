@@ -46,7 +46,7 @@ const RANGES = [
 const selectStyle =
   'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 
-export function FinvizQuotePage() {
+export function FinvizStockPage() {
   const [symbol, setSymbol] = useState('')
   const [interval, setInterval] = useState('Day')
   const [range, setRange] = useState('Month')
@@ -57,7 +57,7 @@ export function FinvizQuotePage() {
     if (!trimmed) return
     execute({
       method: 'POST',
-      path: '/api/finviz/quote',
+      path: '/api/finviz/stock',
       body: { symbol: trimmed, interval, valid_ranges: range },
     })
   }, [symbol, interval, range, execute])
@@ -66,7 +66,7 @@ export function FinvizQuotePage() {
     <div className="p-8">
       <div className="flex items-center gap-3 mb-6">
         <TrendingUp className="size-5" />
-        <h2 className="text-lg font-semibold">Finviz Quote</h2>
+        <h2 className="text-lg font-semibold">Finviz Stock</h2>
       </div>
 
       <div className="flex items-end gap-3 mb-6 flex-wrap">

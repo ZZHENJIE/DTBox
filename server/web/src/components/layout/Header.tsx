@@ -46,7 +46,7 @@ export function Header() {
           <span>Chart</span>
         </NavLink>
         <NavLink
-          to="/finviz/quote"
+          to="/finviz/stock"
           className={({ isActive }) =>
             cn(
               'flex items-center gap-1.5 h-full px-3 text-sm transition-colors border-b-2 border-transparent',
@@ -57,7 +57,7 @@ export function Header() {
           }
         >
           <TrendingUp className="size-4" />
-          <span>Finviz Quote</span>
+          <span>Finviz Stock</span>
         </NavLink>
         {isAdmin && (
           <NavLink

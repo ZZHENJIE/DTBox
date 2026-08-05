@@ -13,6 +13,7 @@ use sea_orm::DatabaseConnection;
 pub struct Source {
     pub finviz: finviz_sdk::Client,
     pub alpaca: alpaca_sdk::Client,
+    pub benzinga: benzinga_sdk::Client,
 }
 
 #[derive(Clone)]

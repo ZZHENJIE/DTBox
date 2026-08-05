@@ -39,3 +39,6 @@ tower-http = { version = "0.6", features = ["fs", "limit", "trace"] }
 reqwest = { version = "0.13.4", default-features = false, features = ["json", "native-tls"] }
 alpaca_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "alpaca_sdk" }
 finviz_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "finviz_sdk" }
+benzinga_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "benzinga_sdk" }
+plotters = { version = "0.3", default-features = false, features = ["chrono", "bitmap_backend", "candlestick", "ttf"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
