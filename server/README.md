@@ -103,7 +103,7 @@ Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启�
 | /api/finviz/news | POST | Finviz 新闻 |
 | /api/alpaca/snapshot | POST | Alpaca 快照 |
 | /api/stock/search?symbol={keyword}&limit={n}&page={n} | GET | 搜索股票 (symbol 必填) |
-| /api/stock/kline_chart | POST | K线图 + 成交量 (返回 PNG 图片) |
+| /api/stock/kline_chart | POST | K线图 + 成交量，返回 PNG (⚠ 待修复) |
 | /api/benzinga/calendar/ipo | POST | Benzinga IPO 日历 |
 | /api/benzinga/calendar/economics | POST | Benzinga 经济日历 |
 | /api/benzinga/calendar/earnings | POST | Benzinga 财报日历 |

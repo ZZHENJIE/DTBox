@@ -97,6 +97,21 @@ export interface QuoteItem {
   Volume: number
 }
 
+// Stock search
+export interface StockItem {
+  id: number
+  symbol: string
+  name: string
+  logo?: string
+}
+
+export interface StockSearchResult {
+  stocks: StockItem[]
+  total: number
+  page: number
+  limit: number
+}
+
 // WebSocket message types (Web ↔ Client)
 export interface WsAccessTokenMessage {
   type: 'access_token'

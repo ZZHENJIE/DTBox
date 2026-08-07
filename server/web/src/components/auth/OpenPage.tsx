@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { bootstrapFromUrl } from '~/lib/websocket'
-import { getAccessToken, subscribe, getAuthState } from '~/lib/store'
+import { getAccessToken, getAuthState, setStoredWsPort, subscribe } from '~/lib/store'
 import { ConnectingSpinner } from './ConnectingSpinner'
 
 export function OpenPage() {
@@ -9,16 +8,14 @@ export function OpenPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const hasWsBootstrap = bootstrapFromUrl()
-    const currentState = getAuthState()
-
-    if (currentState === 'authenticated' && getAccessToken()) {
-      navigate('/', { replace: true })
-      return
+    const urlPort = new URLSearchParams(location.search).get('ws_port')
+    if (urlPort) {
+      setStoredWsPort(urlPort)
     }
 
-    if (!hasWsBootstrap && currentState !== 'authenticated') {
-      setError('缺少 ws_port 参数，无法连接到 DTBox 客户端')
+    const currentState = getAuthState()
+    if (currentState === 'authenticated' && getAccessToken()) {
+      navigate('/', { replace: true })
       return
     }
 

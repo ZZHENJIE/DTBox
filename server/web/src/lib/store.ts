@@ -40,12 +40,12 @@ function notify(): void {
   listeners.forEach((fn) => fn())
 }
 
-// Dev fallback: read token from localStorage when no ws_port
-const port = new URLSearchParams(location.search).get('ws_port')
-if (!port) {
-  const devToken = localStorage.getItem('dtbox_dev_access_token')
-  if (devToken) {
-    accessToken = devToken
-    authState = 'authenticated'
-  }
+const WS_PORT_KEY = 'dtbox_ws_port'
+
+export function getStoredWsPort(): string | null {
+  return localStorage.getItem(WS_PORT_KEY)
+}
+
+export function setStoredWsPort(port: string): void {
+  localStorage.setItem(WS_PORT_KEY, port)
 }

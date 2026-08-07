@@ -1,4 +1,4 @@
-import { setAccessToken, clearAccessToken, setAuthState, getAuthState } from './store'
+import { setAccessToken, clearAccessToken, setAuthState, getAuthState, getAccessToken, getStoredWsPort, setStoredWsPort } from './store'
 
 interface WsMessage {
   type: string
@@ -26,7 +26,7 @@ function updateWsState(state: WsState): void {
   onStateChange?.(state)
 }
 
-export function connect(port: string): void {
+function connect(port: string): void {
   if (ws && ws.readyState === WebSocket.OPEN) return
 
   updateWsState('connecting')
@@ -100,12 +100,26 @@ function scheduleReconnect(port: string): void {
   }, 3000)
 }
 
-// Auto-bootstrap for /open page
-export function bootstrapFromUrl(): boolean {
-  const port = new URLSearchParams(location.search).get('ws_port')
-  if (port) {
-    connect(port)
-    return true
+export function bootstrapFromUrl(): void {
+  if (getAccessToken()) return
+
+  const urlPort = new URLSearchParams(location.search).get('ws_port')
+
+  if (urlPort) {
+    setStoredWsPort(urlPort)
+    connect(urlPort)
+    return
   }
-  return false
+
+  const storedPort = getStoredWsPort()
+  if (storedPort) {
+    connect(storedPort)
+    return
+  }
+
+  const devToken = localStorage.getItem('dtbox_dev_access_token')
+  if (devToken) {
+    setAccessToken(devToken)
+    return
+  }
 }

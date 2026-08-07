@@ -158,6 +158,8 @@ pub struct StockItem {
     pub id: i32,
     pub symbol: String,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

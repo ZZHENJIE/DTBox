@@ -24,6 +24,10 @@ pub async fn search_stocks(
             id: s.id,
             symbol: s.symbol,
             name: s.name,
+            logo: s.logo.as_ref().map(|bytes| {
+                use base64::Engine;
+                format!("data:image/png;base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes))
+            }),
         })
         .collect();
 

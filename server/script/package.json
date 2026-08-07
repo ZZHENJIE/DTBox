@@ -1,0 +1,14 @@
+{
+  "name": "dtbox-server-script",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "type": "module",
+  "dependencies": {
+    "csv-parse": "^7.0.2"
+  }
+}

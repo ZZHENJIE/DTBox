@@ -1,4 +1,4 @@
-import { getAccessToken, subscribe } from './store'
+import { getAccessToken, clearAccessToken, subscribe } from './store'
 import { requestRefresh } from './websocket'
 
 export interface RequestConfig {
@@ -83,6 +83,7 @@ export async function sendRequest(config: RequestConfig): Promise<ResponseResult
   const response = await doFetch(config)
 
   if (response.status === 401 && getAccessToken()) {
+    clearAccessToken()
     requestRefresh()
 
     const newToken = await waitForToken()
@@ -100,6 +101,7 @@ export async function sendBlobRequest(config: RequestConfig): Promise<Blob> {
   const response = await doFetch(config)
 
   if (response.status === 401 && getAccessToken()) {
+    clearAccessToken()
     requestRefresh()
 
     const newToken = await waitForToken()

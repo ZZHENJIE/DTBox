@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import { StockSearch } from './StockSearch'
 
 export function Header() {
   const { user, loading, isAdmin } = useAuth()
@@ -29,6 +30,8 @@ export function Header() {
       >
         DTBox
       </NavLink>
+
+      <StockSearch />
 
       <nav className="flex items-center gap-1 h-full">
         <NavLink

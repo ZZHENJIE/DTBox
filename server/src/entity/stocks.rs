@@ -9,6 +9,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub symbol: String,
     pub name: String,
+    pub logo: Option<Vec<u8>>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

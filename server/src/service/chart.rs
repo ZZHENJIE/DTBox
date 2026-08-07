@@ -33,14 +33,20 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
     let from_date = *dates.first().unwrap();
     let to_date = *dates.last().unwrap();
     let duration = to_date - from_date;
-    let padding = (duration / 50).max(chrono::Duration::hours(1));
-    let mut x_min = from_date - padding;
-    let mut x_max = to_date + padding;
-    if x_max - x_min < chrono::Duration::hours(4) {
-        let mid = x_min + (x_max - x_min) / 2;
-        x_min = mid - chrono::Duration::hours(2);
-        x_max = mid + chrono::Duration::hours(2);
-    }
+    let is_intraday = data.len() >= 2
+        && (dates[1] - dates[0]) < chrono::Duration::hours(24);
+
+    let padding = if is_intraday {
+        (duration / 100).max(chrono::Duration::minutes(10))
+    } else {
+        (duration / 50).max(chrono::Duration::hours(1))
+    };
+    let x_min = from_date - padding;
+    let x_max = to_date + padding;
+
+    let chart_x_area = (width as i32 - 130) as u32;
+    let fill_ratio = if is_intraday { 80 } else { 60 };
+    let candle_width = (chart_x_area / data.len() as u32 * fill_ratio / 100).max(1);
 
     let price_low = data.iter().map(|b| b.low).fold(f64::MAX, f64::min);
     let price_high = data.iter().map(|b| b.high).fold(f64::MIN, f64::max);
@@ -56,10 +62,7 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
         let (upper, lower) = root.split_vertically((height as f64 * 0.7) as i32);
 
         let mut chart = ChartBuilder::on(&upper)
-            .caption(
-                symbol.to_string(),
-                ("sans-serif", 36).into_font(),
-            )
+            .caption(symbol.to_string(), ("sans-serif", 36).into_font())
             .x_label_area_size(30)
             .y_label_area_size(60)
             .build_cartesian_2d(
@@ -71,11 +74,16 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
         chart
             .configure_mesh()
             .light_line_style(WHITE.mix(0.3))
+            .x_label_formatter(&move |d: &chrono::DateTime<Utc>| {
+                if is_intraday {
+                    d.format("%H:%M").to_string()
+                } else {
+                    d.format("%m/%d").to_string()
+                }
+            })
             .y_label_formatter(&|v| format!("{:.2}", v))
             .draw()
             .map_err(|e| e.to_string())?;
-
-        let candle_width = ((x_max - x_min).num_seconds().max(1) as u32 / data.len() as u32 / 3).max(1);
 
         let candles: Vec<_> = data
             .iter()
@@ -93,7 +101,6 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
                 )
             })
             .collect();
-
         chart.draw_series(candles).map_err(|e| e.to_string())?;
 
         let mut vol_chart = ChartBuilder::on(&lower)
@@ -118,7 +125,8 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
             .draw()
             .map_err(|e| e.to_string())?;
 
-        let bar_dur = (duration / data.len() as i32 * 3 / 4).max(chrono::Duration::hours(1));
+        let secs_per_bar = (duration.num_seconds() / data.len() as i64 * fill_ratio as i64 / 100 / 2).max(30);
+        let bar_dur = chrono::Duration::seconds(secs_per_bar);
 
         let vol_bars: Vec<_> = data
             .iter()
@@ -135,7 +143,6 @@ pub fn render_kline(bars: &[Item], symbol: &str) -> Result<Vec<u8>, String> {
                 )
             })
             .collect();
-
         vol_chart.draw_series(vol_bars).map_err(|e| e.to_string())?;
 
         root.present().map_err(|e| e.to_string())?;

@@ -28,6 +28,7 @@ dependencies = [
  "alpaca_sdk",
  "argon2",
  "axum",
+ "base64 0.22.1",
  "benzinga_sdk",
  "chrono",
  "finviz_sdk",

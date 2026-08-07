@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { bootstrapFromUrl } from './lib/websocket'
+import { getAccessToken } from './lib/store'
 import { OpenPage } from './components/auth/OpenPage'
 import { AuthGuard } from './components/auth/AuthGuard'
 import { UnauthorizedPage } from './components/auth/UnauthorizedPage'
@@ -10,9 +13,19 @@ import { AdminUsers } from './components/admin/AdminUsers'
 import { ChartPage } from './components/chart/ChartPage'
 import { FinvizStockPage } from './components/finviz/FinvizStockPage'
 
+function AppInit() {
+  useEffect(() => {
+    if (!getAccessToken()) {
+      bootstrapFromUrl()
+    }
+  }, [])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <AppInit />
       <Routes>
         <Route path="/open" element={<OpenPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
