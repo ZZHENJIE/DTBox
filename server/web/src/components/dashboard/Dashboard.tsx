@@ -1,4 +1,6 @@
 import { Activity } from 'lucide-react'
+import Todo from '##/Todo.md?raw'
+import Markdown from 'markdown-to-jsx'
 
 export function Dashboard() {
   return (
@@ -20,6 +22,7 @@ export function Dashboard() {
           <p className="text-sm text-muted-foreground mb-1">待实现</p>
           <p className="text-2xl font-semibold text-muted-foreground">Finviz / Alpaca</p>
         </div>
+        <Markdown>{Todo}</Markdown>
       </div>
     </div>
   )

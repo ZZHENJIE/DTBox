@@ -37,8 +37,4 @@ bun run update_stocks_table.ts
 
 - Proxy may be needed (e.g. `export HTTPS_PROXY="http://127.0.0.1:7890"`) if Benzinga API returns Cloudflare 403
 
-## Todo
-
-1. 优化update_stocks_table.ts,是更新数据库而不是清空重写
-
 This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
