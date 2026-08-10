@@ -1,6 +1,9 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
-use shared::ApiResponse;
+use shared::{ApiResponse, HealthCheckResult};
 
 pub async fn health_check() -> impl IntoResponse {
-    (StatusCode::OK, Json(ApiResponse::ok()))
+    let result = HealthCheckResult {
+        version: env!("CARGO_PKG_VERSION").to_string(),
+    };
+    (StatusCode::OK, Json(ApiResponse::success(result)))
 }

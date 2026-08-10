@@ -1,5 +1,8 @@
+mod api;
 mod auth;
+mod economics;
 mod state;
+mod tool;
 mod vault;
 mod ws_server;
 
@@ -19,6 +22,7 @@ async fn do_login(
     vault::store(result.user_id, &result.refresh_token)
         .map_err(|e| format!("keyring store error: {}", e))?;
     let _ = vault::store_last_user_id(result.user_id);
+    let _ = vault::store_last_username(&name);
 
     *state.access_token.write().unwrap() = Some(result.access_token);
     *state.user_id.write().unwrap() = Some(result.user_id);
@@ -53,6 +57,7 @@ async fn do_logout(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String>
     *state.access_token.write().unwrap() = None;
     *state.user_id.write().unwrap() = None;
     let _ = vault::clear_last_user_id();
+    let _ = vault::clear_last_username();
 
     Ok(())
 }
@@ -60,7 +65,7 @@ async fn do_logout(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String>
 #[tauri::command]
 async fn try_auto_login(
     state: tauri::State<'_, Arc<AppState>>,
-) -> Result<(String, u16), String> {
+) -> Result<(String, u16, String), String> {
     let server_url = state.server_url.read().unwrap().clone();
     let user_id = vault::load_last_user_id()
         .ok_or_else(|| "no stored session".to_string())?;
@@ -76,8 +81,9 @@ async fn try_auto_login(
     *state.user_id.write().unwrap() = Some(user_id);
 
     let port = ws_server::start(state.inner().clone()).await?;
+    let username = vault::load_last_username().unwrap_or_default();
 
-    Ok((format!("{}", user_id), port))
+    Ok((format!("{}", user_id), port, username))
 }
 
 #[tauri::command]
@@ -113,6 +119,38 @@ async fn get_server_url(
     Ok(state.server_url.read().unwrap().clone())
 }
 
+#[tauri::command]
+async fn open_time_tool(
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    tauri::WebviewWindowBuilder::new(
+        &app,
+        "time-tool",
+        tauri::WebviewUrl::App("time-tool.html".into()),
+    )
+    .title("Time Tool")
+    .inner_size(400.0, 500.0)
+    .always_on_top(true)
+    .build()
+    .map_err(|e| format!("{}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn fetch_akamai_timestamp(
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<u64, String> {
+    tool::fetch_timestamp(state.inner()).await
+}
+
+#[tauri::command]
+async fn fetch_usa_economics(
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<Vec<economics::EconomicsItem>, String> {
+    economics::fetch_usa_economics(state.inner()).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -128,6 +166,9 @@ pub fn run() {
             open_web_page,
             set_server_url,
             get_server_url,
+            open_time_tool,
+            fetch_akamai_timestamp,
+            fetch_usa_economics,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

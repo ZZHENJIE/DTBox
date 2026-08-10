@@ -154,6 +154,14 @@ pub struct ApiResponse<T: Serialize> {
 }
 ```
 
+### /api/health
+```rust
+#[derive(Debug, Serialize)]
+pub struct HealthCheckResult {
+    pub version: String,
+}
+```
+
 ### /api/user/check
 ```rust
 #[derive(Debug, Deserialize)]
@@ -275,6 +283,8 @@ pub struct StockItem {
     pub id: i32,
     pub symbol: String,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<String>,  // data:image/png;base64,...
 }
 ```
 
@@ -437,6 +447,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub symbol: String,
     pub name: String,
+    pub logo: Option<Vec<u8>>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

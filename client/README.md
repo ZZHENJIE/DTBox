@@ -1,15 +1,38 @@
 # DTBox Client
 
-DTBox 桌面客户端，基于 Tauri 2 构建，负责用户登录和本地凭证管理。用户一次登录后，Web 端无需重复输入密码即可同步认证状态。
+DTBox 桌面客户端，基于 Tauri 2 构建，负责用户登录、注册和本地凭证管理。用户一次登录后，下次启动可免密自动登录。
 
 ## 核心功能
 
+- **用户注册**：调用 Server API 创建账号
 - **用户登录**：通过 Tauri 原生 HTTP（Rust 侧 `reqwest`）调用 Server API，无浏览器跨域限制
-- **凭证安全存储**：使用 keyring-rs 将 RefreshToken 和用户 ID 存入系统密钥库
-- **短 Token 内存管理**：AccessToken 仅存内存，短期有效，不落盘
-- **本地 WebSocket 服务**：启用随机端口，供 Web 端连接以接收刷新的 AccessToken
-- **Token 自动刷新**：定时通过 HTTP 调用 Server 刷新 AccessToken，并通过 WebSocket 推送给 Web 端
-- **一键打开 Web 端**：调用 Tauri opener 插件打开远程 Web 页面，URL 仅携带 WebSocket 端口，不传输 Token
+- **免密自动登录**：登录后 RefreshToken 存入系统密钥库，下次启动时自动刷新 AccessToken，无需重新输入密码
+- **凭证安全存储**：使用 keyring-rs 将 RefreshToken 存入系统密钥库，AccessToken 仅存内存
+- **本地 WebSocket 服务**：启用随机端口，供 Web 端连接以接收和刷新 AccessToken
+- **手动打开 Web 端**：通过"Open Web"按钮打开远程 Web 页面，URL 使用用户配置的 Server 地址
+- **TimeTool 悬浮窗口**：独立置顶窗口，显示 Akamai 时间戳（每秒递增）和 Benzinga 美国经济数据
+- **AccessToken 自动刷新**：Rust 侧 `api.rs` 封装 `get_with_auth` / `post_with_auth`，API 调用失败时自动通过 RefreshToken 刷新并重试
+
+## 页面流程
+
+```
+┌───────────┐    Save    ┌───────────┐    Login     ┌────────────────┐
+│  Settings  │ ────────► │   Login   │ ───────────► │   Logged In    │
+│            │ ◄──────── │           │               │                │
+│ Host:Port  │  Edit     │ Username  │               │ Open Web       │
+│            │           │ Password  │               │ Logout         │
+└───────────┘           │           │               │ TimeTool ──────┼──► 新窗口
+                         │           │               │                │    ┌──────────┐
+                         │ Register  │               └────────────────┘    │ TimeTool │
+                         ▼           ▲                                     │          │
+                    ┌───────────┐   │                                     │ hh:mm:ss │
+                    │ Register  │───┘                                     │ USA 经济  │
+                    │           │                                         └──────────┘
+                    │ Username  │
+                    │ Password  │
+                    │ Confirm   │
+                    └───────────┘
+```
 
 ## 认证流程详解
 
@@ -20,13 +43,13 @@ DTBox 桌面客户端，基于 Tauri 2 构建，负责用户登录和本地凭�
 └────┬─────┘       + user_id                 └──────────┘
      │
      │ refresh_token + user_id → 存入 keyring-rs（系统密钥库）
+     │ last_user_id → 存入 keyring-rs（用于免密登录）
      │ access_token → 存内存
      │
      │ 启动 WebSocket 服务 → 绑定 127.0.0.1:<随机端口>
      │
-     │ Tauri opener 打开 Web 页面：
-     │ https://web.app/open?ws_port=<port>
-     │ （URL 不携带 AccessToken）
+     │ 用户手动点击 "Open Web" 按钮
+     │ → 打开 http://<host>:<port>/open?ws_port=<port>
      │
      ▼
 ┌──────────┐      WebSocket (localhost)      ┌──────────┐
@@ -43,6 +66,23 @@ DTBox 桌面客户端，基于 Tauri 2 构建，负责用户登录和本地凭�
      │◄──── 新 access_token 通过 WS 推送 ──────────┘
 ```
 
+### 免密登录流程
+
+```
+应用启动
+  │
+  ├─ 加载本地 Server 配置（Host/Port）
+  │
+  ├─ 从 keyring 读取 last_user_id
+  │     │
+  │     ├─ 存在 → 读取对应 RefreshToken → 调 Server 刷新 AccessToken
+  │     │           │
+  │     │           ├─ 成功 → 启动 WebSocket → 进入 Logged In（无需输入密码）
+  │     │           └─ 失败 → 进入 Login 页面
+  │     │
+  │     └─ 不存在 → 进入 Login 页面
+```
+
 ## 安全设计
 
 | 原则 | 实现 |
@@ -54,14 +94,48 @@ DTBox 桌面客户端，基于 Tauri 2 构建，负责用户登录和本地凭�
 | **本地 WebSocket 绑定** | WebSocket 仅监听 127.0.0.1，不暴露到外网 |
 | **系统密钥库存储** | 依赖操作系统 Keychain/macOS、keyutils/Linux、Windows Credential Manager |
 
-## UI 统一
+## TimeTool 窗口
 
-Client（Tauri 窗口）和 Web 端共享统一的设计体系：
+Logged In 状态下点击 "TimeTool" 按钮，打开一个**置顶**独立窗口，展示：
 
-- **同一组件库**：shadcn/ui，确保两端交互组件视觉一致
-- **同一样式系统**：Tailwind CSS，确保颜色、间距、字体等设计令牌一致
-- **交互模式统一**：表单校验、按钮状态、错误提示等行为保持一致
-- **类型定义共享**：Rust 端通过 `shared` crate 定义类型，Web 端有对应的 TypeScript 类型定义，保证数据结构一致性
+1. **Akamai 时间戳**：调用 `/api/tool/timestamp/akamai` 获取初始时间戳，之后每秒 +1 实时显示（`hh:mm:ss` 格式）
+2. **Benzinga 美国经济数据**：调用 `/api/benzinga/calendar/economics` 获取当天经济数据，筛选 `country == "USA"` 的结果，以表格展示 event_name 和 time
+
+```mermaid
+sequenceDiagram
+    participant TT as TimeTool 窗口
+    participant Rust as Tauri Rust 后端
+    participant Server as DTBox Server
+    participant Akamai as Akamai CDN
+
+    TT->>Rust: invoke("fetch_akamai_timestamp")
+    Rust->>Server: GET /api/tool/timestamp/akamai (Bearer)
+    Server->>Akamai: GET https://time.akamai.com
+    Akamai-->>Server: unixtime
+    Server-->>Rust: ApiResponse<u64>
+    Rust-->>TT: timestamp
+
+    TT->>Rust: invoke("fetch_usa_economics")
+    Rust->>Server: POST /api/benzinga/calendar/economics (Bearer)
+    Server-->>Rust: ApiResponse<Vec<Economics>>
+    Rust->>Rust: filter country == "USA"
+    Rust-->>TT: Vec<EconomicsItem>
+```
+
+## API 自动刷新机制
+
+所有通过 `api.rs` 模块的 `get_with_auth` / `post_with_auth` 发出的请求，在首次失败时会自动尝试刷新 Token：
+
+```
+HTTP 请求
+  ├─ 带当前 AccessToken (Bearer) 发送
+  ├─ 成功 → 返回数据
+  └─ 失败 →
+       ├─ 从 keyring 加载 RefreshToken
+       ├─ 调用 POST /api/user/refresh
+       ├─ 更新 state.access_token 为新的 AccessToken
+       └─ 用新 Token 重试请求
+```
 
 ## WebSocket 文档
 
@@ -76,7 +150,7 @@ ws://127.0.0.1:<port>
 其中 `<port>` 由 Client 通过 URL 参数传递给 Web 端：
 
 ```
-https://web.app/open?ws_port=<port>
+http://<host>:<port>/open?ws_port=<port>
 ```
 
 ### 消息协议
@@ -166,14 +240,15 @@ ws.onclose = () => {
 - AccessToken 仅通过 WebSocket 推送，**不出现在 URL 中**
 - WebSocket 断开后需重新连接（Client 重启后端口会变）
 
+## 技术栈
+
 | 层 | 技术 |
 |----|------|
 | 桌面框架 | Tauri 2 |
 | 前端 UI | React 19 + TypeScript |
 | 构建工具 | Vite |
-| Rust 后端 | tauri, keyring-rs, reqwest, tokio-tungstenite |
-| HTTP 通信 | Tauri 原生 HTTP（Rust reqwest），无跨域限制 |
-| 样式 | Tailwind CSS |
+| Rust 后端 | tauri, keyring-rs, reqwest, tokio-tungstenite, benzinga_sdk, chrono |
+| 样式 | 内联样式（React.CSSProperties） |
 
 ## 目录结构
 
@@ -186,7 +261,10 @@ client/
 ├── src/                   # React 前端代码
 │   ├── main.tsx
 │   ├── App.tsx
-│   └── App.css
+│   ├── settings.ts
+│   ├── time-tool-main.tsx  # TimeTool 窗口入口
+│   └── TimeTool.tsx        # 时间戳 + 经济数据组件
+├── time-tool.html          # TimeTool 窗口 HTML
 └── src-tauri/             # Tauri Rust 后端
     ├── Cargo.toml
     ├── tauri.conf.json
@@ -196,7 +274,14 @@ client/
     ├── icons/             # 应用图标
     └── src/
         ├── main.rs        # Tauri 入口
-        └── lib.rs         # Tauri 命令、WebSocket、keyring 逻辑
+        ├── lib.rs         # Tauri 命令注册
+        ├── api.rs         # HTTP API 封装（带 Token 自动刷新）
+        ├── auth.rs        # 登录、注册、Token 刷新
+        ├── vault.rs       # keyring 凭证存储（token + 用户名）
+        ├── state.rs       # 应用状态管理
+        ├── tool.rs        # Akamai 时间戳获取
+        ├── economics.rs   # Benzinga 经济数据（过滤 USA）
+        └── ws_server.rs   # WebSocket 服务
 ```
 
 ## 前置依赖

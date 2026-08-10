@@ -169,3 +169,10 @@ pub struct StockSearchResult {
     pub page: u64,
     pub limit: u64,
 }
+
+// ---------- /api/health ----------
+
+#[derive(Debug, Serialize)]
+pub struct HealthCheckResult {
+    pub version: String,
+}

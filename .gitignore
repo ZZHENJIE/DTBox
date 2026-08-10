@@ -3,3 +3,7 @@
 config.toml
 *.db
 Todo
+
+# Skills
+.agents
+.claude

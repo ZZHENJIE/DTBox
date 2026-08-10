@@ -13,6 +13,7 @@ function App() {
   const [wsPort, setWsPort] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loggedInUser, setLoggedInUser] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -23,8 +24,9 @@ function App() {
         url: `http://${saved.host}:${saved.port}`,
       });
       try {
-        const result: [string, number] = await invoke("try_auto_login");
+        const result: [string, number, string] = await invoke("try_auto_login");
         setWsPort(result[1]);
+        setLoggedInUser(result[2]);
         setScreen("logged_in");
       } catch {
         setScreen("login");
@@ -56,6 +58,7 @@ function App() {
       await invoke("do_login", { name, password });
       const port: number = await invoke("start_ws_server");
       setWsPort(port);
+      setLoggedInUser(name);
       setScreen("logged_in");
     } catch (e) {
       setError(String(e));
@@ -96,6 +99,14 @@ function App() {
     }
   }
 
+  async function handleOpenTimeTool() {
+    try {
+      await invoke("open_time_tool");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   async function handleLogout() {
     setLoading(true);
     setError("");
@@ -105,6 +116,7 @@ function App() {
       setName("");
       setPassword("");
       setWsPort(null);
+      setLoggedInUser("");
     } catch (e) {
       setError(String(e));
     } finally {
@@ -144,7 +156,7 @@ function App() {
   if (screen === "login") {
     return (
       <main style={mainStyle}>
-        <h1 style={h1Style}>DTBox Login</h1>
+        <h1 style={h1Style}>Login</h1>
         <div style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
           Server: {settings.host}:{settings.port}
         </div>
@@ -176,7 +188,7 @@ function App() {
   if (screen === "register") {
     return (
       <main style={mainStyle}>
-        <h1 style={h1Style}>DTBox Register</h1>
+        <h1 style={h1Style}>Register</h1>
         <div style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
           Server: {settings.host}:{settings.port}
         </div>
@@ -216,12 +228,13 @@ function App() {
 
   return (
     <main style={mainStyle}>
-      <h1 style={h1Style}>DTBox</h1>
+      <h1 style={h1Style}>{loggedInUser}</h1>
       <div style={{ fontSize: 14, color: "#34a853", marginBottom: 16 }}>
         Logged in · WS port: {wsPort}
       </div>
       {error && <ErrorBox msg={error} />}
       <Btn label="Open Web" onClick={handleOpen} />
+      <Btn label="TimeTool" onClick={handleOpenTimeTool} />
       <Btn
         label={loading ? "Logging out..." : "Logout"}
         onClick={handleLogout}
