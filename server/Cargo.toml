@@ -41,5 +41,5 @@ reqwest = { version = "0.13.4", default-features = false, features = ["json", "r
 alpaca_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "alpaca_sdk" }
 finviz_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "finviz_sdk" }
 benzinga_sdk = { git = "https://github.com/ZZHENJIE/TradeSDK", package = "benzinga_sdk" }
-plotters = { version = "0.3", default-features = false, features = ["chrono", "bitmap_backend", "candlestick", "ttf"] }
+plotters = { version = "0.3", default-features = false, features = ["chrono", "bitmap_backend", "candlestick"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
