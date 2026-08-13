@@ -7,11 +7,18 @@
   ],
   "remote": {
     "urls": [
-      "http://*",
-      "https://*"
+      "http://*:*",
+      "https://*:*"
     ]
   },
   "permissions": [
-    "core:default"
+    "core:default",
+    "allow-do-login",
+    "allow-do-register",
+    "allow-do-logout",
+    "allow-get-access-token",
+    "allow-refresh-access-token",
+    "allow-get-user-id",
+    "allow-get-user-info"
   ]
 }

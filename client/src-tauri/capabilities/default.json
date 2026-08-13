@@ -15,6 +15,13 @@
         { "url": "http://*" },
         { "url": "https://*" }
       ]
-    }
+    },
+    "allow-set-server-url",
+    "allow-get-server-url",
+    "allow-test-connection",
+    "allow-open-web",
+    "allow-auto-login",
+    "allow-do-logout",
+    "allow-get-user-info"
   ]
 }
