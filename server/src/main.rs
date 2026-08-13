@@ -1,9 +1,11 @@
 use std::net::SocketAddr;
+use std::path::PathBuf;
 
 use axum::{
     Router, middleware,
     routing::{get, post},
 };
+use clap::Parser;
 
 use sea_orm::Database;
 use server::handler::{admin, alpaca, benzinga, finviz, health, stock, tool, user};
@@ -14,13 +16,22 @@ use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
+#[derive(Parser)]
+#[command(name = "dtbox-server", version, about = "DTBox Server")]
+struct Cli {
+    #[arg(short, long, env = "DTBOX_CONFIG_PATH")]
+    config: PathBuf,
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
         .init();
 
-    let config = Config::load().expect("Failed to load config");
+    let cli = Cli::parse();
+
+    let config = Config::load(&cli.config).expect("Failed to load config");
 
     let db = Database::connect(&config.database_url)
         .await

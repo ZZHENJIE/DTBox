@@ -1,17 +1,35 @@
 mod api;
 mod auth;
-mod economics;
 mod state;
-mod tool;
 mod vault;
-mod ws_server;
 
 use std::sync::Arc;
 
 use state::AppState;
+use tauri::{Emitter, Manager};
+#[cfg(desktop)]
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
+
+#[derive(Clone, serde::Serialize)]
+struct UserInfo {
+    user_id: Option<String>,
+    username: Option<String>,
+}
+
+fn current_user_info(state: &Arc<AppState>) -> UserInfo {
+    UserInfo {
+        user_id: state.user_id.read().unwrap().map(|id| id.to_string()),
+        username: vault::load_last_username(),
+    }
+}
+
+fn emit_auth_state(app: &tauri::AppHandle, state: &Arc<AppState>) {
+    let _ = app.emit("auth-state", current_user_info(state));
+}
 
 #[tauri::command]
 async fn do_login(
+    app: tauri::AppHandle,
     state: tauri::State<'_, Arc<AppState>>,
     name: String,
     password: String,
@@ -26,6 +44,8 @@ async fn do_login(
 
     *state.access_token.write().unwrap() = Some(result.access_token);
     *state.user_id.write().unwrap() = Some(result.user_id);
+
+    emit_auth_state(&app, &state);
 
     Ok(format!("{}", result.user_id))
 }
@@ -42,7 +62,10 @@ async fn do_register(
 }
 
 #[tauri::command]
-async fn do_logout(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
+async fn do_logout(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<(), String> {
     let server_url = state.server_url.read().unwrap().clone();
     let access_token = state.access_token.read().unwrap().clone();
     let user_id = *state.user_id.read().unwrap();
@@ -59,101 +82,144 @@ async fn do_logout(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String>
     let _ = vault::clear_last_user_id();
     let _ = vault::clear_last_username();
 
+    emit_auth_state(&app, &state);
+
     Ok(())
 }
 
 #[tauri::command]
-async fn try_auto_login(
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Result<(String, u16, String), String> {
+async fn get_access_token(state: tauri::State<'_, Arc<AppState>>) -> Result<String, String> {
+    state
+        .access_token
+        .read()
+        .unwrap()
+        .clone()
+        .ok_or_else(|| "not logged in".to_string())
+}
+
+#[tauri::command]
+async fn refresh_access_token(state: tauri::State<'_, Arc<AppState>>) -> Result<String, String> {
     let server_url = state.server_url.read().unwrap().clone();
-    let user_id = vault::load_last_user_id()
-        .ok_or_else(|| "no stored session".to_string())?;
+    let user_id = *state.user_id.read().unwrap();
+    let uid = user_id.ok_or_else(|| "no user id".to_string())?;
 
-    let refresh_token = vault::load(user_id)
-        .map_err(|_| "keyring load error".to_string())?;
+    let refresh_token = vault::load(uid).map_err(|_| "failed to load refresh token".to_string())?;
+    let new_token = auth::refresh(&server_url, &refresh_token).await?;
+    *state.access_token.write().unwrap() = Some(new_token.clone());
 
-    let access_token = auth::refresh(&server_url, &refresh_token)
-        .await
-        .map_err(|e| format!("refresh failed: {}", e))?;
-
-    *state.access_token.write().unwrap() = Some(access_token);
-    *state.user_id.write().unwrap() = Some(user_id);
-
-    let port = ws_server::start(state.inner().clone()).await?;
-    let username = vault::load_last_username().unwrap_or_default();
-
-    Ok((format!("{}", user_id), port, username))
+    Ok(new_token)
 }
 
 #[tauri::command]
-async fn start_ws_server(
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Result<u16, String> {
-    ws_server::start(state.inner().clone()).await
+async fn get_user_id(state: tauri::State<'_, Arc<AppState>>) -> Result<String, String> {
+    state
+        .user_id
+        .read()
+        .unwrap()
+        .map(|id| id.to_string())
+        .ok_or_else(|| "not logged in".to_string())
 }
 
 #[tauri::command]
-async fn open_web_page(
-    web_url: String,
-    ws_port: u16,
-) -> Result<(), String> {
-    let url = format!("{}/open?ws_port={}", web_url, ws_port);
-    tauri_plugin_opener::open_url(url, None::<&str>)
-        .map_err(|e| format!("open error: {}", e))
+async fn get_user_info(state: tauri::State<'_, Arc<AppState>>) -> Result<UserInfo, String> {
+    Ok(current_user_info(&state))
 }
 
 #[tauri::command]
-async fn set_server_url(
-    state: tauri::State<'_, Arc<AppState>>,
-    url: String,
-) -> Result<(), String> {
+async fn set_server_url(state: tauri::State<'_, Arc<AppState>>, url: String) -> Result<(), String> {
     *state.server_url.write().unwrap() = url;
     Ok(())
 }
 
 #[tauri::command]
-async fn get_server_url(
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Result<String, String> {
+async fn get_server_url(state: tauri::State<'_, Arc<AppState>>) -> Result<String, String> {
     Ok(state.server_url.read().unwrap().clone())
 }
 
 #[tauri::command]
-async fn open_time_tool(
+async fn test_connection(
+    state: tauri::State<'_, Arc<AppState>>,
+    url: Option<String>,
+) -> Result<String, String> {
+    let target = match url {
+        Some(u) if !u.trim().is_empty() => u,
+        _ => state.server_url.read().unwrap().clone(),
+    };
+
+    if target.is_empty() {
+        return Err("server url not configured".to_string());
+    }
+
+    auth::health(&target).await
+}
+
+#[tauri::command]
+async fn open_web(
     app: tauri::AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
 ) -> Result<(), String> {
-    tauri::WebviewWindowBuilder::new(
-        &app,
-        "time-tool",
-        tauri::WebviewUrl::App("time-tool.html".into()),
-    )
-    .title("Time Tool")
-    .inner_size(400.0, 500.0)
-    .always_on_top(true)
-    .build()
-    .map_err(|e| format!("{}", e))?;
+    let server_url = state.server_url.read().unwrap().clone();
+    if server_url.is_empty() {
+        return Err("server url not configured".to_string());
+    }
+
+    if let Some(window) = app.get_webview_window("web") {
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    let url: tauri::Url = server_url
+        .parse()
+        .map_err(|e| format!("invalid server url: {e}"))?;
+
+    tauri::WebviewWindowBuilder::new(&app, "web", tauri::WebviewUrl::External(url))
+        .title("DTBox")
+        .build()
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[tauri::command]
-async fn fetch_akamai_timestamp(
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Result<u64, String> {
-    tool::fetch_timestamp(state.inner()).await
-}
+async fn auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool, String> {
+    let server_url = state.server_url.read().unwrap().clone();
+    if server_url.is_empty() {
+        return Ok(false);
+    }
 
-#[tauri::command]
-async fn fetch_usa_economics(
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Result<Vec<economics::EconomicsItem>, String> {
-    economics::fetch_usa_economics(state.inner()).await
+    let Some(user_id) = vault::load_last_user_id() else {
+        return Ok(false);
+    };
+
+    let refresh_token = match vault::load(user_id) {
+        Ok(token) => token,
+        Err(_) => return Ok(false),
+    };
+
+    match auth::refresh(&server_url, &refresh_token).await {
+        Ok(new_token) => {
+            *state.access_token.write().unwrap() = Some(new_token);
+            *state.user_id.write().unwrap() = Some(user_id);
+            Ok(true)
+        }
+        Err(_) => Ok(false),
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
+        .setup(|app| {
+            #[cfg(desktop)]
+            {
+                app.handle()
+                    .plugin(tauri_plugin_window_state::Builder::new().build())?;
+                if let Some(window) = app.get_webview_window("main") {
+                    window.restore_state(StateFlags::all())?;
+                }
+            }
+            Ok(())
+        })
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .manage(Arc::new(AppState::default()))
@@ -161,15 +227,23 @@ pub fn run() {
             do_login,
             do_register,
             do_logout,
-            try_auto_login,
-            start_ws_server,
-            open_web_page,
+            get_access_token,
+            refresh_access_token,
+            get_user_id,
+            get_user_info,
             set_server_url,
             get_server_url,
-            open_time_tool,
-            fetch_akamai_timestamp,
-            fetch_usa_economics,
+            test_connection,
+            open_web,
+            auto_login,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let tauri::RunEvent::Exit = event {
+            #[cfg(desktop)]
+            let _ = app_handle.save_window_state(StateFlags::all());
+        }
+    });
 }

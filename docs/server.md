@@ -146,11 +146,23 @@ Redis 为可选依赖：
 ```bash
 cd server
 cp config.example.toml config.toml
-cargo run
+cargo run -- --config config.toml
 ```
 
 或在 workspace 根目录：
 
 ```bash
-cargo run --package Server
+cargo run --package Server -- --config server/config.toml
 ```
+
+配置文件路径必须显式指定，优先级为启动参数 > 环境变量：
+
+```bash
+# 启动参数
+./server --config /path/to/config.toml   # 或 -c
+
+# 环境变量
+DTBOX_CONFIG_PATH=/path/to/config.toml ./server
+```
+
+两者都未提供时启动报错退出。

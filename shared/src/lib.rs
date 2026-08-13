@@ -172,7 +172,7 @@ pub struct StockSearchResult {
 
 // ---------- /api/health ----------
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct HealthCheckResult {
     pub version: String,
 }

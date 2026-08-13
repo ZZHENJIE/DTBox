@@ -6,10 +6,10 @@ DTBox 后端 API 服务，基于 Axum 构建的纯 HTTP REST API。提供用户�
 
 - Client 通过本服务的 HTTP 接口完成**登录**（获得 AccessToken + RefreshToken）
 - Client 使用 RefreshToken 定期调用 `/api/user/refresh` **刷新 AccessToken**
-- Client 将 AccessToken 通过本地 WebSocket 推送给 Web 端
+- Client 将 AccessToken 通过 Tauri IPC (`invoke`) 提供给 Web 端
 - Web 端直接通过本服务的 HTTP 接口调用业务 API（携带 AccessToken Bearer Header）
 
-> **注意**：Server 本身不提供 WebSocket 服务。WebSocket 通信发生在 Client ↔ Web 之间，用于 Token 刷新推送。
+> **注意**：Server 本身不参与 Token 传递。Tauri IPC 通信发生在 Client ↔ Web 之间，用于登录与 Token 获取/刷新。
 
 ---
 
@@ -476,9 +476,12 @@ impl ActiveModelBehavior for ActiveModel {}
 ```
 
 ## 配置文件结构
-文件格式: config.toml, 可通过 `CONFIG_PATH` 环境变量指定路径。
+文件格式: config.toml。配置文件路径必须显式指定，优先级: 启动参数 > 环境变量。
 
-启动时默认读取 `<CARGO_MANIFEST_DIR>/config.toml`, 即 server 目录下的 config.toml。
+- 启动参数: `./server --config /path/to/config.toml` (或 `-c`)
+- 环境变量: `DTBOX_CONFIG_PATH=/path/to/config.toml ./server`
+
+两者都未提供时，启动会报错退出。
 
 ```rust
 use serde::{Deserialize, Serialize};

@@ -1,0 +1,277 @@
+:root {
+  --bg: #0d1522;
+  --surface: #16222f;
+  --surface-2: #1c2b3c;
+  --border: #24364b;
+  --text: #e6edf3;
+  --text-muted: #8fa6bf;
+  --primary: #3a6ea5;
+  --primary-hover: #4b82bd;
+  --accent: #567091;
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.35);
+  --error: #f87171;
+  --error-bg: rgba(248, 113, 113, 0.12);
+  --error-border: rgba(248, 113, 113, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.field {
+  flex: 1;
+}
+
+.field-port {
+  flex: 0 0 120px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(58, 110, 165, 0.25);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  min-height: 18px;
+}
+
+.status-idle {
+  display: none;
+}
+
+.status-ok {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.status-error {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid var(--error-border);
+}
+
+.status-loading {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-ok .dot {
+  background: var(--success);
+}
+
+.status-error .dot {
+  background: var(--error);
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-meta {
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.user-id {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin-top: 2px;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.hint {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.current-label {
+  flex-shrink: 0;
+}
+
+.current-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  word-break: break-all;
+}

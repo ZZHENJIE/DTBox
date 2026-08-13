@@ -15,7 +15,7 @@ cd server
 cp config.example.toml config.toml
 # 编辑 config.toml，至少设置 jwt.secret 为随机字符串
 cargo build --release
-./target/release/Server
+./target/release/server --config config.toml
 ```
 
 ### 配置文件
@@ -26,7 +26,7 @@ cargo build --release
 [server]
 host = "0.0.0.0"       # 监听地址
 port = 8080             # 监听端口
-web_dir = ""            # 前端静态文件目录（生产环境指向 server/dist）
+web_dir = ""            # 前端静态文件目录（生产环境指向 web/dist）
 
 [jwt]
 secret = "random-secret-please-change"
@@ -45,11 +45,17 @@ max_requests = 100
 window_seconds = 60
 ```
 
-可通过 `CONFIG_PATH` 环境变量指定配置文件路径：
+配置文件路径必须显式指定，支持两种方式：
 
 ```bash
-CONFIG_PATH=/etc/dtbox/config.toml ./Server
+# 方式一：启动参数
+./Server --config /etc/dtbox/config.toml
+
+# 方式二：环境变量
+DTBOX_CONFIG_PATH=/etc/dtbox/config.toml ./Server
 ```
+
+优先级为启动参数 > 环境变量，两者都未提供时启动报错。
 
 ### HTTPS 反向代理
 
@@ -90,12 +96,12 @@ example.com {
 ### 部署 Web 前端
 
 ```bash
-cd server/web
+cd web
 bun install
 bun run build
 ```
 
-构建产物输出到 `server/dist`。确保 `config.toml` 中 `web_dir` 指向该目录。
+构建产物输出到 `web/dist`。确保 `config.toml` 中 `web_dir` 指向该目录。
 
 ## Client 构建
 
@@ -139,5 +145,5 @@ bun run update_stocks_table.ts
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `CONFIG_PATH` | `<CARGO_MANIFEST_DIR>/config.toml` | Server 配置文件路径 |
+| `DTBOX_CONFIG_PATH` | 无（必填） | Server 配置文件路径 |
 | `REDIS_URL` | 配置文件中读取 | Redis 连接地址 |

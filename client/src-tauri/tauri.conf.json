@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "dtbox",
+  "productName": "DTBox",
   "version": "0.1.0",
   "identifier": "com.zhongzhenjie.dtbox",
   "build": {
@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "DTBox",
-        "width": 800,
-        "height": 600
+        "width": 500,
+        "height": 500
       }
     ],
     "security": {

@@ -33,6 +33,7 @@ base64 = "0.22"
 redis = { version = "1", features = ["tokio-comp"] }
 regex = "1"
 toml = "0.9"
+clap = { version = "4", features = ["derive", "env"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tower = { version = "0.5", features = ["limit"] }

@@ -5,9 +5,10 @@ DTBox 的认证机制分为三层：**密码登录**、**Token 管理**、**免�
 ## 密码登录流程
 
 ```
-用户 (GUI)                    Client (Tauri)                   Server (Axum)
+Web (子窗口)                   Client (Tauri)                   Server (Axum)
     │                              │                                │
-    │  输入 username + password    │                                │
+    │  invoke("do_login")          │                                │
+    │  { name, password }          │                                │
     │─────────────────────────────►│                                │
     │                              │  POST /api/user/login          │
     │                              │  { username, password }        │
@@ -26,7 +27,7 @@ DTBox 的认证机制分为三层：**密码登录**、**Token 管理**、**免�
     │                              │ user_id → keyring-rs           │
     │                              │ access_token → 内存            │
     │                              │                                │
-    │◄─── 登录成功 ────────────────│                                │
+    │◄── user_id ─────────────────│                                │
 ```
 
 ## Token 设计
@@ -55,12 +56,12 @@ Web 端                      Client (Tauri)                  Server (Axum)
   │                              │                                │
   │  AccessToken 即将过期        │                                │
   │                              │                                │
-  │  WS: { type: "refresh" }    │                                │
+  │  invoke("refresh_access_token")                               │
   │─────────────────────────────►│                                │
   │                              │                                │
   │                              │  从 keyring 读取 RefreshToken  │
   │                              │                                │
-  │                              │  POST /api/user/refresh        │
+  │                              │  GET /api/user/refresh         │
   │                              │  Refresh-Token: <token>        │
   │                              │───────────────────────────────►│
   │                              │                                │
@@ -71,7 +72,7 @@ Web 端                      Client (Tauri)                  Server (Axum)
   │                              │                                │
   │                              │ 更新内存中的 access_token       │
   │                              │                                │
-  │◄── WS: { type: "access_token", token } ──────────────────────│
+  │◄── new access_token ────────│                                │
   │                              │                                │
   │  更新本地 access_token       │                                │
 ```
@@ -81,36 +82,38 @@ Web 端                      Client (Tauri)                  Server (Axum)
 ```
 应用启动
   │
-  ├─ 加载本地 Server 配置（Host/Port）
+  ├─ 主窗口加载，读取 Server 配置
   │
   ├─ 从 keyring 读取 last_user_id
   │     │
-  │     ├─ 存在 → 读 RefreshToken → POST /api/user/refresh
+  │     ├─ 存在 → 读 RefreshToken → GET /api/user/refresh
   │     │           │
-  │     │           ├─ 刷新成功 → 启动 WebSocket → Logged In（无需密码）
-  │     │           └─ 刷新失败 → 进入 Login 页面
+  │     │           ├─ 刷新成功 → 打开 Web 子窗口（无需密码）
+  │     │           └─ 刷新失败 → 打开 Web 子窗口，进入登录页
   │     │
-  │     └─ 不存在 → 进入 Login 页面
+  │     └─ 不存在 → 打开 Web 子窗口，进入登录页
 ```
 
 ## 登出流程
 
 ```
-Client (Tauri)                    Server (Axum)
-  │                                    │
-  │  POST /api/user/logout            │
-  │  Authorization: Bearer <access>    │
-  │  Refresh-Token: <refresh>         │
-  │──────────────────────────────────►│
-  │                                    │
-  │                                    │ AccessToken → 黑名单（TTL = 剩余有效期）
-  │                                    │ RefreshToken → revoked = true
-  │                                    │
-  │◄─── 200 OK ───────────────────────│
-  │                                    │
-  │  清除 keyring 中的凭证             │
-  │  清空内存 Token                    │
-  │  关闭 WebSocket 服务               │
+Web 端                       Client (Tauri)                    Server (Axum)
+  │                              │                                    │
+  │  invoke("do_logout")         │                                    │
+  │─────────────────────────────►│                                    │
+  │                              │  POST /api/user/logout            │
+  │                              │  Authorization: Bearer <access>    │
+  │                              │  Refresh-Token: <refresh>         │
+  │                              │──────────────────────────────────►│
+  │                              │                                    │
+  │                              │                                    │ AccessToken → 黑名单（TTL = 剩余有效期）
+  │                              │                                    │ RefreshToken → revoked = true
+  │                              │                                    │
+  │                              │◄─── 200 OK ───────────────────────│
+  │                              │                                    │
+  │                              │  清除 keyring 中的凭证             │
+  │                              │  清空内存 Token                    │
+  │◄── 登出成功 ────────────────│                                    │
 ```
 
 ## 安全设计
@@ -118,46 +121,42 @@ Client (Tauri)                    Server (Axum)
 | 原则 | 实现方式 |
 |------|----------|
 | **长 Token 不外传** | RefreshToken 仅存 keyring-rs，绝不发送到 Web 端 |
-| **短 Token 不经 URL** | AccessToken 通过 WebSocket 推送，不在 URL 中出现 |
-| **WebSocket 本地绑定** | 仅监听 `127.0.0.1`，外部不可达 |
-| **随机端口** | 每次启动随机分配，降低端口劫持风险 |
+| **短 Token 不经 URL** | AccessToken 通过 Tauri IPC (`invoke`) 传递，不在 URL 中出现 |
+| **IPC 进程内通信** | Token 传递走 Tauri 进程内 IPC，无需暴露网络端口 |
 | **系统密钥库** | macOS Keychain / Linux keyutils / Windows Credential Manager |
 | **Token 黑名单** | 登出/密码修改时撤销，优先 Redis，回退内存 |
 | **密码哈希** | argon2 算法，每个密码独立 salt |
 | **登录保护** | 失败次数过多锁定账号（`locked_until`） |
 
-## WebSocket 协议
+## Tauri IPC 命令
 
-### 连接地址
+Web 子窗口与 Client 之间通过 `@tauri-apps/api` 的 `invoke` 通信。
 
-```
-ws://127.0.0.1:<port>
-```
+### 认证相关
 
-`<port>` 由 Client 通过 URL 参数 `?ws_port=<port>` 传递给 Web 端。
-
-### 消息格式
-
-所有消息均为 JSON，顶层包含 `type` 字段。
-
-#### Client → Web（推送）
-
-**推送 AccessToken：**
-
-```json
-{ "type": "access_token", "token": "eyJhbG..." }
+```ts
+// 登录 / 注册（Web 子窗口调用）
+const userId = await invoke("do_login", { name, password });
+const newId = await invoke("do_register", { name, password });
+await invoke("do_logout");
 ```
 
-**Token 刷新失败：**
+### Token 相关
 
-```json
-{ "type": "error", "message": "token refresh failed" }
+```ts
+// 获取 AccessToken
+const token = await invoke("get_access_token");
+
+// 刷新 AccessToken
+const newToken = await invoke("refresh_access_token");
+
+// 获取用户 ID
+const userId = await invoke("get_user_id");
 ```
 
-#### Web → Client（请求）
+### 服务器配置（主窗口调用）
 
-**请求刷新 Token：**
-
-```json
-{ "type": "refresh" }
+```ts
+await invoke("set_server_url", { url });
+const url = await invoke("get_server_url");
 ```

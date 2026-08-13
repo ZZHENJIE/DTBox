@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "remote",
+  "description": "Capability for the remote Web SPA (served by the configured Server) loaded in the web child window",
+  "windows": [
+    "web"
+  ],
+  "remote": {
+    "urls": [
+      "http://*",
+      "https://*"
+    ]
+  },
+  "permissions": [
+    "core:default"
+  ]
+}
