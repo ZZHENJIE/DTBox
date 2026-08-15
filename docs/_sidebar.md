@@ -12,6 +12,9 @@
   - [部署指南](deployment.md)
   - [脚本工具](scripts.md)
 
+- 发布
+  - [更新日志](CHANGELOG.md)
+
 - API 参考
   - [公开接口](api-public.md)
   - [已认证接口](api-authenticated.md)

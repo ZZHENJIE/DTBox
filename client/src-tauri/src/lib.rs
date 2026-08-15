@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use state::AppState;
 use tauri::{Emitter, Manager};
+use tauri_plugin_opener::OpenerExt;
 #[cfg(desktop)]
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
@@ -14,12 +15,14 @@ use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 struct UserInfo {
     user_id: Option<String>,
     username: Option<String>,
+    avatar: Option<String>,
 }
 
 fn current_user_info(state: &Arc<AppState>) -> UserInfo {
     UserInfo {
         user_id: state.user_id.read().unwrap().map(|id| id.to_string()),
         username: vault::load_last_username(),
+        avatar: None,
     }
 }
 
@@ -122,7 +125,25 @@ async fn get_user_id(state: tauri::State<'_, Arc<AppState>>) -> Result<String, S
 
 #[tauri::command]
 async fn get_user_info(state: tauri::State<'_, Arc<AppState>>) -> Result<UserInfo, String> {
-    Ok(current_user_info(&state))
+    let user_id = state.user_id.read().unwrap().map(|id| id.to_string());
+    let username = vault::load_last_username();
+
+    let mut avatar = None;
+    let mut server_name = None;
+    if state.access_token.read().unwrap().is_some() {
+        if let Ok(info) = api::get_with_auth::<shared::InfoResult>(&state, "/api/user/me").await {
+            if !info.avatar.is_empty() {
+                avatar = Some(info.avatar);
+            }
+            server_name = Some(info.name);
+        }
+    }
+
+    Ok(UserInfo {
+        user_id,
+        username: server_name.or(username),
+        avatar,
+    })
 }
 
 #[tauri::command]
@@ -181,6 +202,13 @@ async fn open_web(
 }
 
 #[tauri::command]
+async fn open_url(app: tauri::AppHandle, url: String) -> Result<(), String> {
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool, String> {
     let server_url = state.server_url.read().unwrap().clone();
     if server_url.is_empty() {
@@ -235,6 +263,7 @@ pub fn run() {
             get_server_url,
             test_connection,
             open_web,
+            open_url,
             auto_login,
         ])
         .build(tauri::generate_context!())

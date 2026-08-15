@@ -32,3 +32,11 @@ export async function refreshAccessToken(): Promise<string> {
 export async function getUserId(): Promise<string> {
   return invoke<string>("get_user_id");
 }
+
+export async function openUrl(url: string): Promise<void> {
+  if (!isTauri()) {
+    window.open(url, "_blank");
+    return;
+  }
+  await invoke("open_url", { url });
+}

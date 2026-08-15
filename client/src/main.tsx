@@ -9,17 +9,29 @@ type Status = {
   text: string;
 };
 
-type AuthState = {
+type UserInfo = {
   user_id: string | null;
   username: string | null;
+  avatar: string | null;
 };
 
 type User = {
   userId: string;
   username: string;
+  avatar: string;
 };
 
 const SERVER_URL_KEY = "server_url";
+
+async function fetchUser(): Promise<User | null> {
+  const info = await invoke<UserInfo>("get_user_info");
+  if (!info.user_id) return null;
+  return {
+    userId: info.user_id,
+    username: info.username ?? info.user_id,
+    avatar: info.avatar ?? "",
+  };
+}
 
 function parseUrl(url: string): { host: string; port: string } {
   try {
@@ -46,10 +58,12 @@ function App() {
     let unlisten: (() => void) | undefined;
     (async () => {
       try {
-        unlisten = await listen<AuthState>("auth-state", (event) => {
-          const { user_id, username } = event.payload;
+        unlisten = await listen<UserInfo>("auth-state", (event) => {
+          const { user_id } = event.payload;
           if (user_id) {
-            setUser({ userId: user_id, username: username ?? user_id });
+            fetchUser().then((u) => {
+              if (u) setUser(u);
+            });
           } else {
             setUser(null);
           }
@@ -66,10 +80,8 @@ function App() {
           await invoke("set_server_url", { url });
           const ok = await invoke<boolean>("auto_login");
           if (ok) {
-            const info = await invoke<AuthState>("get_user_info");
-            if (info.user_id) {
-              setUser({ userId: info.user_id, username: info.username ?? info.user_id });
-            }
+            const u = await fetchUser();
+            if (u) setUser(u);
           }
         }
       } catch (e) {
@@ -163,7 +175,13 @@ function App() {
 
         <section className="card">
           <div className="user-row">
-            <div className="avatar">{user.username.charAt(0).toUpperCase()}</div>
+            <div className="avatar">
+              {user.avatar ? (
+                <img className="avatar-img" src={user.avatar} alt="" />
+              ) : (
+                user.username.charAt(0).toUpperCase()
+              )}
+            </div>
             <div className="user-meta">
               <div className="user-name">{user.username}</div>
               <div className="user-id">User ID: {user.userId}</div>

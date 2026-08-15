@@ -13,6 +13,7 @@ fn main() {
                 "get_server_url",
                 "test_connection",
                 "open_web",
+                "open_url",
                 "auto_login",
             ]),
         ),

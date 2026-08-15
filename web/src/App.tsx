@@ -1,13 +1,18 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import type { ReactNode } from "react";
 
 import { AppLayout } from "~/components/layout/AppLayout";
 import CalendarPage from "~/components/pages/CalendarPage";
-import ChartPage from "~/components/pages/ChartPage";
-import DashboardPage from "~/components/pages/DashboardPage";
-import DocsPage from "~/components/pages/DocsPage";
 import LoginPage from "~/components/pages/LoginPage";
-import StockSearchPage from "~/components/pages/StockSearchPage";
+import QuotePage from "~/components/pages/QuotePage";
+import ScreenerPage from "~/components/pages/ScreenerPage";
+import SettingsPage from "~/components/pages/SettingsPage";
 import { useAuth } from "~/hooks/use-auth";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -33,10 +38,15 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function ChartRoute() {
+function QuoteRoute() {
   const location = useLocation();
   const symbol = new URLSearchParams(location.search).get("symbol") ?? "";
-  return <ChartPage key={symbol} />;
+  return <QuotePage key={symbol} />;
+}
+
+function CalendarRoute() {
+  const { type } = useParams();
+  return <CalendarPage key={type} />;
 }
 
 export default function App() {
@@ -50,13 +60,12 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/chart" element={<ChartRoute />} />
-        <Route path="/search" element={<StockSearchPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/screener" element={<ScreenerPage />} />
+        <Route path="/quote" element={<QuoteRoute />} />
+        <Route path="/calendar/:type" element={<CalendarRoute />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/screener" replace />} />
     </Routes>
   );
 }
