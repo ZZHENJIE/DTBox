@@ -39,28 +39,10 @@ jobs:
         with:
           workspaces: '. -> target'
 
-      - name: build (Linux musl)
-        if: contains(matrix.target, 'linux-musl')
-        uses: houseabsolute/actions-rust-cross@v1
-        with:
-          command: build
-          target: ${{ matrix.target }}
-          args: '--release --package Server'
-
-      - name: build (macOS / Windows)
-        if: "!contains(matrix.target, 'linux-musl')"
+      - name: build
         run: cargo build --release --package Server --target ${{ matrix.target }}
 
-      - name: test (Linux musl)
-        if: contains(matrix.target, 'linux-musl')
-        uses: houseabsolute/actions-rust-cross@v1
-        with:
-          command: test
-          target: ${{ matrix.target }}
-          args: '--package Server'
-
-      - name: test (macOS / Windows)
-        if: "!contains(matrix.target, 'linux-musl')"
+      - name: test
         run: cargo test --package Server
 
       - name: strip and prepare binary (Linux / macOS)
