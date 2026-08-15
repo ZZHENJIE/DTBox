@@ -39,7 +39,16 @@ jobs:
         with:
           workspaces: '. -> target'
 
+      - name: install musl (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
       - name: build
+        env:
+          CC_x86_64_unknown_linux_musl: musl-gcc
+          CC_aarch64_unknown_linux_musl: musl-gcc
         run: cargo build --release --package Server --target ${{ matrix.target }}
 
       - name: test
