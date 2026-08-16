@@ -14,7 +14,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:80',
+      '/api': 'http://38.54.89.52:80',
     },
   },
   build: {

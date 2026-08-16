@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import Markdown from "markdown-to-jsx";
+import { useTranslation } from "react-i18next";
 
 import { ScrollArea } from "~/components/layout/ScrollArea";
 import {
@@ -65,12 +66,13 @@ interface ChangelogDialogProps {
 }
 
 export function ChangelogDialog({ open, onOpenChange }: ChangelogDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>更新日志</DialogTitle>
-          <DialogDescription>DTBox 版本更新记录</DialogDescription>
+          <DialogTitle>{t("changelog.title")}</DialogTitle>
+          <DialogDescription>{t("changelog.subtitle")}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           {changelogContent ? (
@@ -78,7 +80,9 @@ export function ChangelogDialog({ open, onOpenChange }: ChangelogDialogProps) {
               {changelogContent}
             </Markdown>
           ) : (
-            <p className="text-muted-foreground text-sm">暂无更新日志</p>
+            <p className="text-muted-foreground text-sm">
+              {t("changelog.empty")}
+            </p>
           )}
         </ScrollArea>
       </DialogContent>

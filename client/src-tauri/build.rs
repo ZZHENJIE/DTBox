@@ -14,6 +14,7 @@ fn main() {
                 "test_connection",
                 "open_web",
                 "open_url",
+                "open_time_window",
                 "auto_login",
             ]),
         ),

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 
 import {
@@ -22,12 +23,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 const VALID_TYPES = ["ipo", "spac", "economics", "earnings"] as const;
 type CalendarKind = (typeof VALID_TYPES)[number];
 
-const TITLES: Record<CalendarKind, string> = {
-  ipo: "IPO 日历",
-  spac: "SPAC 日历",
-  economics: "经济日历",
-  earnings: "财报日历",
-};
+const PAGE_SIZE = 1000;
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -71,6 +67,7 @@ function settle<T>(
 }
 
 export default function CalendarPage() {
+  const { t } = useTranslation();
   const raw = useParams().type ?? "ipo";
   const type: CalendarKind = (VALID_TYPES as readonly string[]).includes(raw)
     ? (raw as CalendarKind)
@@ -80,7 +77,6 @@ export default function CalendarPage() {
 
   const [dateFrom, setDateFrom] = useState(isIpo ? monthStart() : today());
   const [dateTo, setDateTo] = useState(isIpo ? monthEnd() : today());
-  const [pageSize, setPageSize] = useState(20);
 
   const [ipo, setIpo] = useState<Status<IPOItem>>({
     loading: isIpo,
@@ -100,7 +96,7 @@ export default function CalendarPage() {
 
   const fetchIpo = (ipoType: IPOType) =>
     benzingaIpo({
-      page_size: pageSize,
+      page_size: PAGE_SIZE,
       date_from: dateFrom,
       date_to: dateTo,
       ipo_type: ipoType,
@@ -108,14 +104,14 @@ export default function CalendarPage() {
 
   const fetchEconomics = () =>
     benzingaEconomics({
-      page_size: pageSize,
+      page_size: PAGE_SIZE,
       date_from: dateFrom,
       date_to: dateTo,
     });
 
   const fetchEarnings = () =>
     benzingaEarnings({
-      page_size: pageSize,
+      page_size: PAGE_SIZE,
       date_from: dateFrom,
       date_to: dateTo,
     });
@@ -164,14 +160,10 @@ export default function CalendarPage() {
         : earnings.loading;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{TITLES[type]}</h1>
-        <p className="text-muted-foreground text-sm">Benzinga 日历数据</p>
-      </div>
+    <div className="flex h-[calc(100dvh-7rem)] flex-col gap-6">
 
-      <Card>
-        <CardContent className="flex flex-col gap-4">
+      <Card className="min-h-0 flex-1">
+        <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -180,7 +172,7 @@ export default function CalendarPage() {
             className="flex flex-wrap items-end gap-3"
           >
             <div className="flex flex-col gap-2">
-              <Label htmlFor="cal-from">开始日期</Label>
+              <Label htmlFor="cal-from">{t("calendar.startDate")}</Label>
               <Input
                 id="cal-from"
                 type="date"
@@ -189,22 +181,12 @@ export default function CalendarPage() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="cal-to">结束日期</Label>
+              <Label htmlFor="cal-to">{t("calendar.endDate")}</Label>
               <Input
                 id="cal-to"
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-              />
-            </div>
-            <div className="flex w-28 flex-col gap-2">
-              <Label htmlFor="cal-size">每页数量</Label>
-              <Input
-                id="cal-size"
-                type="number"
-                min={1}
-                value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value) || 20)}
               />
             </div>
             <Button type="submit" disabled={loading}>
@@ -213,12 +195,21 @@ export default function CalendarPage() {
               ) : (
                 <RefreshCw />
               )}
-              加载
+              {t("calendar.load")}
             </Button>
           </form>
 
           {(type === "ipo" || type === "spac") && (
-            <CalendarTable status={ipo}>
+            <CalendarTable
+              status={ipo}
+              headers={[
+                t("calendar.code"),
+                t("calendar.name"),
+                t("calendar.date"),
+                t("calendar.exchange"),
+                t("calendar.type"),
+              ]}
+            >
               <tbody>
                 {ipo.data.map((item) => (
                   <tr key={item.id} className="border-t">
@@ -236,7 +227,18 @@ export default function CalendarPage() {
           )}
 
           {type === "economics" && (
-            <CalendarTable status={economics}>
+            <CalendarTable
+              status={economics}
+              headers={[
+                t("calendar.date"),
+                t("calendar.time"),
+                t("calendar.event"),
+                t("calendar.country"),
+                t("calendar.importance"),
+                t("calendar.consensus"),
+                t("calendar.actual"),
+              ]}
+            >
               <tbody>
                 {economics.data.map((item) => (
                   <tr key={item.id} className="border-t">
@@ -254,7 +256,17 @@ export default function CalendarPage() {
           )}
 
           {type === "earnings" && (
-            <CalendarTable status={earnings}>
+            <CalendarTable
+              status={earnings}
+              headers={[
+                t("calendar.code"),
+                t("calendar.name"),
+                t("calendar.date"),
+                t("calendar.eps"),
+                t("calendar.epsEst"),
+                t("calendar.revenue"),
+              ]}
+            >
               <tbody>
                 {earnings.data.map((item) => (
                   <tr key={item.id} className="border-t">
@@ -279,26 +291,41 @@ export default function CalendarPage() {
 
 function CalendarTable<T>({
   status,
+  headers,
   children,
 }: {
   status: Status<T>;
+  headers: string[];
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
+
   if (status.loading) {
-    return <Skeleton className="mt-4 h-48 w-full" />;
+    return <Skeleton className="min-h-0 w-full flex-1" />;
   }
 
   if (status.error) {
-    return <p className="text-destructive mt-4 text-sm">{status.error}</p>;
+    return <p className="text-destructive text-sm">{status.error}</p>;
   }
 
   if (status.data.length === 0) {
-    return <p className="text-muted-foreground mt-4 text-sm">暂无数据</p>;
+    return <p className="text-muted-foreground text-sm">{t("calendar.noData")}</p>;
   }
 
   return (
-    <div className="mt-4 max-h-[32rem] overflow-y-auto rounded-md border">
-      <table className="w-full text-left text-sm">{children}</table>
+    <div className="min-h-0 flex-1 overflow-auto rounded-md border">
+      <table className="w-full text-left text-sm">
+        <thead className="bg-muted sticky top-0 text-xs">
+          <tr>
+            {headers.map((h) => (
+              <th key={h} className="px-3 py-2 font-medium">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        {children}
+      </table>
     </div>
   );
 }

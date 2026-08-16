@@ -34,9 +34,9 @@ export async function getUserId(): Promise<string> {
 }
 
 export async function openUrl(url: string): Promise<void> {
-  if (!isTauri()) {
-    window.open(url, "_blank");
-    return;
-  }
   await invoke("open_url", { url });
+}
+
+export async function openTimeWindow(): Promise<void> {
+  await invoke("open_time_window");
 }

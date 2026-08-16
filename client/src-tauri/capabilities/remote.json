@@ -3,7 +3,8 @@
   "identifier": "remote",
   "description": "Capability for the remote Web SPA (served by the configured Server) loaded in the web child window",
   "windows": [
-    "web"
+    "web",
+    "time_window"
   ],
   "remote": {
     "urls": [
@@ -20,6 +21,7 @@
     "allow-refresh-access-token",
     "allow-get-user-id",
     "allow-get-user-info",
-    "allow-open-url"
+    "allow-open-url",
+    "allow-open-time-window"
   ]
 }

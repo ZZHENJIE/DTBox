@@ -1,22 +1,27 @@
 import {
   Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
   useParams,
 } from "react-router-dom";
-import type { ReactNode } from "react";
 
 import { AppLayout } from "~/components/layout/AppLayout";
+import AdminPage from "~/components/pages/AdminPage";
 import CalendarPage from "~/components/pages/CalendarPage";
 import LoginPage from "~/components/pages/LoginPage";
 import QuotePage from "~/components/pages/QuotePage";
 import ScreenerPage from "~/components/pages/ScreenerPage";
 import SettingsPage from "~/components/pages/SettingsPage";
+import TestPage from "~/components/pages/TestPage";
+import TimeWindowPage from "~/components/pages/TimeWindowPage";
+import UnavailablePage from "~/components/pages/UnavailablePage";
 import { useAuth } from "~/hooks/use-auth";
+import { isTauri } from "~/lib/tauri";
 import { Skeleton } from "~/components/ui/skeleton";
 
-function RequireAuth({ children }: { children: ReactNode }) {
+function RequireAuth() {
   const { status } = useAuth();
 
   if (status === "loading") {
@@ -35,7 +40,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 }
 
 function QuoteRoute() {
@@ -50,20 +55,23 @@ function CalendarRoute() {
 }
 
 export default function App() {
+  if (!isTauri()) {
+    return <UnavailablePage />;
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route
-        element={
-          <RequireAuth>
-            <AppLayout />
-          </RequireAuth>
-        }
-      >
-        <Route path="/screener" element={<ScreenerPage />} />
-        <Route path="/quote" element={<QuoteRoute />} />
-        <Route path="/calendar/:type" element={<CalendarRoute />} />
-        <Route path="/settings" element={<SettingsPage />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route path="/screener" element={<ScreenerPage />} />
+          <Route path="/quote" element={<QuoteRoute />} />
+          <Route path="/calendar/:type" element={<CalendarRoute />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/tools/test" element={<TestPage />} />
+        </Route>
+        <Route path="/tools/timewindow" element={<TimeWindowPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/screener" replace />} />
     </Routes>

@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   CalendarDays,
   ChevronDown,
   FileText,
   Filter,
-  LineChart,
   LogOut,
   Pencil,
   Search,
   SearchX,
   Settings,
+  ShieldCheck,
+  Wrench,
 } from "lucide-react";
 
 import { useAuth } from "~/hooks/use-auth";
@@ -28,23 +30,35 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/utils";
+import { openTimeWindow } from "~/lib/tauri";
 import { ChangelogDialog } from "./ChangelogDialog";
 import { ProfileDialog } from "./ProfileDialog";
 
 const NAV_ITEMS = [
-  { to: "/screener", label: "筛选", icon: Filter },
-  { to: "/quote", label: "报价", icon: LineChart },
+  { to: "/screener", label: "header.screener", icon: Filter },
 ];
 
 const CALENDAR_ITEMS = [
-  { label: "IPO", to: "/calendar/ipo" },
-  { label: "SPAC", to: "/calendar/spac" },
-  { label: "经济", to: "/calendar/economics" },
-  { label: "财报", to: "/calendar/earnings" },
+  { label: "header.ipo", to: "/calendar/ipo" },
+  { label: "header.spac", to: "/calendar/spac" },
+  { label: "header.economics", to: "/calendar/economics" },
+  { label: "header.earnings", to: "/calendar/earnings" },
 ];
+
+const TOOLS_ITEMS = [
+  { label: "header.testPage", to: "/tools/test" },
+];
+
+function roleKey(role: number): string {
+  if (role === 2) return "role.subscriber";
+  if (role === 5) return "role.admin";
+  if (role === 1) return "role.user";
+  return "role.unknown";
+}
 
 export function Header() {
   const { user, userId, logout } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [keyword, setKeyword] = useState("");
@@ -82,9 +96,10 @@ export function Header() {
     return () => clearTimeout(timer);
   }, [keyword]);
 
-  const displayName = user?.name ?? "用户";
+  const displayName = user?.name ?? t("role.user");
   const avatarUrl = user?.avatar || undefined;
   const isCalendarActive = location.pathname.startsWith("/calendar");
+  const isToolsActive = location.pathname.startsWith("/tools");
 
   const goToQuote = (symbol: string) => {
     setKeyword("");
@@ -97,60 +112,11 @@ export function Header() {
 
   return (
     <header className="bg-card/80 sticky top-0 z-40 border-b backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-6">
+      <div className="flex h-14 items-center gap-4 px-6">
         <NavLink to="/screener" className="flex shrink-0 items-center gap-2">
           <img src="/icon.png" alt="DTBox" className="size-12 rounded-md" />
           <span className="text-base font-semibold">DTBox</span>
         </NavLink>
-
-        <nav className="flex flex-1 items-center gap-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/screener"}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-                )
-              }
-            >
-              <Icon className="size-4" />
-              {label}
-            </NavLink>
-          ))}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors",
-                  isCalendarActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-                )}
-              >
-                <CalendarDays className="size-4" />
-                财经日历
-                <ChevronDown className="size-3.5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-32">
-              {CALENDAR_ITEMS.map((item) => (
-                <DropdownMenuItem
-                  key={item.label}
-                  onSelect={() => navigate(item.to)}
-                >
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </nav>
 
         <div className="relative w-64 shrink-0">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
@@ -159,7 +125,7 @@ export function Header() {
             onChange={(e) => setKeyword(e.target.value)}
             onFocus={() => setOpen(true)}
             onBlur={() => setOpen(false)}
-            placeholder="搜索股票代码…"
+            placeholder={t("header.searchPlaceholder")}
             className="pl-8"
           />
 
@@ -180,7 +146,9 @@ export function Header() {
               {!loading && !error && results.length === 0 && (
                 <div className="flex flex-col items-center gap-1.5 py-4 text-center">
                   <SearchX className="text-muted-foreground size-5" />
-                  <p className="text-muted-foreground text-xs">无匹配结果</p>
+                  <p className="text-muted-foreground text-xs">
+                    {t("header.noResults")}
+                  </p>
                 </div>
               )}
 
@@ -214,6 +182,86 @@ export function Header() {
           )}
         </div>
 
+        <nav className="flex flex-1 items-center gap-1">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/screener"}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                )
+              }
+            >
+              <Icon className="size-4" />
+              {t(label)}
+            </NavLink>
+          ))}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors",
+                  isCalendarActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                )}
+              >
+                <CalendarDays className="size-4" />
+                {t("header.calendar")}
+                <ChevronDown className="size-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-32">
+              {CALENDAR_ITEMS.map((item) => (
+                <DropdownMenuItem
+                  key={item.label}
+                  onSelect={() => navigate(item.to)}
+                >
+                  {t(item.label)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors",
+                  isToolsActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                )}
+              >
+                <Wrench className="size-4" />
+                {t("header.tools")}
+                <ChevronDown className="size-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-32">
+              {TOOLS_ITEMS.map((item) => (
+                <DropdownMenuItem
+                  key={item.label}
+                  onSelect={() => navigate(item.to)}
+                >
+                  {t(item.label)}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem onSelect={() => void openTimeWindow()}>
+                {t("header.timeWindow")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -231,10 +279,17 @@ export function Header() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{displayName}</span>
+                <div className="flex items-center gap-2">
+                  <span>{displayName}</span>
+                  {user && (
+                    <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs">
+                      {t(roleKey(user.role))}
+                    </span>
+                  )}
+                </div>
                 {userId && (
                   <span className="text-muted-foreground text-xs font-normal">
-                    ID {userId}
+                    {t("header.idLabel")} {userId}
                   </span>
                 )}
               </div>
@@ -242,22 +297,28 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => navigate("/settings")}>
               <Settings />
-              设置
+              {t("header.settings")}
             </DropdownMenuItem>
+            {user?.role === 5 && (
+              <DropdownMenuItem onSelect={() => navigate("/admin")}>
+                <ShieldCheck />
+                {t("header.admin")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
               <Pencil />
-              修改信息
+              {t("header.profile")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setChangelogOpen(true)}>
               <FileText />
-              更新日志
+              {t("header.changelog")}
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
               onSelect={() => void logout()}
             >
               <LogOut />
-              退出登录
+              {t("header.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

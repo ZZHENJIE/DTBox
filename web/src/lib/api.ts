@@ -1,4 +1,5 @@
-import { isTauri, getAccessToken, refreshAccessToken } from "./tauri";
+import { getAccessToken, refreshAccessToken } from "./tauri";
+import i18n from "~/i18n";
 import type { ApiResponse } from "~/types/api";
 
 export class ApiError extends Error {
@@ -16,9 +17,6 @@ let tokenPromise: Promise<string> | null = null;
 
 function loadToken(): Promise<string> {
   if (cachedToken) return Promise.resolve(cachedToken);
-  if (!isTauri()) {
-    return Promise.reject(new ApiError("未运行在 Tauri 环境中，无法获取 AccessToken"));
-  }
   if (!tokenPromise) {
     tokenPromise = getAccessToken()
       .then((token) => {
@@ -72,7 +70,7 @@ async function extractError(response: Response): Promise<string> {
   } catch {
     // ignore parse errors
   }
-  return `请求失败（状态码 ${response.status}）`;
+  return i18n.t("errors.requestFailed", { status: response.status });
 }
 
 export async function apiRequest<T>(
@@ -88,7 +86,7 @@ export async function apiRequest<T>(
 
   const body = (await response.json()) as ApiResponse<T>;
   if (!body.success) {
-    throw new ApiError(body.message ?? "未知错误", response.status);
+    throw new ApiError(body.message ?? i18n.t("errors.unknown"), response.status);
   }
   return body.data as T;
 }

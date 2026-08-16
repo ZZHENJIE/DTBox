@@ -8,8 +8,6 @@ use std::sync::Arc;
 use state::AppState;
 use tauri::{Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
-#[cfg(desktop)]
-use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
 #[derive(Clone, serde::Serialize)]
 struct UserInfo {
@@ -209,6 +207,34 @@ async fn open_url(app: tauri::AppHandle, url: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn open_time_window(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<(), String> {
+    let server_url = state.server_url.read().unwrap().clone();
+    if server_url.is_empty() {
+        return Err("server url not configured".to_string());
+    }
+
+    if let Some(window) = app.get_webview_window("time_window") {
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    let url: tauri::Url = format!("{}/tools/timewindow", server_url.trim_end_matches('/'))
+        .parse()
+        .map_err(|e| format!("invalid url: {e}"))?;
+
+    tauri::WebviewWindowBuilder::new(&app, "time_window", tauri::WebviewUrl::External(url))
+        .always_on_top(true)
+        .title("TimeWindow")
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
 async fn auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool, String> {
     let server_url = state.server_url.read().unwrap().clone();
     if server_url.is_empty() {
@@ -236,18 +262,7 @@ async fn auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool, Stri
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let app = tauri::Builder::default()
-        .setup(|app| {
-            #[cfg(desktop)]
-            {
-                app.handle()
-                    .plugin(tauri_plugin_window_state::Builder::new().build())?;
-                if let Some(window) = app.get_webview_window("main") {
-                    window.restore_state(StateFlags::all())?;
-                }
-            }
-            Ok(())
-        })
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .manage(Arc::new(AppState::default()))
@@ -264,15 +279,14 @@ pub fn run() {
             test_connection,
             open_web,
             open_url,
+            open_time_window,
             auto_login,
-        ])
-        .build(tauri::generate_context!())
-        .expect("error while building tauri application");
+        ]);
 
-    app.run(|app_handle, event| {
-        if let tauri::RunEvent::Exit = event {
-            #[cfg(desktop)]
-            let _ = app_handle.save_window_state(StateFlags::all());
-        }
-    });
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_window_state::Builder::default().build());
+
+    builder
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }

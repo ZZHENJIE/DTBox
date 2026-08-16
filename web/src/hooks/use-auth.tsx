@@ -15,7 +15,6 @@ import {
   doRegister,
   getAccessToken,
   getUserId,
-  isTauri,
 } from "~/lib/tauri";
 import type { InfoResult } from "~/types/api";
 
@@ -57,17 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     (async () => {
-      if (!isTauri()) {
-        if (import.meta.env.DEV) {
-          setStatus("authenticated");
-          setUserId(null);
-          setUser(null);
-        } else {
-          setStatus("unauthenticated");
-        }
-        return;
-      }
-
       try {
         await getAccessToken();
         if (!cancelled) {
