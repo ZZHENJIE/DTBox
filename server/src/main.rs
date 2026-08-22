@@ -106,7 +106,9 @@ async fn main() {
     let finviz_routes = Router::new()
         .route("/stock", post(finviz::stock))
         .route("/screener", post(finviz::screener))
-        .route("/news", post(finviz::news));
+        .route("/news", post(finviz::news))
+        .route("/calendar/earnings", post(finviz::calendar_earnings))
+        .route("/calendar/economics", post(finviz::calendar_economics));
 
     let alpaca_routes = Router::new().route("/snapshot", post(alpaca::snapshot));
 

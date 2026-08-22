@@ -227,7 +227,7 @@ async fn open_time_window(
 
     tauri::WebviewWindowBuilder::new(&app, "time_window", tauri::WebviewUrl::External(url))
         .always_on_top(true)
-        .title("TimeWindow")
+        .title("Time Window")
         .build()
         .map_err(|e| e.to_string())?;
 

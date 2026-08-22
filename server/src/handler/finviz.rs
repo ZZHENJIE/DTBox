@@ -1,5 +1,5 @@
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
-use finviz_sdk::{NewsQuery, ScreenerQuery, StockQuery};
+use finviz_sdk::{EarningsQuery, EconomicsQuery, NewsQuery, ScreenerQuery, StockQuery};
 use shared::ApiResponse;
 
 use crate::AppState;
@@ -41,6 +41,36 @@ pub async fn news(
     Json(req): Json<NewsQuery>,
 ) -> impl IntoResponse {
     match state.source.finviz.news(&req).await {
+        Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiResponse::<()>::error(e.to_string())),
+        )
+            .into_response(),
+    }
+}
+
+pub async fn calendar_economics(
+    State(state): State<AppState>,
+    _user: SubscriberUser,
+    Json(req): Json<EconomicsQuery>,
+) -> impl IntoResponse {
+    match state.source.finviz.economics(&req).await {
+        Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiResponse::<()>::error(e.to_string())),
+        )
+            .into_response(),
+    }
+}
+
+pub async fn calendar_earnings(
+    State(state): State<AppState>,
+    _user: SubscriberUser,
+    Json(req): Json<EarningsQuery>,
+) -> impl IntoResponse {
+    match state.source.finviz.earnings(&req).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,

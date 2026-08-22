@@ -74,6 +74,20 @@ K 线图 + 成交量图表。
 **请求体**：`NewsQuery`
 **响应**：`ApiResponse<Vec<NewsItem>>`
 
+### POST /api/finviz/calendar/economics
+
+经济日历。
+
+**请求体**：`EconomicsQuery`（来自 `finviz_sdk`）
+**响应**：`ApiResponse<Vec<Economics>>`
+
+### POST /api/finviz/calendar/earnings
+
+财报日历。
+
+**请求体**：`EarningsQuery`（来自 `finviz_sdk`）
+**响应**：`ApiResponse<Vec<Earnings>>`
+
 ## Benzinga 接口
 
 ### POST /api/benzinga/calendar/ipo

@@ -74,13 +74,25 @@ Web 基于 `react-router-dom` 组织路由，主要页面：
 | `/login` | 登录 / 注册 | 通过 IPC 调 Client 完成认证 |
 | `/screener` | 筛选器 | Finviz 筛选器数据表格，点击 Symbol 弹出 K 线对话框（上一项/下一项/报价） |
 | `/quote` | 报价 | `?symbol=` 指定股票，K 线图 + 相关新闻 |
-| `/calendar/:type` | 财经日历 | Benzinga 数据（`ipo` / `spac` / `economics` / `earnings`） |
+| `/calendar/:type` | 财经日历 | `ipo`/`spac` 仅 Benzinga；`economics`/`earnings` 支持 Finviz(默认)/Benzinga 双源切换，时间统一由 UTC `timestamp` 转本地 `YYYY-MM-DD HH:mm` 展示，所有 Symbol 列可点击跳转 `/quote?symbol=` |
 | `/settings` | 设置 | 默认图表、筛选器预设、TimeWindow、语言 |
 | `/admin` | 管理员 | 用户管理（角色修改、筛选器预设编辑），仅管理员可见 |
 | `/tools/test` | 测试页面 | 占位测试页 |
 | `/tools/timewindow` | 时间窗口 | 独立页面（无全局 Header），网络时间戳悬浮时钟 |
 
 > 未匹配路由重定向到 `/screener`。
+
+### 财经日历数据源说明
+
+- `ipo`/`spac`：`POST /api/benzinga/calendar/ipo`（`page_size`+`date_from/to`+`ipo_type`），表头 `Symbol/Name/Date/Exchange/Type`，Symbol 可点击跳报价。
+- `economics`：双源 `Tabs` 切换（默认 `finviz`）
+  - `Benzinga`：`POST /api/benzinga/calendar/economics`（`timestamp: i64` UTC 替代旧 `date`/`time` 字符串；前端以 `timestamp` 转本地日期/时间，`0` 时回退）→ 列 `Date/Time/Event/Country/Importance/Consensus/Actual`
+  - `Finviz`：`POST /api/finviz/calendar/economics`（无 `page_size`，仅 `date_from/to`；返回 `Timestamp/Event/Impact/For/Actual/Expected/Prior`）→ 列 `Date/Time/Event/Impact/For/Actual/Expected/Prior`
+- `earnings`：双源 `Tabs` 切换（默认 `finviz`）
+  - `Benzinga`：`POST /api/benzinga/calendar/earnings`（仍为 `date`/`time` 字符串）→ 列 `Symbol/Name/Date/Time/EPS/EPS Est./Revenue`
+  - `Finviz`：`POST /api/finviz/calendar/earnings`（`Timestamp/Ticker/Company/Market Cap/EPS Estimate/Actual...`）→ 列 `Date/Time/Symbol/Name/Market Cap/EPS Est./EPS Act./Revenue Est./Revenue Act.`
+- 类型分离：`src/types/data.ts` 中 `BenzingaEconomicsItem/EarningsItem` 与 `FinvizEconomicsItem/EarningsItem` 完全分离（Finviz 返回 PascalCase/带空格键名）；`src/lib/endpoints.ts` 新增 `finvizEconomics`/`finvizEarnings`。
+- 表头统一：全站表格 `Ticker` 已统一为 `Symbol`（`i18n calendar.code` / `screener.symbol`）。
 
 ## 国际化 (i18n)
 

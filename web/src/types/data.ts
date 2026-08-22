@@ -209,19 +209,20 @@ export interface IPOItem {
   updated: number;
 }
 
-export interface EconomicsQuery {
+/* ── Benzinga calendar ── */
+
+export interface BenzingaEconomicsQuery {
   page_size: number;
   date_from: string;
   date_to: string;
 }
 
-export interface EconomicsItem {
+export interface BenzingaEconomicsItem {
   actual: string;
   actual_t: string;
   consensus: string;
   consensus_t: string;
   country: string;
-  date: string;
   description: string;
   event_category: string;
   event_name: string;
@@ -232,17 +233,20 @@ export interface EconomicsItem {
   period_year: number;
   prior: string;
   prior_t: string;
-  time: string;
+  timestamp: number;
   updated: number;
+  // legacy fallback — older backend may still send date/time
+  date?: string;
+  time?: string;
 }
 
-export interface EarningsQuery {
+export interface BenzingaEarningsQuery {
   page_size: number;
   date_from: string;
   date_to: string;
 }
 
-export interface EarningsItem {
+export interface BenzingaEarningsItem {
   currency: string;
   cusip: string;
   date: string;
@@ -271,3 +275,52 @@ export interface EarningsItem {
   time: string;
   updated: number;
 }
+
+/* ── Finviz calendar ── */
+
+export interface FinvizEconomicsQuery {
+  date_from: string;
+  date_to: string;
+}
+
+export interface FinvizEconomicsItem {
+  Timestamp: number;
+  Event: string;
+  Impact: number;
+  For: string;
+  Actual: string;
+  Expected: string;
+  Prior: string;
+}
+
+export interface FinvizEarningsQuery {
+  date_from: string;
+  date_to: string;
+}
+
+export interface FinvizEarningsItem {
+  Timestamp: number;
+  Ticker: string;
+  Company: string;
+  "Market Cap": number;
+  "EPS Estimate": number | null;
+  "EPS Actual": number | null;
+  "EPS Surprise": number | null;
+  "EPS GAAP Estimate": number | null;
+  "EPS GAAP Actual": number | null;
+  "EPS GAAP Surprise": number | null;
+  "Revenue Estimate": number | null;
+  "Revenue Actual": number | null;
+  "Revenue Surprise": number | null;
+  "1-Day Price Reaction": number | null;
+}
+
+/* ── Deprecated aliases (for gradual migration) ── */
+/** @deprecated use BenzingaEconomicsQuery */
+export type EconomicsQuery = BenzingaEconomicsQuery;
+/** @deprecated use BenzingaEconomicsItem */
+export type EconomicsItem = BenzingaEconomicsItem;
+/** @deprecated use BenzingaEarningsQuery */
+export type EarningsQuery = BenzingaEarningsQuery;
+/** @deprecated use BenzingaEarningsItem */
+export type EarningsItem = BenzingaEarningsItem;

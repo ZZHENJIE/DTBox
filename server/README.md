@@ -101,6 +101,8 @@ Redis 为可选依赖, 未连接时自动回退为内存黑名单(进程重启�
 | /api/finviz/stock | POST | Finviz 股票报价 |
 | /api/finviz/screener | POST | Finviz 筛选 |
 | /api/finviz/news | POST | Finviz 新闻 |
+| /api/finviz/calendar/economics | POST | Finviz 经济日历 |
+| /api/finviz/calendar/earnings | POST | Finviz 财报日历 |
 | /api/alpaca/snapshot | POST | Alpaca 快照 |
 | /api/stock/search?symbol={keyword}&limit={n}&page={n} | GET | 搜索股票 (symbol 必填) |
 | /api/stock/kline_chart | POST | K线图 + 成交量，返回 PNG (⚠ 待修复) |
@@ -248,9 +250,11 @@ pub struct AdminChangeRequest {
 > 请求/响应类型来自 `finviz_sdk` crate，客户端需依赖该 SDK 复用类型。
 
 ```
-POST /stock       请求: StockQuery       响应: ApiResponse<Stock>
-POST /screener    请求: ScreenerQuery     响应: ApiResponse<Vec<Ticker>>  
-POST /news        请求: NewsQuery         响应: ApiResponse<Vec<NewsItem>>
+POST /stock                 请求: StockQuery       响应: ApiResponse<Stock>
+POST /screener              请求: ScreenerQuery    响应: ApiResponse<Vec<Ticker>>
+POST /news                  请求: NewsQuery        响应: ApiResponse<Vec<NewsItem>>
+POST /calendar/economics    请求: EconomicsQuery   响应: ApiResponse<Vec<Economics>>
+POST /calendar/earnings     请求: EarningsQuery    响应: ApiResponse<Vec<Earnings>>
 ```
 
 ### /api/alpaca/*

@@ -13,10 +13,14 @@ import type {
 import type {
   AlpacaSnapshot,
   AlpacaSnapshotQuery,
-  EarningsItem,
-  EarningsQuery,
-  EconomicsItem,
-  EconomicsQuery,
+  BenzingaEarningsItem,
+  BenzingaEarningsQuery,
+  BenzingaEconomicsItem,
+  BenzingaEconomicsQuery,
+  FinvizEarningsItem,
+  FinvizEarningsQuery,
+  FinvizEconomicsItem,
+  FinvizEconomicsQuery,
   FinvizNewsItem,
   FinvizNewsQuery,
   FinvizScreenerItem,
@@ -97,10 +101,16 @@ export const alpacaSnapshot = (query: AlpacaSnapshotQuery) =>
 export const benzingaIpo = (query: IPOQuery) =>
   post<IPOItem[]>("/api/benzinga/calendar/ipo", query);
 
-export const benzingaEconomics = (query: EconomicsQuery) =>
-  post<EconomicsItem[]>("/api/benzinga/calendar/economics", query);
+export const benzingaEconomics = (query: BenzingaEconomicsQuery) =>
+  post<BenzingaEconomicsItem[]>("/api/benzinga/calendar/economics", query);
 
-export const benzingaEarnings = (query: EarningsQuery) =>
-  post<EarningsItem[]>("/api/benzinga/calendar/earnings", query);
+export const benzingaEarnings = (query: BenzingaEarningsQuery) =>
+  post<BenzingaEarningsItem[]>("/api/benzinga/calendar/earnings", query);
+
+export const finvizEconomics = (query: FinvizEconomicsQuery) =>
+  post<FinvizEconomicsItem[]>("/api/finviz/calendar/economics", query);
+
+export const finvizEarnings = (query: FinvizEarningsQuery) =>
+  post<FinvizEarningsItem[]>("/api/finviz/calendar/earnings", query);
 
 export const akamaiTimestamp = () => apiRequest<number>("/api/tool/timestamp/akamai");
